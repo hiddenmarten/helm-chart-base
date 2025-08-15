@@ -1,0 +1,32 @@
+# See https://pre-commit.com for more information
+# See https://pre-commit.com/hooks.html for more hooks
+repos:
+- repo: https://github.com/pre-commit/pre-commit-hooks
+  rev: v5.0.0
+  hooks:
+    - id: trailing-whitespace
+    - id: end-of-file-fixer
+      exclude: '(^|/)README\.md$'
+    - id: check-added-large-files
+- repo: local
+  hooks:
+    - id: make-schema
+      name: make-schema
+      entry: sh -c 'make schema'
+      language: system
+      require_serial: true
+    - id: make-lint
+      name: make-lint
+      entry: sh -c 'make lint'
+      language: system
+      require_serial: true
+    - id: make-docs
+      name: make-docs
+      entry: sh -c 'make docs'
+      language: system
+      require_serial: true
+    - id: make-unittest
+      name: make-unittest
+      entry: sh -c 'make unittest'
+      language: system
+      require_serial: true
