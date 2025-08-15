@@ -1,3 +1,4 @@
 bin
 .idea
-*/Chart.lock
+**/Chart.lock
+charts
