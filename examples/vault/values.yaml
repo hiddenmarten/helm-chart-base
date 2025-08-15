@@ -14,13 +14,3 @@ base:
     spec:
       rules:
         "vault.example.local":
-          tls:
-            secretName: vault-tls-secret
-          http:
-            paths:
-              "/":
-                backend:
-                  service:
-                    name: vault-base
-                    port:
-                      name: http

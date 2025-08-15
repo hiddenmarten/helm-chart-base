@@ -1,13 +1,13 @@
 {{/*
 Ingress template for base-library chart
-Usage: {{ include "base-lib.ingress" (dict "val" .Values "ctx" $) }}
+Usage: {{ include "base-lib.ingress" (dict "val" .Values "ctx" $ctx) }}
 */}}
 {{ define "base-lib.ingress" -}}
 {{ $val := .val -}}
 {{ $ctx := .ctx -}}
 {{ $defaults := include "base-lib.defaults" (dict "ctx" $ctx) | fromYaml -}}
 {{ $val = mustMergeOverwrite $defaults $val -}}
-{{ $spec := include "base-lib.ingress.spec" (dict "spec" $val.ingress.spec "ctx" $) | fromYaml -}}
+{{ $spec := include "base-lib.ingress.spec" (dict "spec" $val.ingress.spec "ctx" $ctx) | fromYaml -}}
 {{ $val = mustMergeOverwrite $val.ingress.spec (dict "ingress" (dict "spec" $spec)) -}}
 {{- if $val.ingress.spec.rules }}
 apiVersion: "networking.k8s.io/v1"
@@ -24,19 +24,19 @@ spec: {{ tpl (toYaml $val.ingress.spec) $ctx | nindent 2 }}
 
 {{/*
 TLS sections template for ingress
-Usage: {{ include "base-lib.ingress.spec" (dict "spec" .Values.ingress.spec "ctx" $) }}
+Usage: {{ include "base-lib.ingress.spec" (dict "spec" .Values.ingress.spec "ctx" $ctx) }}
 */}}
 {{ define "base-lib.ingress.spec" -}}
 {{ $spec := .spec -}}
 {{ $ctx := .ctx -}}
-{{ $spec = mustMergeOverwrite $spec (include "base-lib.ingress.tls" (dict "rules" $spec.rules "ctx" $) | fromYaml) }}
-{{ $spec = mustMergeOverwrite $spec (include "base-lib.ingress.rules" (dict "rules" $spec.rules "ctx" $) | fromYaml) }}
+{{ $spec = mustMergeOverwrite $spec (include "base-lib.ingress.tls" (dict "rules" $spec.rules "ctx" $ctx) | fromYaml) }}
+{{ $spec = mustMergeOverwrite $spec (include "base-lib.ingress.rules" (dict "rules" $spec.rules "ctx" $ctx) | fromYaml) }}
 {{ $spec | toYaml }}
 {{- end }}
 
 {{/*
 TLS sections template for ingress
-Usage: {{ include "base-lib.ingress.tls" (dict "rules" .Values.ingress.spec.rules "ctx" $) }}
+Usage: {{ include "base-lib.ingress.tls" (dict "rules" .Values.ingress.spec.rules "ctx" $ctx) }}
 */}}
 {{ define "base-lib.ingress.tls" -}}
   {{ $rules := .rules -}}
@@ -61,7 +61,7 @@ Usage: {{ include "base-lib.ingress.tls" (dict "rules" .Values.ingress.spec.rule
 
 {{/*
 Rules sections template for ingress
-Usage: {{ include "base-lib.ingress.rules" (dict "rules" .Values.ingress.spec.rules "ctx" $) }}
+Usage: {{ include "base-lib.ingress.rules" (dict "rules" .Values.ingress.spec.rules "ctx" $ctx) }}
 */}}
 {{ define "base-lib.ingress.rules" -}}
   {{ $rules := .rules -}}
@@ -83,7 +83,8 @@ Usage: {{ include "base-lib.ingress.rules" (dict "rules" .Values.ingress.spec.ru
     {{ end -}}
     {{ $pathsList := list -}}
     {{ range $kk, $vv := $rule.http.paths -}}
-      {{ $path := mustMergeOverwrite ((include "base-lib.ingress.path.default" (dict "ctx" $ctx)) | fromYaml) $vv -}}
+      {{ $defaultPath := include "base-lib.ingress.path.default" (dict "ctx" $ctx) | fromYaml -}}
+      {{ $path := mustMergeOverwrite $defaultPath $vv -}}
       {{ $_ := set $path "path" $kk -}}
       {{ $pathsList = append $pathsList $path -}}
     {{ end -}}
@@ -95,25 +96,37 @@ Usage: {{ include "base-lib.ingress.rules" (dict "rules" .Values.ingress.spec.ru
 
 {{/*
 Path section sctracture
-Usage: {{ include "base-lib.ingress.path.default" (dict "ctx" $) }}
+Usage: {{ include "base-lib.ingress.path.default" (dict "ctx" $ctx) }}
 */}}
 {{ define "base-lib.ingress.path.default" -}}
 {{ $ctx := .ctx -}}
+{{ $portName := include "base-lib.ingress.service.http.portName" (dict "ctx" $ctx) | fromYaml -}}
 pathType: Prefix
 backend:
   service:
-    name: ""
-    port:
-      number: 0
+    name: {{ include "base-lib.fullname" (dict "ctx" $ctx) }}
+    port: {{ $portName | toYaml | nindent 6 }}
 {{- end }}
 
 {{/*
 Rule section sctracture
-Usage: {{ include "base-lib.ingress.path.default" (dict "ctx" $) }}
+Usage: {{ include "base-lib.ingress.path.default" (dict "ctx" $ctx) }}
 */}}
 {{ define "base-lib.ingress.rule.default" -}}
 {{ $ctx := .ctx -}}
 host: ""
 http:
   paths: {}
+{{- end }}
+
+{{/*
+Rule section sctracture
+Usage: {{ include "base-lib.ingress.service.http.portName" (dict "ctx" $ctx) }}
+*/}}
+{{ define "base-lib.ingress.service.http.portName" -}}
+{{ $ctx := .ctx -}}
+{{ if not $ctx.Values.service.spec.ports.http -}}
+{{ fail "couldn't find http port in service" }}
+{{- end }}
+name: http
 {{- end }}

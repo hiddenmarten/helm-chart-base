@@ -17,5 +17,6 @@ A HashiCorp Vault helm chart using base
 | base.image.pullPolicy | string | `"IfNotPresent"` |  |
 | base.image.repository | string | `"hashicorp/vault"` |  |
 | base.image.tag | string | `"1.20.2"` |  |
+| base.ingress.spec.rules."vault.example.local".tls.secretName | string | `"vault-tls-secret"` |  |
 | base.service.spec.ports.http.port | int | `8200` |  |
 
