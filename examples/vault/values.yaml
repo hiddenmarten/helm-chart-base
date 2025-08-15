@@ -9,9 +9,9 @@ base:
         "/vault/config.d/config.json":
           ui: true
           disable_mlock: true
-          "storage":
-            "file":
-              "path": /vault/file
+          storage:
+            file:
+              path: /vault/file
 
   secrets:
     envVars:
