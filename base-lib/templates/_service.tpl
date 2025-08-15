@@ -3,10 +3,13 @@ Service template for base-library chart
 Usage: {{ include "base-lib.service" (dict "service" .Values.service "ctx" $) }}
 */}}
 {{ define "base-lib.service" -}}
-{{ $service := .svc -}}
+{{ $service := .service -}}
 {{ $ctx := .ctx -}}
 {{ $defaults := include "base-lib.defaults" (dict "ctx" $ctx) | fromYaml -}}
 {{ $service = mustMergeOverwrite $defaults.service $service -}}
+{{ $ports := include "base-lib.service.ports" (dict "ports" $service.spec.ports "ctx" $ctx) | fromYaml -}}
+{{ $service = mustMergeOverwrite $service (dict "spec" $ports) -}}
+{{ if $service.spec.ports -}}
 apiVersion: v1
 kind: Service
 metadata:
@@ -15,36 +18,22 @@ metadata:
   {{- with $service.annotations }}
   annotations: {{ tpl (toYaml .) $ctx | nindent 4 }}
   {{- end }}
-spec:
-  {{- with $service.type }}
-  type: {{ tpl (toYaml .) $ctx }}
-  {{- end }}
-  {{- with $service.clusterIP }}
-  clusterIP: {{ tpl (toYaml .) $ctx }}
-  {{- end }}
-  {{- with $service.externalTrafficPolicy }}
-  externalTrafficPolicy: {{ tpl (toYaml .) $ctx }}
-  {{- end }}
-  {{- with $service.sessionAffinity }}
-  sessionAffinity: {{ tpl (toYaml .) $ctx }}
-  {{- end }}
-  {{- with $service.loadBalancerIP }}
-  loadBalancerIP: {{ tpl (toYaml .) $ctx }}
-  {{- end }}
-  {{- with $service.loadBalancerSourceRanges }}
-  loadBalancerSourceRanges: {{ tpl (toYaml .) $ctx | nindent 2 }}
-  {{- end }}
-  selector: {{ include "base-lib.selectorLabels" (dict "ctx" $ctx) | nindent 4 }}
-  {{- if $service.ports }}
-  ports:
-  {{- range $k, $v := $service.ports }}
-    - name: {{ $k }}
-      port: {{ $v.port }}
-      targetPort: {{ $v.targetPort | default $v.port }}
-      protocol: {{ $v.protocol | default "TCP" }}
-      {{- with $v.nodePort }}
-      nodePort: {{ tpl (toYaml .) $ctx }}
-      {{- end }}
-  {{- end }}
-  {{- end }}
+spec: {{ tpl (toYaml $service.spec) $ctx | nindent 2 }}
+{{- end }}
+{{- end }}
+
+{{/*
+Ports template for service
+Usage: {{ include "base-lib.service" (dict "ports" $ports "ctx" $ctx) }}
+*/}}
+{{ define "base-lib.service.ports" -}}
+{{ $ports := .ports -}}
+{{ $ctx := .ctx -}}
+ports:
+{{- range $k, $v := $ports }}
+  - name: {{ $k }}
+    port: {{ $v.port }}
+    targetPort: {{ $v.port }}
+    protocol: "TCP"
+{{- end }}
 {{- end }}

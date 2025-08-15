@@ -68,8 +68,9 @@ pod:
 
 # This is for setting up a service more information can be found here: https://kubernetes.io/docs/concepts/services-networking/service/
 service:
-  # This sets the ports more information can be found here: https://kubernetes.io/docs/concepts/services-networking/service/#field-spec-ports
-  ports: {}
+  spec:
+    # This sets the ports more information can be found here: https://kubernetes.io/docs/concepts/services-networking/service/#field-spec-ports
+    ports: {}
 
 # This is for setting up ingress more information can be found here: https://kubernetes.io/docs/concepts/services-networking/ingress/
 ingress:
