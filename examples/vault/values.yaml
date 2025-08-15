@@ -1,0 +1,5 @@
+base:
+  image:
+    repository: hashicorp/vault
+    pullPolicy: IfNotPresent
+    tag: 1.20.2

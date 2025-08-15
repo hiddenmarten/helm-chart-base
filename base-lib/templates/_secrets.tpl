@@ -8,6 +8,8 @@ Usage: {{ include "base-lib.secrets" (dict "secrets" .Values.secrets "ctx" $) }}
 {{ $defaults := include "base-lib.defaults" (dict "ctx" $ctx) | fromYaml -}}
 {{ $secrets = mustMergeOverwrite $defaults.secrets $secrets -}}
 {{- range $postfix, $content := $secrets }}
+{{ $payload := include "base-lib.secrets.payload" (dict "postfix" $postfix "content" $content "ctx" $ctx) | fromYaml -}}
+{{ if $payload -}}
 apiVersion: v1
 kind: Secret
 metadata:
@@ -19,8 +21,8 @@ metadata:
 {{- with $content.type }}
 type: {{ tpl (toYaml .) $ctx }}
 {{- end }}
-{{ include "base-lib.secrets.content" (dict "postfix" $postfix "content" $content "ctx" $ctx) }}
 ---
+{{- end }}
 {{- end }}
 {{- end }}
 
@@ -28,7 +30,7 @@ type: {{ tpl (toYaml .) $ctx }}
 Secret content helper
 Usage: {{ include "base-lib.secrets.content" (dict "postfix" $postfix "content" $content "ctx" $ctx) }}
 */}}
-{{ define "base-lib.secrets.content" -}}
+{{ define "base-lib.secrets.payload" -}}
 {{ $postfix := .postfix -}}
 {{ $content := .content -}}
 {{ $ctx := .ctx -}}

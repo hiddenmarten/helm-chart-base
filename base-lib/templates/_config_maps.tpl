@@ -8,6 +8,8 @@ Usage: {{ include "base-lib.configMaps" (dict "cms" .Values.configMaps "ctx" $) 
 {{ $defaults := include "base-lib.defaults" (dict "ctx" $ctx) | fromYaml -}}
 {{ $cms = mustMergeOverwrite $defaults.configMaps $cms -}}
 {{- range $postfix, $content := $cms }}
+{{ $payload := include "base-lib.configMaps.payload" (dict "postfix" $postfix "content" $content "ctx" $ctx) | fromYaml -}}
+{{ if $payload -}}
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -16,8 +18,9 @@ metadata:
   {{- with $content.annotations }}
   annotations: {{ tpl (toYaml .) $ctx | nindent 4 }}
   {{- end }}
-{{ include "base-lib.configMaps.content" (dict "postfix" $postfix "content" $content "ctx" $ctx) }}
+{{ $payload | toYaml | indent 2 }}
 ---
+{{- end }}
 {{- end }}
 {{- end }}
 
@@ -25,7 +28,7 @@ metadata:
 ConfigMap content helper
 Usage: {{ include "base-lib.configMaps.content" (dict "postfix" $postfix "content" $content "ctx" $ctx) }}
 */}}
-{{ define "base-lib.configMaps.content" -}}
+{{ define "base-lib.configMaps.payload" -}}
 {{ $postfix := .postfix -}}
 {{ $content := .content -}}
 {{ $ctx := .ctx -}}

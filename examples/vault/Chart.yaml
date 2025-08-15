@@ -1,0 +1,9 @@
+apiVersion: v2
+name: vault
+description: A HashiCorp Vault helm chart using base
+type: application
+version: 0.1.0
+dependencies:
+  - name: base
+    version: 0.0.1
+    repository: file://../../base

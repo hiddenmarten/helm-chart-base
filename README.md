@@ -18,3 +18,9 @@ TODO list:
 
 # Agreements:
  - no lists allowed in helm chart values, lists break the merge flow in chart inheritance
+
+
+# Commands:
+```shell
+ cd base && helm dependency update && cd ../examples/vault && helm dependency update && cd ../.. && helm template examples/vault
+```
