@@ -7,6 +7,8 @@ Usage: {{ include "base-lib.ingress" (dict "val" .Values "ctx" $) }}
 {{ $ctx := .ctx -}}
 {{ $defaults := include "base-lib.defaults" (dict "ctx" $ctx) | fromYaml -}}
 {{ $val = mustMergeOverwrite $defaults $val -}}
+{{ $spec := include "base-lib.ingress.spec" (dict "spec" $val.ingress.spec "ctx" $) | fromYaml -}}
+{{ $val = mustMergeOverwrite $val.ingress.spec (dict "ingress" (dict "spec" $spec)) -}}
 {{- if $val.ingress.spec.rules }}
 apiVersion: "networking.k8s.io/v1"
 kind: Ingress
@@ -16,13 +18,20 @@ metadata:
   {{- with $val.ingress.annotations }}
   annotations: {{ tpl (toYaml .) $ctx | nindent 4 }}
   {{- end }}
-spec:
-  {{- with $val.ingress.ingressClassName }}
-  ingressClassName: {{ tpl (toYaml .) $ctx }}
-  {{- end }}
-  {{ include "base-lib.ingress.tls" (dict "rules" $val.ingress.spec.rules "ctx" $) }}
-  {{ include "base-lib.ingress.rules" (dict "rules" $val.ingress.spec.rules "ctx" $) }}
+spec: {{ tpl (toYaml $val.ingress.spec) $ctx | nindent 2 }}
 {{- end }}
+{{- end }}
+
+{{/*
+TLS sections template for ingress
+Usage: {{ include "base-lib.ingress.spec" (dict "spec" .Values.ingress.spec "ctx" $) }}
+*/}}
+{{ define "base-lib.ingress.spec" -}}
+{{ $spec := .spec -}}
+{{ $ctx := .ctx -}}
+{{ $spec = mustMergeOverwrite $spec (include "base-lib.ingress.tls" (dict "rules" $spec.rules "ctx" $) | fromYaml) }}
+{{ $spec = mustMergeOverwrite $spec (include "base-lib.ingress.rules" (dict "rules" $spec.rules "ctx" $) | fromYaml) }}
+{{ $spec | toYaml }}
 {{- end }}
 
 {{/*
@@ -63,7 +72,7 @@ Usage: {{ include "base-lib.ingress.rules" (dict "rules" .Values.ingress.spec.ru
     {{ if $v -}}
     {{ $rule = mustMergeOverwrite $rule $v -}}
     {{ end -}}
-    {{ if not $rule.tls -}}
+    {{ if $rule.tls -}}
     {{ $_ := unset $rule "tls" -}}
     {{ end -}}
     {{ if not $rule.host -}}
