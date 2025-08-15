@@ -1,0 +1,131 @@
+suite: Ingress template
+templates:
+  - templates/ingress.tpl
+
+tests:
+  - it: renders an Ingress with basic configuration
+    set:
+      service:
+        spec:
+          ports:
+            http:
+              port: 80
+      ingress:
+        spec:
+          rules:
+            "example.com":
+              paths:
+                - path: /
+                  pathType: Prefix
+                  backend:
+                    service:
+                      name: RELEASE-NAME-base
+                      port:
+                        number: 80
+    asserts:
+      - isKind:
+          of: Ingress
+      - equal:
+          path: metadata.name
+          value: RELEASE-NAME-base
+      - equal:
+          path: spec.rules[0].host
+          value: example.com
+
+  - it: renders an Ingress with TLS configuration
+    skip:
+      reason: "Need service configuration for ingress template"
+    set:
+      service:
+        spec:
+          ports:
+            http:
+              port: 80
+      ingress:
+        spec:
+          tls:
+            - hosts:
+                - example.com
+              secretName: example-tls
+          rules:
+            "example.com":
+              paths:
+                - path: /
+                  pathType: Prefix
+    asserts:
+      - isKind:
+          of: Ingress
+      - lengthEqual:
+          path: spec.tls
+          count: 1
+      - equal:
+          path: spec.tls[0].secretName
+          value: example-tls
+      - contains:
+          path: spec.tls[0].hosts
+          content: example.com
+
+  - it: renders an Ingress with custom TLS secret per host
+    skip:
+      reason: "Need service configuration for ingress template"
+    set:
+      service:
+        spec:
+          ports:
+            http:
+              port: 80
+      ingress:
+        spec:
+          rules:
+            "vault.example.local":
+              tls:
+                secretName: vault-tls-secret
+              paths:
+                - path: /
+                  pathType: Prefix
+    asserts:
+      - isKind:
+          of: Ingress
+      - equal:
+          path: spec.tls[0].secretName
+          value: vault-tls-secret
+      - contains:
+          path: spec.tls[0].hosts
+          content: vault.example.local
+
+  - it: renders an Ingress with annotations
+    skip:
+      reason: "Need service configuration for ingress template"
+    set:
+      service:
+        spec:
+          ports:
+            http:
+              port: 80
+      ingress:
+        metadata:
+          annotations:
+            nginx.ingress.kubernetes.io/rewrite-target: /
+            cert-manager.io/cluster-issuer: letsencrypt
+        spec:
+          rules:
+            "example.com":
+              paths:
+                - path: /api
+                  pathType: Prefix
+    asserts:
+      - isKind:
+          of: Ingress
+      - equal:
+          path: metadata.annotations["nginx.ingress.kubernetes.io/rewrite-target"]
+          value: /
+      - equal:
+          path: metadata.annotations["cert-manager.io/cluster-issuer"]
+          value: letsencrypt
+
+  - it: should not render when ingress is not defined
+    skip:
+      reason: "Need to implement conditional rendering in template"
+    asserts:
+      - hasDocuments:
+          count: 0

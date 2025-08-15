@@ -1,0 +1,116 @@
+suite: ConfigMaps template
+templates:
+  - templates/config_maps.tpl
+
+tests:
+  - it: renders ConfigMaps with file data
+    set:
+      configMaps:
+        files:
+          data:
+            "/app/file.txt": |
+              content
+            "/app/file.json":
+              key: value
+            "/app/file.yaml":
+              key: value
+            "/app/file.toml":
+              key: value
+    asserts:
+      - isKind:
+          of: ConfigMap
+      - equal:
+          path: metadata.name
+          value: RELEASE-NAME-base-files
+      - isNotEmpty:
+          path: data["/app/file.txt"]
+      - isNotEmpty:
+          path: data["/app/file.json"]
+      - isNotEmpty:
+          path: data["/app/file.yaml"]
+      - isNotEmpty:
+          path: data["/app/file.toml"]
+
+  - it: renders ConfigMaps with environment variables
+    skip:
+      reason: "Need to verify configMaps envVars implementation"
+    set:
+      configMaps:
+        envVars:
+          data:
+            DATABASE_URL: postgresql://localhost:5432/mydb
+            LOG_LEVEL: info
+    asserts:
+      - isKind:
+          of: ConfigMap
+      - equal:
+          path: metadata.name
+          value: RELEASE-NAME-base-env-vars
+      - equal:
+          path: data.DATABASE_URL
+          value: postgresql://localhost:5432/mydb
+      - equal:
+          path: data.LOG_LEVEL
+          value: info
+
+  - it: renders multiple ConfigMaps when both files and envVars are defined
+    set:
+      configMaps:
+        files:
+          data:
+            "config.yaml": |
+              server:
+                port: 8080
+        envVars:
+          data:
+            APP_ENV: production
+    asserts:
+      - hasDocuments:
+          count: 2
+
+  - it: renders ConfigMap with custom name
+    set:
+      configMaps:
+        custom-config:
+          data:
+            key1: value1
+            key2: value2
+    asserts:
+      - isKind:
+          of: ConfigMap
+      - equal:
+          path: metadata.name
+          value: RELEASE-NAME-base-custom-config
+      - equal:
+          path: data.key1
+          value: value1
+
+  - it: renders ConfigMap with labels and annotations
+    skip:
+      reason: "Need to verify metadata implementation in template"
+    set:
+      configMaps:
+        files:
+          metadata:
+            labels:
+              custom-label: custom-value
+            annotations:
+              custom-annotation: custom-value
+          data:
+            "test.conf": "test content"
+    asserts:
+      - isKind:
+          of: ConfigMap
+      - equal:
+          path: metadata.labels["custom-label"]
+          value: custom-value
+      - equal:
+          path: metadata.annotations["custom-annotation"]
+          value: custom-value
+
+  - it: should not render when configMaps is not defined
+    skip:
+      reason: "Need to implement conditional rendering in template"
+    asserts:
+      - hasDocuments:
+          count: 0

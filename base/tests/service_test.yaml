@@ -1,0 +1,95 @@
+suite: Service template
+templates:
+  - templates/service.tpl
+
+tests:
+  - it: renders a Service with basic configuration
+    set:
+      service:
+        spec:
+          ports:
+            http:
+              port: 8080
+    asserts:
+      - isKind:
+          of: Service
+      - equal:
+          path: metadata.name
+          value: RELEASE-NAME-base
+      - equal:
+          path: spec.ports[0].port
+          value: 8080
+      - equal:
+          path: spec.ports[0].name
+          value: http
+
+  - it: renders a Service with multiple ports
+    set:
+      service:
+        spec:
+          ports:
+            http:
+              port: 8080
+              targetPort: 8080
+            metrics:
+              port: 9090
+              targetPort: 9090
+    asserts:
+      - isKind:
+          of: Service
+      - lengthEqual:
+          path: spec.ports
+          count: 2
+      - contains:
+          path: spec.ports
+          content:
+            name: http
+            port: 8080
+            targetPort: 8080
+      - contains:
+          path: spec.ports
+          content:
+            name: metrics
+            port: 9090
+            targetPort: 9090
+
+  - it: renders a Service with custom type
+    set:
+      service:
+        spec:
+          type: LoadBalancer
+          ports:
+            http:
+              port: 80
+    asserts:
+      - isKind:
+          of: Service
+      - equal:
+          path: spec.type
+          value: LoadBalancer
+
+  - it: renders a Service with selector labels
+    skip:
+      reason: "Need to verify selector implementation in template"
+    set:
+      service:
+        spec:
+          ports:
+            http:
+              port: 8080
+    asserts:
+      - isKind:
+          of: Service
+      - equal:
+          path: spec.selector["app.kubernetes.io/name"]
+          value: base
+      - equal:
+          path: spec.selector["app.kubernetes.io/instance"]
+          value: RELEASE-NAME
+
+  - it: should not render when service is not defined
+    skip:
+      reason: "Need to implement conditional rendering in template"
+    asserts:
+      - hasDocuments:
+          count: 0

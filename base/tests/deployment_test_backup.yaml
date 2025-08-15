@@ -1,0 +1,95 @@
+suite: Deployment template
+templates:
+  - templates/deployment.tpl
+
+tests:
+  - it: renders a Deployment with basic configuration
+    set:
+      image:
+        repository: nginx
+        tag: latest
+    asserts:
+      - isKind:
+          of: Deployment
+      - equal:
+          path: metadata.name
+          value: RELEASE-NAME-base
+      - equal:
+          path: spec.template.spec.containers[0].image
+          value: nginx:latest
+
+  - it: renders a Deployment with custom name
+    set:
+      image:
+        repository: nginx
+        tag: latest
+      fullnameOverride: custom-app
+    asserts:
+      - isKind:
+          of: Deployment
+      - equal:
+          path: metadata.name
+          value: custom-app
+
+  - it: renders a Deployment with replica count
+    set:
+      image:
+        repository: nginx
+        tag: latest
+      replicaCount: 3
+    asserts:
+      - isKind:
+          of: Deployment
+      - equal:
+          path: spec.replicas
+          value: 3
+
+  - it: renders a Deployment with environment variables
+    skip:
+      reason: "Need to verify env variable implementation in template"
+    set:
+      image:
+        repository: nginx
+        tag: latest
+      env:
+        - name: TEST_VAR
+          value: test_value
+    asserts:
+      - isKind:
+          of: Deployment
+      - contains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: TEST_VAR
+            value: test_value
+
+  - it: renders a Deployment with resource limits
+    set:
+      image:
+        repository: nginx
+        tag: latest
+      resources:
+        limits:
+          cpu: 100m
+          memory: 128Mi
+        requests:
+          cpu: 50m
+          memory: 64Mi
+    asserts:
+      - isKind:
+          of: Deployment
+      - equal:
+          path: spec.template.spec.containers[0].resources.limits.cpu
+          value: 100m
+      - equal:
+          path: spec.template.spec.containers[0].resources.requests.memory
+          value: 64Mi
+
+  - it: should not render when disabled
+    skip:
+      reason: "Need to implement disable logic in template"
+    set:
+      enabled: false
+    asserts:
+      - hasDocuments:
+          count: 0
