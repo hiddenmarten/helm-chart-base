@@ -35,15 +35,15 @@ Usage: {{ include "base-lib.ingress.tls" (dict "rules" .Values.ingress.spec.rule
   {{ $tlsDict := dict -}}
   {{ range $k, $v := $rules -}}
       {{ if and $v $v.tls $v.tls.secretName -}}
-      {{ $existingRules := index $tlsDict $v.tls.secretName | default list -}}
-      {{ $rulesList := append $existingRules $k -}}
-      {{ $_ := set $tlsDict $v.tls.secretName $rulesList }}
+      {{ $existingHosts := index $tlsDict $v.tls.secretName | default list -}}
+      {{ $hostsList := append $existingHosts $k -}}
+      {{ $_ := set $tlsDict $v.tls.secretName $hostsList }}
       {{- end }}
   {{- end }}
   {{- if $tlsDict }}
   {{ $tlsList := list -}}
-      {{- range $secretName, $rulesList := $tlsDict }}
-      {{ $tlsEntry := dict "secretName" $secretName "rules" $rulesList -}}
+      {{- range $secretName, $hostsList := $tlsDict }}
+      {{ $tlsEntry := dict "secretName" $secretName "hosts" $hostsList -}}
       {{ $tlsList = append $tlsList $tlsEntry -}}
       {{- end }}
   tls: {{ tpl (toYaml $tlsList) $ctx | nindent 4 }}
@@ -62,6 +62,9 @@ Usage: {{ include "base-lib.ingress.rules" (dict "rules" .Values.ingress.spec.ru
     {{ $rule := include "base-lib.ingress.rule.default" (dict "ctx" $ctx) | fromYaml -}}
     {{ if $v -}}
     {{ $rule = mustMergeOverwrite $rule $v -}}
+    {{ end -}}
+    {{ if hasKey $rule "tls" -}}
+    {{ $_ := unset $rule "tls" -}}
     {{ end -}}
     {{ if not $rule.host -}}
     {{ $_ := set $rule "host" $k -}}
