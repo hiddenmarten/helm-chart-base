@@ -14,6 +14,8 @@ base:
     spec:
       rules:
         "vault.example.local":
+          tls:
+            secretName: vault-tls-secret
 
   serviceMonitor:
     spec:
