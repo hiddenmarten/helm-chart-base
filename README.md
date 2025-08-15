@@ -4,9 +4,13 @@ TODO list:
 - Implement ingress section
 - Add serviceMonitor support
 - Add tests for base-lib via base chart
-- Implement reusable podSpec section
 - Implement statefulset support
-- Add RBAC support
+- Write chart examples:
+  - single postgres
+  - single vault
+  - mono chart with vault uses postgres as a backend
+  - umbrella chart with vault uses postgres as a backend
 - Add sidecar support
-- Make visibility of conditions and loops better within templates (the issue basically in indents)
-
+- Implement reusable podSpec section
+- Add RBAC support
+- Improve visibility of conditions and loops better within templates (the issue basically in indents)
