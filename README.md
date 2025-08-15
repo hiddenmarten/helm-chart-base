@@ -1,7 +1,6 @@
 # helm-chart-base
 
 TODO list:
-- Add serviceMonitor support
 - Add tests for base-lib via base chart
 - Implement statefulset support
 - Write chart examples:

@@ -14,3 +14,9 @@ base:
     spec:
       rules:
         "vault.example.local":
+
+  serviceMonitor:
+    spec:
+      endpoints:
+        http:
+          path: /sys/metrics

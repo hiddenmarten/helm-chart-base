@@ -77,8 +77,6 @@ service:
 ingress:
   # ingressClassName: ""
   annotations: {}
-    # kubernetes.io/ingress.class: nginx
-    # kubernetes.io/tls-acme: "true"
   spec:
     rules: {}
   #    "chart-example.local":
@@ -92,6 +90,18 @@ ingress:
   #                name: chart-example
   #                port:
   #                  number: 8080
+
+serviceMonitor:
+  annotations: {}
+  spec:
+    selector:
+      matchLabels: {}
+    endpoints: {}
+#      http:
+#        path: /metrics
+#        interval: 30s
+#        scrapeTimeout: 10s
+#        honorLabels: false
 
 # ConfigMaps to render
 configMaps:
