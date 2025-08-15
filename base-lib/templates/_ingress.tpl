@@ -63,7 +63,7 @@ Usage: {{ include "base-lib.ingress.rules" (dict "rules" .Values.ingress.spec.ru
     {{ if $v -}}
     {{ $rule = mustMergeOverwrite $rule $v -}}
     {{ end -}}
-    {{ if hasKey $rule "tls" -}}
+    {{ if not $rule.tls -}}
     {{ $_ := unset $rule "tls" -}}
     {{ end -}}
     {{ if not $rule.host -}}
