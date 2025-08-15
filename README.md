@@ -1,10 +1,12 @@
 # helm-chart-base
 
-TODO: Implement ingress section
-TODO: Add serviceMonitor support
-TODO: Add tests for base-lib via base chart
-TODO: Implement reusable podSpec section
-TODO: Implement statefulset support
-TODO: Add RBAC support
-TODO: Add sidecar support
-TODO: Make visibility of conditions and loops better within templates (the issue basically in indents)
+TODO list:
+- Implement ingress section
+- Add serviceMonitor support
+- Add tests for base-lib via base chart
+- Implement reusable podSpec section
+- Implement statefulset support
+- Add RBAC support
+- Add sidecar support
+- Make visibility of conditions and loops better within templates (the issue basically in indents)
+
