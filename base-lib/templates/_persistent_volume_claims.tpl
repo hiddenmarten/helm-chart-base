@@ -8,6 +8,7 @@ Usage: {{ include "base-lib.persistentVolumeClaims" (dict "pvcs" .Values.persist
 {{ $defaults := include "base-lib.defaults" (dict "ctx" $ctx) | fromYaml -}}
 {{ $pvcs = mustMergeOverwrite $defaults.persistentVolumeClaims $pvcs -}}
 {{- range $k, $v := $pvcs }}
+{{ $pvcSpec := include "base-lib.persistentVolumeClaims.spec" (dict "spec" $v.spec "ctx" $ctx) | fromYaml -}}
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
@@ -16,7 +17,7 @@ metadata:
   {{- with $v.annotations }}
   annotations: {{ tpl (toYaml .) $ctx | nindent 4 }}
   {{- end }}
-spec: {{ include "base-lib.persistentVolumeClaims.spec" (dict "v" $v "ctx" $ctx) | nindent 2 }}
+spec: {{ tpl (toYaml $pvcSpec) $ctx | nindent 2 }}
 ---
 {{- end }}
 {{- end }}
@@ -26,11 +27,11 @@ PersistentVolumeClaim spec helper
 Usage: {{ include "base-lib.persistentVolumeClaims.spec" (dict "pvc" $pvc "ctx" $ctx) }}
 */}}
 {{ define "base-lib.persistentVolumeClaims.spec" -}}
-{{ $pvc := .pvc -}}
+{{ $spec := .spec -}}
 {{ $ctx := .ctx -}}
-{{ with $pvc.spec -}}
-{{ tpl (toYaml .) $ctx }}
-{{- end }}
+{{ $defaultSpec := include "base-lib.persistentVolumeClaims.spec.default" (dict "ctx" $ctx) | fromYaml -}}
+{{ $spec = mustMergeOverwrite $defaultSpec $spec -}}
+{{ $spec | toYaml }}
 {{- end }}
 
 {{/*
@@ -41,4 +42,17 @@ Usage: {{ include "base-lib.persistentVolumeClaims.name" (dict "postfix" $postfi
 {{ $postfix := .postfix -}}
 {{ $ctx := .ctx -}}
 {{ printf "%s-%s" (include "base-lib.fullname" (dict "ctx" $ctx)) ($postfix | kebabcase) }}
+{{- end }}
+
+{{/*
+PersistentVolumeClaim spec helper
+Usage: {{ include "base-lib.persistentVolumeClaims.spec.default" (dict "ctx" $ctx) }}
+*/}}
+{{ define "base-lib.persistentVolumeClaims.spec.default" -}}
+{{ $ctx := .ctx -}}
+accessModes:
+- ReadWriteOnce
+resources:
+  requests:
+    storage: 5Gi
 {{- end }}

@@ -20,3 +20,8 @@ base:
       endpoints:
         http:
           path: /sys/metrics
+
+  persistentVolumeClaims:
+    data:
+      mount:
+        mountPath: /vault/data
