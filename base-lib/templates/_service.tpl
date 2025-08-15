@@ -23,17 +23,21 @@ spec: {{ tpl (toYaml $service.spec) $ctx | nindent 2 }}
 {{- end }}
 
 {{/*
-Ports template for service
+Tempate rewriting ports as a map to ports as a list
 Usage: {{ include "base-lib.service" (dict "ports" $ports "ctx" $ctx) }}
 */}}
 {{ define "base-lib.service.ports" -}}
 {{ $ports := .ports -}}
 {{ $ctx := .ctx -}}
-ports:
+{{ $portsList := list -}}
 {{- range $k, $v := $ports }}
-  - name: {{ $k }}
-    port: {{ $v.port }}
-    targetPort: {{ $v.port }}
-    protocol: "TCP"
+{{ $port := $v -}}
+{{ if not $port.name -}}
+{{ $_ := set $port "name" $k -}}
+{{ end -}}
+{{ $portsList = append $portsList $port -}}
+{{- end }}
+{{ if $portsList -}}
+ports: {{ $portsList | toYaml | nindent 2 }}
 {{- end }}
 {{- end }}
