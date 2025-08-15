@@ -23,5 +23,9 @@ base:
 
   persistentVolumeClaims:
     data:
+      spec:
+        resources:
+          requests:
+            storage: 1Gi
       mount:
         mountPath: /vault/data
