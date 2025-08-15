@@ -6,7 +6,8 @@ Usage: {{ include "base-lib.secrets" (dict "secrets" .Values.secrets "ctx" $) }}
 {{ $secrets := .secrets -}}
 {{ $ctx := .ctx -}}
 {{ $defaults := include "base-lib.defaults" (dict "ctx" $ctx) | fromYaml -}}
-{{ $secrets = mustMergeOverwrite $defaults.secrets $secrets -}}
+{{ $defaultSecrets := $defaults.secrets -}}
+{{ $secrets = mustMergeOverwrite $defaultSecrets $secrets -}}
 {{- range $postfix, $content := $secrets }}
 {{ $payload := include "base-lib.secrets.payload" (dict "postfix" $postfix "content" $content "ctx" $ctx) | fromYaml -}}
 {{ if $payload -}}
@@ -21,6 +22,7 @@ metadata:
 {{- with $content.type }}
 type: {{ tpl (toYaml .) $ctx }}
 {{- end }}
+{{ $payload | toYaml }}
 ---
 {{- end }}
 {{- end }}

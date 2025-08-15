@@ -1,1 +1,1 @@
-{{ include "base-lib.secrets" (dict "val" .Values.secrets "ctx" $) }}
+{{ include "base-lib.secrets" (dict "secrets" .Values.secrets "ctx" $) }}

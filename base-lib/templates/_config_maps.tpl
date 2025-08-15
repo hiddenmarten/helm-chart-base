@@ -3,10 +3,11 @@ ConfigMap template for base-library chart
 Usage: {{ include "base-lib.configMaps" (dict "cms" .Values.configMaps "ctx" $) }}
 */}}
 {{ define "base-lib.configMaps" -}}
-{{ $cms := .cms -}}
+{{ $cms := .configMaps -}}
 {{ $ctx := .ctx -}}
 {{ $defaults := include "base-lib.defaults" (dict "ctx" $ctx) | fromYaml -}}
-{{ $cms = mustMergeOverwrite $defaults.configMaps $cms -}}
+{{ $defaultCms := $defaults.configMaps -}}
+{{ $cms = mustMergeOverwrite $defaultCms $cms -}}
 {{- range $postfix, $content := $cms }}
 {{ $payload := include "base-lib.configMaps.payload" (dict "postfix" $postfix "content" $content "ctx" $ctx) | fromYaml -}}
 {{ if $payload -}}
@@ -18,7 +19,7 @@ metadata:
   {{- with $content.annotations }}
   annotations: {{ tpl (toYaml .) $ctx | nindent 4 }}
   {{- end }}
-{{ $payload | toYaml | indent 2 }}
+{{ $payload | toYaml }}
 ---
 {{- end }}
 {{- end }}

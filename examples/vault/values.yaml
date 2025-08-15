@@ -3,6 +3,21 @@ base:
     repository: hashicorp/vault
     tag: 1.20.2
 
+  configMaps:
+    files:
+      data:
+        "/vault/config.d/config.json":
+          ui: true
+          disable_mlock: true
+          "storage":
+            "file":
+              "path": /vault/file
+
+  secrets:
+    envVars:
+      data:
+        VAULT_DEV_ROOT_TOKEN_ID: root
+
   service:
     spec:
       ports:
@@ -23,10 +38,10 @@ base:
           path: /sys/metrics
 
   persistentVolumeClaims:
-    data:
+    file:
       spec:
         resources:
           requests:
             storage: 1Gi
       mount:
-        mountPath: /vault/data
+        mountPath: /vault/file

@@ -14,9 +14,15 @@ A HashiCorp Vault helm chart using base
 
 | Key | Type | Default | Description |
 |-----|------|---------|-------------|
-| base.image.pullPolicy | string | `"IfNotPresent"` |  |
+| base.configMap.files."/vault/config.d/config.json".disable_mlock | bool | `true` |  |
+| base.configMap.files."/vault/config.d/config.json".storage.file.path | string | `"{{ .Values.base.persistentVolumeClaims.data.mount.mountPath }}"` |  |
+| base.configMap.files."/vault/config.d/config.json".ui | bool | `true` |  |
 | base.image.repository | string | `"hashicorp/vault"` |  |
 | base.image.tag | string | `"1.20.2"` |  |
 | base.ingress.spec.rules."vault.example.local".tls.secretName | string | `"vault-tls-secret"` |  |
+| base.persistentVolumeClaims.data.mount.mountPath | string | `"/vault/data"` |  |
+| base.persistentVolumeClaims.data.spec.resources.requests.storage | string | `"1Gi"` |  |
+| base.secrets.envVars.VAULT_DEV_ROOT_TOKEN_ID | string | `"root"` |  |
 | base.service.spec.ports.http.port | int | `8200` |  |
+| base.serviceMonitor.spec.endpoints.http.path | string | `"/sys/metrics"` |  |
 
