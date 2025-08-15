@@ -19,7 +19,7 @@ metadata:
   {{- with $content.annotations }}
   annotations: {{ tpl (toYaml .) $ctx | nindent 4 }}
   {{- end }}
-{{ $payload | toYaml }}
+{{ tpl ($payload | toYaml) $ctx }}
 ---
 {{- end }}
 {{- end }}
@@ -50,9 +50,9 @@ Usage: {{ include "base-lib.configMaps.content.envVars" (dict "content" $content
 {{ $content := .content -}}
 {{ $ctx := .ctx -}}
 {{ if $content.data -}}
-{{ print "data:" }}
+{{ print "data: " }}
 {{ range $k, $v := $content.data -}}
-{{ printf "%s: %s" (tpl $k $ctx) (tpl $v $ctx) | indent 2 }}
+{{ printf "%s: %s" $k $v | indent 2 }}
 {{- end }}
 {{- end }}
 {{- if $content.binaryData }}
@@ -70,16 +70,16 @@ Usage: {{ include "base-lib.configMaps.content.files" (dict "content" $content "
 {{ if $content.data -}}
 {{ print "data:" }}
 {{ range $k, $v := $content.data -}}
-{{ $filepath := tpl $k $ctx -}}
+{{ $filepath := $k -}}
 {{ printf "%s: |" (include "base-lib.util.dnsCompatible" (dict "filepath" $filepath)) | indent 2 }}
 {{ if mustRegexMatch "(.+)(\\.yaml|\\.yml)$" (base $filepath) -}}
-{{ tpl ($v | toYaml) $ctx | indent 4 }}
+{{ $v | toYaml | indent 4 }}
 {{ else if mustRegexMatch "(.+)(\\.json)$" (base $filepath) -}}
-{{ tpl ($v | toJson) $ctx | indent 4 }}
+{{ $v | toJson | indent 4 }}
 {{ else if mustRegexMatch "(.+)(\\.toml)$" (base $filepath) -}}
-{{ tpl ($v | toToml) $ctx | indent 4 }}
+{{ $v | toToml | indent 4 }}
 {{ else -}}
-{{ tpl ($v | toString) $ctx | indent 4 }}
+{{ $v | toString | indent 4 }}
 {{ end -}}
 {{- end }}
 {{- end }}
@@ -96,10 +96,10 @@ Usage: {{ include "base-lib.configMaps.content.others" (dict "content" $content 
 {{ $content := .content -}}
 {{ $ctx := .ctx -}}
 {{- with $content.data }}
-data: {{ tpl (toYaml .) $ctx | nindent 2 }}
+data: {{ toYaml . | nindent 2 }}
 {{- end }}
 {{- with $content.binaryData }}
-binaryData: {{ tpl (toYaml .) $ctx | nindent 2 }}
+binaryData: {{ toYaml . | nindent 2 }}
 {{- end }}
 {{- end }}
 
