@@ -9,3 +9,16 @@ base:
       ports:
         http:
           port: 8200
+
+  ingress:
+    spec:
+      rules:
+        "vault.example.local":
+          http:
+            paths:
+              "/":
+                backend:
+                  service:
+                    name: vault-base
+                    port:
+                      name: http

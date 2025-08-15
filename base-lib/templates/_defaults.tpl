@@ -68,6 +68,7 @@ pod:
 
 # This is for setting up a service more information can be found here: https://kubernetes.io/docs/concepts/services-networking/service/
 service:
+  annotations: {}
   spec:
     # This sets the ports more information can be found here: https://kubernetes.io/docs/concepts/services-networking/service/#field-spec-ports
     ports: {}
@@ -78,17 +79,19 @@ ingress:
   annotations: {}
     # kubernetes.io/ingress.class: nginx
     # kubernetes.io/tls-acme: "true"
-  hosts: {}
-  #  "chart-example.local":
-  #    tls:
-  #      secretName: chart-example-tls
-  #    paths:
-  #      "/":
-  #        backend:
-  #          service:
-  #            name: chart-example
-  #            port:
-  #              number: 8080
+  spec:
+    rules: {}
+  #    "chart-example.local":
+  #      tls:
+  #        secretName: chart-example-tls
+  #      http:
+  #        paths:
+  #          "/":
+  #            backend:
+  #              service:
+  #                name: chart-example
+  #                port:
+  #                  number: 8080
 
 # ConfigMaps to render
 configMaps:
@@ -109,9 +112,11 @@ configMaps:
 # Secrets to render
 secrets:
   envVars:
+    annotations: {}
     data: {}
 #      SECRET_ENV_VAR_KEY: "SECRET_ENV_VAR_VALUE"
   files:
+    annotations: {}
     data: {}
 #      "/app/secret.json":
 #        key: value
