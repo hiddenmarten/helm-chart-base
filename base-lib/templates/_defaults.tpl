@@ -92,17 +92,19 @@ ingress:
 
 # ConfigMaps to render
 configMaps:
-  envVars: {}
-#    ENV_VAR_KEY: "ENV_VAR_VALUE"
-  files: {}
-#    "/app/data.json":
-#      key: value
-#    "/app/data.yaml":
-#      key: value
-#    "/app/data.toml":
-#      key: value
-#    "/app/data.txt": |
-#      any text
+  envVars:
+    data: {}
+#      ENV_VAR_KEY: "ENV_VAR_VALUE"
+  files:
+    data: {}
+#      "/app/data.json":
+#        key: value
+#      "/app/data.yaml":
+#        key: value
+#      "/app/data.toml":
+#        key: value
+#      "/app/data.txt": |
+#        any text
 
 # Secrets to render
 secrets:

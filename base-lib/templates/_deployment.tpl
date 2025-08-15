@@ -62,13 +62,13 @@ spec:
           {{- with $val.resources }}
           resources: {{ tpl (toYaml .) $ctx | nindent 12 }}
           {{- end }}
-          {{- if or $val.configMaps.envVars $val.secrets.envVars }}
+          {{- if or $val.configMaps.envVars.data $val.secrets.envVars.data }}
           envFrom:
-          {{- if $val.configMaps.envVars }}
+          {{- if $val.configMaps.envVars.data }}
             - configMapRef:
                 name: {{ include "base-lib.configMaps.name" (dict "postfix" "envVars" "ctx" $ctx) }}
           {{- end }}
-          {{- if $val.secrets.envVars }}
+          {{- if $val.secrets.envVars.data }}
             - secretRef:
                 name: {{ include "base-lib.secrets.name" (dict "postfix" "envVars" "ctx" $ctx) }}
           {{- end }}
