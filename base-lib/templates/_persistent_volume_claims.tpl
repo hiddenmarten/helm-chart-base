@@ -54,5 +54,51 @@ accessModes:
 - ReadWriteOnce
 resources:
   requests:
-    storage: 5Gi
+    storage: null
+{{- end }}
+
+{{/*
+Usage: {{ include "base-lib.volumes.persistentVolumeClaims.name" (dict "postfix" $postfix "ctx" $ctx) }}
+*/}}
+{{ define "base-lib.persistentVolumeClaims.volume.name" -}}
+{{ $ctx := .ctx -}}
+{{ $postfix := .postfix -}}
+{{ printf "%s-%s" ("persistentVolumeClaim" | kebabcase) $postfix }}
+{{- end }}
+
+{{/*
+Usage: {{ include "base-lib.volumes.persistentVolumeClaims.volume" (dict "postfix" $postfix "ctx" $ctx) }}
+*/}}
+{{ define "base-lib.persistentVolumeClaims.volume" -}}
+{{ $ctx := .ctx -}}
+{{ $postfix := .postfix }}
+name: {{ include "base-lib.persistentVolumeClaims.volume.name" (dict "postfix" $postfix "ctx" $ctx) }}
+persistentVolumeClaim:
+  claimName: {{ include "base-lib.persistentVolumeClaims.name" (dict "postfix" $postfix "ctx" $ctx) }}
+{{- end }}
+
+{{/*
+Usage: {{ include "base-lib.volumes.persistentVolumeClaims.volumeMounts" (dict "persistentVolumeClaims" $persistentVolumeClaims "ctx" $ctx) }}
+*/}}
+{{ define "base-lib.persistentVolumeClaims.volumeMounts" -}}
+{{ $ctx := .ctx -}}
+{{ $persistentVolumeClaims := .persistentVolumeClaims }}
+{{ $mounts := list -}}
+{{ range $postfix, $content := $persistentVolumeClaims -}}
+{{ $name := include "base-lib.persistentVolumeClaims.volume.name" (dict "postfix" $postfix "ctx" $ctx) -}}
+{{ $defaultMount := include "base-lib.persistentVolumeClaims.volumeMount.default" (dict "name" $name "ctx" $ctx) | fromYaml -}}
+{{ $mount := mustMergeOverwrite $defaultMount $content.mount -}}
+{{ $mounts = append $mounts $mount -}}
+{{- end }}
+volumeMounts: {{ $mounts | toYaml | nindent 2 }}
+{{- end }}
+
+{{/*
+Usage: {{ include "base-lib.volumes.persistentVolumeClaims.volumeMount" (dict "ctx" $ctx) }}
+*/}}
+{{ define "base-lib.persistentVolumeClaims.volumeMount.default" -}}
+{{ $path := .path -}}
+{{ $name := .name -}}
+{{ $ctx := .ctx -}}
+name: {{ $name }}
 {{- end }}

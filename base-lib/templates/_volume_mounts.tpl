@@ -19,10 +19,9 @@ Usage: {{ include "base-lib.volumeMounts" (dict "val" $val "ctx" $ctx) }}
 {{ end -}}
 {{ end -}}
 {{ if $val.persistentVolumeClaims -}}
-{{ range $k, $v := $val.persistentVolumeClaims -}}
-{{ $name := include "base-lib.volumes.persistentVolumeClaims.name" (dict "postfix" $k "ctx" $ctx) -}}
-{{ $volumeMount := mustMergeOverwrite $v.mount (dict "name" $name) -}}
-{{ $volumeMounts = append $volumeMounts $volumeMount -}}
+{{ $pvcVolumeMounts := include "base-lib.persistentVolumeClaims.volumeMounts" (dict "persistentVolumeClaims" $val.persistentVolumeClaims "ctx" $ctx) | fromYaml -}}
+{{ range $pvcVolumeMounts.volumeMounts -}}
+{{ $volumeMounts = append $volumeMounts . -}}
 {{ end -}}
 {{ end -}}
 {{ if ne (len $volumeMounts) 0 -}}

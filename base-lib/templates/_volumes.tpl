@@ -16,7 +16,7 @@ Usage: {{ include "base-lib.volumes" (dict "val" $val "ctx" $ctx) }}
 {{ end -}}
 {{ if $val.persistentVolumeClaims -}}
 {{ range $k, $_ := $val.persistentVolumeClaims -}}
-{{ $volume := include "base-lib.volumes.persistentVolumeClaims.volume" (dict "postfix" $k "ctx" $ctx) | fromYaml -}}
+{{ $volume := include "base-lib.persistentVolumeClaims.volume" (dict "postfix" $k "ctx" $ctx) | fromYaml -}}
 {{ $volumes = append $volumes $volume -}}
 {{ end -}}
 {{ end -}}
@@ -26,25 +26,3 @@ Usage: {{ include "base-lib.volumes" (dict "val" $val "ctx" $ctx) }}
 {{ end -}}
 {{ end -}}
 
-
-{{/*
-Template for PersistentVolumeClaims files volume name
-Usage: {{ include "base-lib.volumes.persistentVolumeClaims.name" (dict "postfix" $postfix "ctx" $ctx) }}
-*/}}
-{{ define "base-lib.volumes.persistentVolumeClaims.name" -}}
-{{ $ctx := .ctx -}}
-{{ $postfix := .postfix -}}
-{{ printf "%s-%s" ("persistentVolumeClaim" | kebabcase) $postfix }}
-{{- end }}
-
-{{/*
-Template for PersistentVolumeClaims volume
-Usage: {{ include "base-lib.volumes.persistentVolumeClaims.volume" (dict "postfix" $postfix "ctx" $ctx) }}
-*/}}
-{{ define "base-lib.volumes.persistentVolumeClaims.volume" -}}
-{{ $ctx := .ctx -}}
-{{ $postfix := .postfix }}
-name: {{ include "base-lib.volumes.persistentVolumeClaims.name" (dict "postfix" $postfix "ctx" $ctx) }}
-persistentVolumeClaim:
-  claimName: {{ include "base-lib.persistentVolumeClaims.name" (dict "postfix" $postfix "ctx" $ctx) }}
-{{- end }}
