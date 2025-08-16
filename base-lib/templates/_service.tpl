@@ -9,7 +9,7 @@ Usage: {{ include "base-lib.service" (dict "service" .Values.service "ctx" $) }}
 {{ $service = mustMergeOverwrite $defaults.service $service -}}
 {{ $ports := include "base-lib.service.ports" (dict "ports" $service.spec.ports "ctx" $ctx) | fromYaml -}}
 {{ $service = mustMergeOverwrite $service (dict "spec" $ports) -}}
-{{ if $service.spec.ports -}}
+{{ if and $service.enabled $service.spec.ports -}}
 apiVersion: v1
 kind: Service
 metadata:

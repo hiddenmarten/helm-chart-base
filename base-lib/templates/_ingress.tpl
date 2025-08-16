@@ -9,7 +9,7 @@ Usage: {{ include "base-lib.ingress" (dict "val" .Values "ctx" $ctx) }}
 {{ $val = mustMergeOverwrite $defaults $val -}}
 {{ $spec := include "base-lib.ingress.spec" (dict "spec" $val.ingress.spec "ctx" $ctx) | fromYaml -}}
 {{ $val = mustMergeOverwrite $val.ingress.spec (dict "ingress" (dict "spec" $spec)) -}}
-{{- if $val.ingress.spec.rules }}
+{{- if and $val.ingress.enabled $val.ingress.spec.rules }}
 apiVersion: "networking.k8s.io/v1"
 kind: Ingress
 metadata:

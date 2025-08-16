@@ -68,6 +68,7 @@ pod:
 
 # This is for setting up a service more information can be found here: https://kubernetes.io/docs/concepts/services-networking/service/
 service:
+  enabled: true
   annotations: {}
   spec:
     # This sets the ports more information can be found here: https://kubernetes.io/docs/concepts/services-networking/service/#field-spec-ports
@@ -75,6 +76,7 @@ service:
 
 # This is for setting up ingress more information can be found here: https://kubernetes.io/docs/concepts/services-networking/ingress/
 ingress:
+  enabled: true
   # ingressClassName: ""
   annotations: {}
   spec:
@@ -92,6 +94,7 @@ ingress:
   #                  number: 8080
 
 serviceMonitor:
+  enabled: true
   annotations: {}
   spec:
     selector:
