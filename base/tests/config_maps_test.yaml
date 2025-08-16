@@ -22,14 +22,22 @@ tests:
       - equal:
           path: metadata.name
           value: RELEASE-NAME-base-files
-      - isNotEmpty:
-          path: data["/app/file.txt"]
-      - isNotEmpty:
-          path: data["/app/file.json"]
-      - isNotEmpty:
-          path: data["/app/file.yaml"]
-      - isNotEmpty:
-          path: data["/app/file.toml"]
+      - equal:
+          path: data["___app___file.txt"]
+          value: |
+            content
+      - equal:
+          path: data["___app___file.json"]
+          value: |
+            {"key":"value"}
+      - equal:
+          path: data["___app___file.yaml"]
+          value: |
+            key: value
+      - equal:
+          path: data["___app___file.toml"]
+          value: |
+            key = "value"
 
   - it: renders ConfigMaps with environment variables
     skip:
