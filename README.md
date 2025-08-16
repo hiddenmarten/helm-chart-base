@@ -1,6 +1,7 @@
 # helm-chart-base
 
 TODO list:
+- Add custom labels support
 - Add tests for base-lib via base chart
 - Implement statefulset support
 - Write chart examples:
