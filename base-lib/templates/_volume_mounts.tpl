@@ -12,10 +12,11 @@ Usage: {{ include "base-lib.volumeMounts" (dict "val" $val "ctx" $ctx) }}
 {{ $volumeMounts = append $volumeMounts . -}}
 {{ end -}}
 {{ end -}}
-{{ range $k, $_ := $val.secrets.files.data -}}
-{{ $name := include "base-lib.volumes.secret.name" (dict "ctx" $ctx) -}}
-{{ $volumeMount := include "base-lib.volumeMounts.files.default" (dict "path" "name" $name $k "ctx" $ctx) | fromYaml -}}
-{{ $volumeMounts = append $volumeMounts $volumeMount -}}
+{{ if and $val.secrets.files.enabled $val.secrets.files.data -}}
+{{ $secretVolumeMounts := include "base-lib.secrets.files.volumeMounts" (dict "files" $val.secrets.files "ctx" $ctx) | fromYaml -}}
+{{ range $secretVolumeMounts.volumeMounts -}}
+{{ $volumeMounts = append $volumeMounts . -}}
+{{ end -}}
 {{ end -}}
 {{ if $val.persistentVolumeClaims -}}
 {{ range $k, $v := $val.persistentVolumeClaims -}}

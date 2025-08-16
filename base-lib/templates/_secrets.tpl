@@ -1,5 +1,4 @@
 {{/*
-Secret template for base-library chart
 Usage: {{ include "base-lib.secrets" (dict "secrets" .Values.secrets "ctx" $) }}
 */}}
 {{ define "base-lib.secrets" -}}
@@ -29,27 +28,25 @@ type: {{ tpl (. | toYaml) $ctx }}
 {{- end }}
 
 {{/*
-Secret content helper
-Usage: {{ include "base-lib.secrets.content" (dict "postfix" $postfix "content" $content "ctx" $ctx) }}
+Usage: {{ include "base-lib.secrets.payload" (dict "postfix" $postfix "content" $content "ctx" $ctx) }}
 */}}
 {{ define "base-lib.secrets.payload" -}}
 {{ $postfix := .postfix -}}
 {{ $content := .content -}}
 {{ $ctx := .ctx -}}
 {{ if eq $postfix "envVars" -}}
-{{ include "base-lib.secrets.content.envVars" (dict "content" $content "ctx" $ctx) }}
+{{ include "base-lib.secrets.envVars.content" (dict "content" $content "ctx" $ctx) }}
 {{ else if eq $postfix "files" -}}
-{{ include "base-lib.secrets.content.files" (dict "content" $content "ctx" $ctx) }}
+{{ include "base-lib.secrets.files.content" (dict "content" $content "ctx" $ctx) }}
 {{ else -}}
-{{ include "base-lib.secrets.content.others" (dict "content" $content "ctx" $ctx) }}
+{{ include "base-lib.secrets.others.content" (dict "content" $content "ctx" $ctx) }}
 {{- end }}
 {{- end }}
 
 {{/*
-Secret envVars content helper
-Usage: {{ include "base-lib.secrets.content.envVars" (dict "content" $content "ctx" $ctx) }}
+Usage: {{ include "base-lib.secrets.envVars.content" (dict "content" $content "ctx" $ctx) }}
 */}}
-{{ define "base-lib.secrets.content.envVars" -}}
+{{ define "base-lib.secrets.envVars.content" -}}
 {{ $content := .content -}}
 {{ $ctx := .ctx -}}
 {{ if $content.data -}}
@@ -64,10 +61,9 @@ Usage: {{ include "base-lib.secrets.content.envVars" (dict "content" $content "c
 {{- end }}
 
 {{/*
-Secret files content helper
-Usage: {{ include "base-lib.secrets.content.files" (dict "val" $v "ctx" $ctx) }}
+Usage: {{ include "base-lib.secrets.files.content" (dict "content" $content "ctx" $ctx) }}
 */}}
-{{ define "base-lib.secrets.content.files" -}}
+{{ define "base-lib.secrets.files.content" -}}
 {{ $content := .content -}}
 {{ $ctx := .ctx -}}
 {{ if $content.data -}}
@@ -92,10 +88,43 @@ Usage: {{ include "base-lib.secrets.content.files" (dict "val" $v "ctx" $ctx) }}
 {{- end }}
 
 {{/*
-Secret others content helper
-Usage: {{ include "base-lib.secrets.content.others" (dict "content" $content "ctx" $ctx) }}
+Usage: {{ include "base-lib.secrets.files.name" (dict "ctx" $ctx) }}
 */}}
-{{ define "base-lib.secrets.content.others" -}}
+{{ define "base-lib.secrets.files.name" -}}
+{{ $ctx := .ctx -}}
+{{ print "secret-files" }}
+{{- end }}
+
+{{/*
+Usage: {{ include "base-lib.secrets.files.volume" (dict "ctx" $ctx) }}
+*/}}
+{{ define "base-lib.secrets.files.volume" -}}
+{{ $ctx := .ctx -}}
+name: {{ include "base-lib.secrets.files.name" (dict "ctx" $ctx) }}
+secret:
+  secretName: {{ include "base-lib.secrets.name" (dict "postfix" "files" "ctx" $ctx) }}
+{{- end }}
+
+{{/*
+Usage: {{ include "base-lib.secrets.files.volumeMounts" (dict "files" $files "ctx" $ctx) }}
+*/}}
+{{ define "base-lib.secrets.files.volumeMounts" -}}
+{{ $files := .files -}}
+{{ $ctx := .ctx -}}
+{{ $mounts := list -}}
+{{ range $path, $_ := $files.data -}}
+{{ $name := include "base-lib.secrets.files.name" (dict "ctx" $ctx) -}}
+{{ $defaultMount := include "base-lib.volumeMounts.files.default" (dict "path" $path "name" $name "ctx" $ctx) | fromYaml -}}
+{{ $mount := mustMergeOverwrite $defaultMount $files.mount -}}
+{{ $mounts = append $mounts $mount -}}
+{{- end }}
+volumeMounts: {{ $mounts | toYaml | nindent 2 }}
+{{- end }}
+
+{{/*
+Usage: {{ include "base-lib.secrets.others.content" (dict "content" $content "ctx" $ctx) }}
+*/}}
+{{ define "base-lib.secrets.others.content" -}}
 {{ $content := .content -}}
 {{ $ctx := .ctx -}}
 {{- with $content.data }}
@@ -107,7 +136,6 @@ stringData: {{ tpl (. | toYaml) $ctx | nindent 2 }}
 {{- end }}
 
 {{/*
-Secret name helper
 Usage: {{ include "base-lib.secrets.name" (dict "postfix" $postfix "ctx" $) }}
 */}}
 {{ define "base-lib.secrets.name" -}}

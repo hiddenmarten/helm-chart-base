@@ -10,8 +10,8 @@ Usage: {{ include "base-lib.volumes" (dict "val" $val "ctx" $ctx) }}
 {{ $volume := include "base-lib.configMaps.files.volume" (dict "ctx" $ctx) | fromYaml -}}
 {{ $volumes = append $volumes $volume -}}
 {{ end -}}
-{{ if $val.secrets.files.data -}}
-{{ $volume := include "base-lib.volumes.secret.volume" (dict "ctx" $ctx) | fromYaml -}}
+{{ if and $val.secrets.files.enabled $val.secrets.files.data -}}
+{{ $volume := include "base-lib.secrets.files.volume" (dict "ctx" $ctx) | fromYaml -}}
 {{ $volumes = append $volumes $volume -}}
 {{ end -}}
 {{ if $val.persistentVolumeClaims -}}
@@ -26,25 +26,6 @@ Usage: {{ include "base-lib.volumes" (dict "val" $val "ctx" $ctx) }}
 {{ end -}}
 {{ end -}}
 
-{{/*
-Template for secret files volume name
-Usage: {{ include "base-lib.volumes.secret.name" (dict "ctx" $ctx) }}
-*/}}
-{{ define "base-lib.volumes.secret.name" -}}
-{{ $ctx := .ctx -}}
-{{ print "secret-files" }}
-{{- end }}
-
-{{/*
-Template for secret volume
-Usage: {{ include "base-lib.volumes.secret.volume" (dict "ctx" $ctx) }}
-*/}}
-{{ define "base-lib.volumes.secret.volume" -}}
-{{ $ctx := .ctx -}}
-name: {{ include "base-lib.volumes.secret.name" (dict "ctx" $ctx) }}
-secret:
-  secretName: {{ include "base-lib.secrets.name" (dict "postfix" "files" "ctx" $ctx) }}
-{{- end }}
 
 {{/*
 Template for PersistentVolumeClaims files volume name
