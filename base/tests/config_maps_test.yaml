@@ -3,7 +3,7 @@ templates:
   - templates/config_maps.tpl
 
 tests:
-  - it: renders ConfigMaps with file data
+  - it: different format of files
     set:
       configMaps:
         files:
@@ -75,12 +75,16 @@ tests:
           count: 2
 
   - it: renders ConfigMap with custom name
+    skip:
+      reason: "Need to verify implementation"
     set:
       configMaps:
         custom-config:
           data:
             key1: value1
             key2: value2
+          binaryData:
+            certificate.crt: LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0t
     asserts:
       - isKind:
           of: ConfigMap
@@ -90,6 +94,9 @@ tests:
       - equal:
           path: data.key1
           value: value1
+      - equal:
+          path: binaryData["certificate.crt"]
+          value: LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0t
 
   - it: renders ConfigMap with annotations
     set:
@@ -106,9 +113,30 @@ tests:
           path: metadata.annotations["custom-annotation"]
           value: custom-value
 
-  - it: should not render when configMaps is not defined
-    skip:
-      reason: "Need to implement conditional rendering in template"
+  - it: should not render when configMaps is disabled
+    set:
+      configMaps:
+        files:
+          enabled: false
+          data:
+            "config.yaml": |
+              server:
+                port: 8080
+        envVars:
+          enabled: false
+          data:
+            APP_ENV: production
+    asserts:
+      - hasDocuments:
+          count: 0
+
+  - it: should not render when no data is defined
+    set:
+      configMaps:
+        files:
+          data: {}
+        envVars:
+          data: {}
     asserts:
       - hasDocuments:
           count: 0

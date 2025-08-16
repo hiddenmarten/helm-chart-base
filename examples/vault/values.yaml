@@ -13,6 +13,12 @@ base:
           storage:
             file:
               path: /vault/file
+#    custom-config:
+#      data:
+#        key1: value1
+#        key2: value2
+#      binaryData:
+#        certificate.crt: LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0t
 
   secrets:
     envVars:
