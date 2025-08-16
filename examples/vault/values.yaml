@@ -18,14 +18,7 @@ base:
     envVars:
       data:
         VAULT_DEV_ROOT_TOKEN_ID: root
-    files:
-      data:
-        "/vault/config.d/config.json":
-          ui: true
-          disable_mlock: true
-          storage:
-            file:
-              path: /vault/file
+
   service:
     spec:
       ports:

@@ -24,20 +24,6 @@ metadata:
 data:
   VAULT_DEV_ROOT_TOKEN_ID: cm9vdA==
 ---
-# Source: vault/charts/base/templates/secrets.tpl
-apiVersion: v1
-kind: Secret
-metadata:
-  name: release-name-base-files
-  labels: 
-    app.kubernetes.io/name: base
-    app.kubernetes.io/instance: release-name
-    helm.sh/chart: base-0.0.1
-    app.kubernetes.io/managed-by: Helm
-data:
-  ___vault___config.d___config.json: |
-    eyJkaXNhYmxlX21sb2NrIjp0cnVlLCJzdG9yYWdlIjp7ImZpbGUiOnsicGF0aCI6Ii92YXVsdC9maWxlIn19LCJ1aSI6dHJ1ZX0=
----
 # Source: vault/charts/base/templates/persistent_volume_claims.tpl
 apiVersion: v1
 kind: PersistentVolumeClaim
@@ -102,16 +88,9 @@ spec:
             - secretRef:
                 name: release-name-base-env-vars
           volumeMounts:
-            - mountPath: /vault/config.d/config.json
-              name: secret-files
-              readOnly: true
-              subPath: ___vault___config.d___config.json
             - mountPath: /vault/file
               name: persistent-volume-claim-file
       volumes:
-        - name: secret-files
-          secret:
-            secretName: release-name-base-files
         - name: persistent-volume-claim-file
           persistentVolumeClaim:
             claimName: release-name-base-file
