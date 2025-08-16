@@ -91,7 +91,7 @@ tests:
           path: data.key1
           value: value1
 
-  - it: renders ConfigMap with labels and annotations
+  - it: renders ConfigMap with annotations
     set:
       configMaps:
         files:
