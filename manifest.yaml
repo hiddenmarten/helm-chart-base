@@ -24,6 +24,22 @@ metadata:
 data:
   VAULT_DEV_ROOT_TOKEN_ID: cm9vdA==
 ---
+# Source: vault/charts/base/templates/config_maps.tpl
+apiVersion: v1
+kind: ConfigMap
+binaryData: {}
+data:
+  ___vault___config.d___config.json: |
+    {"disable_mlock":true,"storage":{"file":{"path":"/vault/file"}},"ui":true}
+metadata:
+  annotations: {}
+  labels:
+    app.kubernetes.io/instance: release-name
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: base
+    helm.sh/chart: base-0.0.1
+  name: release-name-base-files
+---
 # Source: vault/charts/base/templates/persistent_volume_claims.tpl
 apiVersion: v1
 kind: PersistentVolumeClaim
@@ -88,9 +104,16 @@ spec:
             - secretRef:
                 name: release-name-base-env-vars
           volumeMounts:
+            - mountPath: /vault/config.d/config.json
+              name: config-map-files
+              readOnly: true
+              subPath: ___vault___config.d___config.json
             - mountPath: /vault/file
               name: persistent-volume-claim-file
       volumes:
+        - configMap:
+            name: release-name-base-files
+          name: config-map-files
         - name: persistent-volume-claim-file
           persistentVolumeClaim:
             claimName: release-name-base-file

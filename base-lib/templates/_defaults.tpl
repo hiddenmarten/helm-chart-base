@@ -108,16 +108,11 @@ serviceMonitor:
 
 # ConfigMaps to render
 configMaps:
-  envVars:
-    enabled: true
-    annotations: {}
-    data: {}
+  envVars: {}
+#    data: {}
 #      ENV_VAR_KEY: "ENV_VAR_VALUE"
-  files:
-    enabled: true
-    annotations: {}
-    mount: {}
-    data: {}
+  files: {}
+#    data:
 #      "/app/data.json":
 #        key: value
 #      "/app/data.yaml":

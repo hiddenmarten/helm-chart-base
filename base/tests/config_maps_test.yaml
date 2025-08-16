@@ -75,8 +75,6 @@ tests:
           count: 2
 
   - it: renders ConfigMap with custom name
-    skip:
-      reason: "Need to verify implementation"
     set:
       configMaps:
         custom-config:
@@ -102,8 +100,9 @@ tests:
     set:
       configMaps:
         files:
-          annotations:
-            custom-annotation: custom-value
+          metadata:
+            annotations:
+              custom-annotation: custom-value
           data:
             "test.conf": "test content"
     asserts:

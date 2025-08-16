@@ -6,9 +6,9 @@ Usage: {{ include "base-lib.volumes" (dict "val" $val "ctx" $ctx) }}
 {{ $ctx := .ctx -}}
 {{ $val := .val -}}
 {{ $volumes := list -}}
-{{ if and $val.configMaps.files.enabled $val.configMaps.files.data -}}
-{{ $volume := include "base-lib.configMaps.files.volume" (dict "ctx" $ctx) | fromYaml -}}
-{{ $volumes = append $volumes $volume -}}
+{{ $cmVolumes := include "base-lib.configMaps.files.volumes" (dict "content" $val.configMaps.files "ctx" $ctx) | fromYaml -}}
+{{ range $cmVolumes.volumes -}}
+{{ $volumes = append $volumes . -}}
 {{ end -}}
 {{ if and $val.secrets.files.enabled $val.secrets.files.data -}}
 {{ $volume := include "base-lib.secrets.files.volume" (dict "ctx" $ctx) | fromYaml -}}

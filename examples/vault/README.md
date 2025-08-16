@@ -17,7 +17,6 @@ A HashiCorp Vault helm chart using base
 | base.configMaps.files.data."/vault/config.d/config.json".disable_mlock | bool | `true` |  |
 | base.configMaps.files.data."/vault/config.d/config.json".storage.file.path | string | `"/vault/file"` |  |
 | base.configMaps.files.data."/vault/config.d/config.json".ui | bool | `true` |  |
-| base.configMaps.files.enabled | bool | `false` |  |
 | base.image.repository | string | `"hashicorp/vault"` |  |
 | base.image.tag | string | `"1.20.2"` |  |
 | base.ingress.spec.rules."vault.example.local".http.paths./.backend.service.port.name | string | `"http"` |  |
