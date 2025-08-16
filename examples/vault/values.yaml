@@ -30,6 +30,13 @@ base:
         "vault.example.local":
           tls:
             secretName: vault-tls-secret
+          http:
+            paths:
+              "/":
+                backend:
+                  service:
+                    port:
+                      name: http
 
   serviceMonitor:
     spec:

@@ -78,9 +78,6 @@ Usage: {{ include "base-lib.ingress.rules" (dict "rules" .Values.ingress.spec.ru
     {{ if not $rule.host -}}
     {{ $_ := set $rule "host" $k -}}
     {{ end -}}
-    {{ if not $rule.http.paths }}
-    {{ $_ := set $rule.http "paths" (dict "/" dict) -}}
-    {{ end -}}
     {{ $pathsList := list -}}
     {{ range $kk, $vv := $rule.http.paths -}}
       {{ $defaultPath := include "base-lib.ingress.path.default" (dict "ctx" $ctx) | fromYaml -}}
@@ -100,12 +97,10 @@ Usage: {{ include "base-lib.ingress.path.default" (dict "ctx" $ctx) }}
 */}}
 {{ define "base-lib.ingress.path.default" -}}
 {{ $ctx := .ctx -}}
-{{ $portName := include "base-lib.ingress.service.http.portName" (dict "ctx" $ctx) | fromYaml -}}
 pathType: Prefix
 backend:
   service:
     name: {{ include "base-lib.fullname" (dict "ctx" $ctx) }}
-    port: {{ $portName | toYaml | nindent 6 }}
 {{- end }}
 
 {{/*
@@ -117,16 +112,4 @@ Usage: {{ include "base-lib.ingress.path.default" (dict "ctx" $ctx) }}
 host: ""
 http:
   paths: {}
-{{- end }}
-
-{{/*
-Rule section sctracture
-Usage: {{ include "base-lib.ingress.service.http.portName" (dict "ctx" $ctx) }}
-*/}}
-{{ define "base-lib.ingress.service.http.portName" -}}
-{{ $ctx := .ctx -}}
-{{ if not $ctx.Values.service.spec.ports.http -}}
-{{ fail "couldn't find http port in service" }}
-{{- end }}
-name: http
 {{- end }}

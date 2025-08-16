@@ -28,19 +28,6 @@ data:
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: release-name-base-env-vars
-  labels: 
-    app.kubernetes.io/name: base
-    app.kubernetes.io/instance: release-name
-    helm.sh/chart: base-0.0.1
-    app.kubernetes.io/managed-by: Helm
-data:
-  KEY: VALUE
----
-# Source: vault/charts/base/templates/config_maps.tpl
-apiVersion: v1
-kind: ConfigMap
-metadata:
   name: release-name-base-files
   labels: 
     app.kubernetes.io/name: base
@@ -112,8 +99,6 @@ spec:
         - name: base
           image: "hashicorp/vault:1.20.2"
           envFrom:
-            - configMapRef:
-                name: release-name-base-env-vars
             - secretRef:
                 name: release-name-base-env-vars
           volumeMounts:
