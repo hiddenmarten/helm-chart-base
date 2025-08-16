@@ -97,11 +97,10 @@ tests:
     set:
       configMaps:
         files:
-          metadata:
-            labels:
-              custom-label: custom-value
-            annotations:
-              custom-annotation: custom-value
+          labels:
+            custom-label: custom-value
+          annotations:
+            custom-annotation: custom-value
           data:
             "test.conf": "test content"
     asserts:
