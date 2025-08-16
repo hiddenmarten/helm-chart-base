@@ -52,7 +52,7 @@ Usage: {{ include "base-lib.configMaps.content.envVars" (dict "content" $content
 {{ if $content.data -}}
 {{ print "data: " }}
 {{ range $k, $v := $content.data -}}
-{{ printf "%s: %s" $k $v | indent 2 }}
+{{ printf "%s: %s" $k $v | nindent 2 }}
 {{- end }}
 {{- end }}
 {{- if $content.binaryData }}

@@ -40,8 +40,6 @@ tests:
             key = "value"
 
   - it: renders ConfigMaps with environment variables
-    skip:
-      reason: "Need to verify configMaps envVars implementation"
     set:
       configMaps:
         envVars:

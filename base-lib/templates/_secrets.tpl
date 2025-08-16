@@ -55,7 +55,7 @@ Usage: {{ include "base-lib.secrets.content.envVars" (dict "content" $content "c
 {{ if $content.data -}}
 {{ print "data:" }}
 {{ range $k, $v := $content.data -}}
-{{ printf "%s: %s" (tpl $k $ctx) ((tpl $v $ctx) | b64enc) | indent 2 }}
+{{ printf "%s: %s" (tpl $k $ctx) ((tpl $v $ctx) | b64enc) | nindent 2 }}
 {{- end }}
 {{- end }}
 {{- if $content.stringData }}

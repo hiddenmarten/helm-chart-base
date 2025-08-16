@@ -1,6 +1,7 @@
 # helm-chart-base
 
 TODO list:
+- Add enablers for each resource
 - Add tests for base-lib via base chart
 - Implement statefulset support
 - Write chart examples:
