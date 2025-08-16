@@ -1,5 +1,4 @@
 {{/*
-ConfigMap template for base-library chart
 Usage: {{ include "base-lib.configMaps" (dict "cms" .Values.configMaps "ctx" $) }}
 */}}
 {{ define "base-lib.configMaps" -}}
@@ -10,14 +9,14 @@ Usage: {{ include "base-lib.configMaps" (dict "cms" .Values.configMaps "ctx" $) 
 {{ $cms = mustMergeOverwrite $defaultCms $cms -}}
 {{- range $postfix, $content := $cms }}
 {{ $payload := include "base-lib.configMaps.payload" (dict "postfix" $postfix "content" $content "ctx" $ctx) | fromYaml -}}
-{{ if $payload -}}
+{{ if and $content.enabled $payload -}}
 apiVersion: v1
 kind: ConfigMap
 metadata:
   name: {{ include "base-lib.configMaps.name" (dict "postfix" $postfix "ctx" $ctx) }}
   labels: {{ include "base-lib.labels" (dict "ctx" $ctx) | nindent 4 }}
   {{- with $content.annotations }}
-  annotations: {{ tpl (toYaml .) $ctx | nindent 4 }}
+  annotations: {{ tpl (. | toYaml) $ctx | nindent 4 }}
   {{- end }}
 {{ tpl ($payload | toYaml) $ctx }}
 ---
@@ -26,7 +25,6 @@ metadata:
 {{- end }}
 
 {{/*
-ConfigMap content helper
 Usage: {{ include "base-lib.configMaps.content" (dict "postfix" $postfix "content" $content "ctx" $ctx) }}
 */}}
 {{ define "base-lib.configMaps.payload" -}}
@@ -34,19 +32,18 @@ Usage: {{ include "base-lib.configMaps.content" (dict "postfix" $postfix "conten
 {{ $content := .content -}}
 {{ $ctx := .ctx -}}
 {{ if eq $postfix "envVars" -}}
-{{ include "base-lib.configMaps.content.envVars" (dict "content" $content "ctx" $ctx) }}
+{{ include "base-lib.configMaps.envVars.content" (dict "content" $content "ctx" $ctx) }}
 {{ else if eq $postfix "files" -}}
-{{ include "base-lib.configMaps.content.files" (dict "content" $content "ctx" $ctx) }}
+{{ include "base-lib.configMaps.files.content" (dict "content" $content "ctx" $ctx) }}
 {{ else -}}
-{{ include "base-lib.configMaps.content.others" (dict "content" $content "ctx" $ctx) }}
+{{ include "base-lib.configMaps.others.content" (dict "content" $content "ctx" $ctx) }}
 {{- end }}
 {{- end }}
 
 {{/*
-ConfigMap envVars content helper
-Usage: {{ include "base-lib.configMaps.content.envVars" (dict "content" $content "ctx" $ctx) }}
+Usage: {{ include "base-lib.configMaps.envVars.content" (dict "content" $content "ctx" $ctx) }}
 */}}
-{{ define "base-lib.configMaps.content.envVars" -}}
+{{ define "base-lib.configMaps.envVars.content" -}}
 {{ $content := .content -}}
 {{ $ctx := .ctx -}}
 {{ if $content.data -}}
@@ -61,10 +58,9 @@ Usage: {{ include "base-lib.configMaps.content.envVars" (dict "content" $content
 {{- end }}
 
 {{/*
-ConfigMap files content helper
-Usage: {{ include "base-lib.configMaps.content.files" (dict "content" $content "ctx" $ctx) }}
+Usage: {{ include "base-lib.configMaps.files.content" (dict "content" $content "ctx" $ctx) }}
 */}}
-{{ define "base-lib.configMaps.content.files" -}}
+{{ define "base-lib.configMaps.files.content" -}}
 {{ $content := .content -}}
 {{ $ctx := .ctx -}}
 {{ if $content.data -}}
@@ -89,10 +85,43 @@ Usage: {{ include "base-lib.configMaps.content.files" (dict "content" $content "
 {{- end }}
 
 {{/*
-ConfigMap others content helper
-Usage: {{ include "base-lib.configMaps.content.others" (dict "content" $content "ctx" $ctx) }}
+Usage: {{ include "base-lib.volumes.configMap.name" (dict "ctx" $ctx) }}
 */}}
-{{ define "base-lib.configMaps.content.others" -}}
+{{ define "base-lib.configMaps.files.name" -}}
+{{ $ctx := .ctx -}}
+{{ print "config-map-files" }}
+{{- end }}
+
+{{/*
+Usage: {{ include "base-lib.volumes.configMap.volume" (dict "ctx" $ctx) }}
+*/}}
+{{ define "base-lib.configMaps.files.volume" -}}
+{{ $ctx := .ctx -}}
+name: {{ include "base-lib.configMaps.files.name" (dict "ctx" $ctx) }}
+configMap:
+  name: {{ include "base-lib.configMaps.name" (dict "postfix" "files" "ctx" $ctx) }}
+{{- end }}
+
+{{/*
+Usage: {{ include "base-lib.configMaps.files.volumeMounts" (dict "files" $files "ctx" $ctx) }}
+*/}}
+{{ define "base-lib.configMaps.files.volumeMounts" -}}
+{{ $files := .files -}}
+{{ $ctx := .ctx -}}
+{{ $mounts := list -}}
+{{ range $path, $_ := $files.data -}}
+{{ $name := include "base-lib.configMaps.files.name" (dict "ctx" $ctx) -}}
+{{ $defaultMount := include "base-lib.volumeMounts.files.default" (dict "path" $path "name" $name "ctx" $ctx) | fromYaml -}}
+{{ $mount := mustMergeOverwrite $defaultMount $files.mount -}}
+{{ $mounts = append $mounts $mount -}}
+{{- end }}
+volumeMounts: {{ $mounts | toYaml | nindent 2 }}
+{{- end }}
+
+{{/*
+Usage: {{ include "base-lib.configMaps.others.content" (dict "content" $content "ctx" $ctx) }}
+*/}}
+{{ define "base-lib.configMaps.others.content" -}}
 {{ $content := .content -}}
 {{ $ctx := .ctx -}}
 {{- with $content.data }}
@@ -104,7 +133,6 @@ binaryData: {{ toYaml . | nindent 2 }}
 {{- end }}
 
 {{/*
-ConfigMap name helper
 Usage: {{ include "base-lib.configMapName" (dict "postfix" $postfix "ctx" $ctx) }}
 */}}
 {{ define "base-lib.configMaps.name" -}}

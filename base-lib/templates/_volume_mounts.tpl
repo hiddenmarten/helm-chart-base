@@ -6,14 +6,15 @@ Usage: {{ include "base-lib.volumeMounts" (dict "val" $val "ctx" $ctx) }}
 {{ $ctx := .ctx -}}
 {{ $val := .val -}}
 {{ $volumeMounts := list -}}
-{{ range $k, $_ := $val.configMaps.files.data -}}
-{{ $name := include "base-lib.volumes.configMap.name" (dict "ctx" $ctx) -}}
-{{ $volumeMount := include "base-lib.volumeMounts.files.mount" (dict "path" $k "name" $name "ctx" $ctx) | fromYaml -}}
-{{ $volumeMounts = append $volumeMounts $volumeMount -}}
+{{ if and $val.configMaps.files.enabled $val.configMaps.files.data -}}
+{{ $cmVolumeMountsMounts := include "base-lib.configMaps.files.volumeMounts" (dict "files" $val.configMaps.files "ctx" $ctx) | fromYaml -}}
+{{ range $cmVolumeMountsMounts.volumeMounts -}}
+{{ $volumeMounts = append $volumeMounts . -}}
+{{ end -}}
 {{ end -}}
 {{ range $k, $_ := $val.secrets.files.data -}}
 {{ $name := include "base-lib.volumes.secret.name" (dict "ctx" $ctx) -}}
-{{ $volumeMount := include "base-lib.volumeMounts.files.mount" (dict "path" "name" $name $k "ctx" $ctx) | fromYaml -}}
+{{ $volumeMount := include "base-lib.volumeMounts.files.default" (dict "path" "name" $name $k "ctx" $ctx) | fromYaml -}}
 {{ $volumeMounts = append $volumeMounts $volumeMount -}}
 {{ end -}}
 {{ if $val.persistentVolumeClaims -}}
@@ -31,9 +32,9 @@ Usage: {{ include "base-lib.volumeMounts" (dict "val" $val "ctx" $ctx) }}
 
 {{/*
 Template for configmap volume mount
-Usage: {{ include "base-lib.volumeMounts.mount" (dict "path" $k "name" $name "ctx" $ctx) }}
+Usage: {{ include "base-lib.volumeMounts.default" (dict "path" $k "name" $name "ctx" $ctx) }}
 */}}
-{{ define "base-lib.volumeMounts.files.mount" -}}
+{{ define "base-lib.volumeMounts.files.default" -}}
 {{ $path := .path -}}
 {{ $name := .name -}}
 {{ $ctx := .ctx -}}

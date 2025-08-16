@@ -106,9 +106,14 @@ serviceMonitor:
 # ConfigMaps to render
 configMaps:
   envVars:
+    enabled: true
+    annotations: {}
     data: {}
 #      ENV_VAR_KEY: "ENV_VAR_VALUE"
   files:
+    enabled: true
+    annotations: {}
+    mount: {}
     data: {}
 #      "/app/data.json":
 #        key: value
@@ -122,11 +127,14 @@ configMaps:
 # Secrets to render
 secrets:
   envVars:
+    enabled: true
     annotations: {}
     data: {}
 #      SECRET_ENV_VAR_KEY: "SECRET_ENV_VAR_VALUE"
   files:
+    enabled: true
     annotations: {}
+    mount: {}
     data: {}
 #      "/app/secret.json":
 #        key: value

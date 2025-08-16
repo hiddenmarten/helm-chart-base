@@ -5,6 +5,7 @@ base:
 
   configMaps:
     files:
+      # enabled: false
       data:
         "/vault/config.d/config.json":
           ui: true

@@ -10,17 +10,17 @@ Usage: {{ include "base-lib.secrets" (dict "secrets" .Values.secrets "ctx" $) }}
 {{ $secrets = mustMergeOverwrite $defaultSecrets $secrets -}}
 {{- range $postfix, $content := $secrets }}
 {{ $payload := include "base-lib.secrets.payload" (dict "postfix" $postfix "content" $content "ctx" $ctx) | fromYaml -}}
-{{ if $payload -}}
+{{ if and $content.enabled $payload -}}
 apiVersion: v1
 kind: Secret
 metadata:
   name: {{ include "base-lib.secrets.name" (dict "postfix" $postfix "ctx" $ctx) }}
   labels: {{ include "base-lib.labels" (dict "ctx" $ctx) | nindent 4 }}
   {{- with $content.annotations }}
-  annotations: {{ tpl (toYaml .) $ctx | nindent 4 }}
+  annotations: {{ tpl (. | toYaml) $ctx | nindent 4 }}
   {{- end }}
 {{- with $content.type }}
-type: {{ tpl (toYaml .) $ctx }}
+type: {{ tpl (. | toYaml) $ctx }}
 {{- end }}
 {{ $payload | toYaml }}
 ---
@@ -99,10 +99,10 @@ Usage: {{ include "base-lib.secrets.content.others" (dict "content" $content "ct
 {{ $content := .content -}}
 {{ $ctx := .ctx -}}
 {{- with $content.data }}
-data: {{ tpl (toYaml .) $ctx | nindent 2 }}
+data: {{ tpl (. | toYaml) $ctx | nindent 2 }}
 {{- end }}
 {{- with $content.stringData }}
-stringData: {{ tpl (toYaml .) $ctx | nindent 2 }}
+stringData: {{ tpl (. | toYaml) $ctx | nindent 2 }}
 {{- end }}
 {{- end }}
 
