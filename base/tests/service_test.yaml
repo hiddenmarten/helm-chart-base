@@ -70,7 +70,7 @@ tests:
 
   - it: renders a Service with selector labels
     skip:
-      reason: "Need to verify selector implementation in template"
+      reason: "Need to verify implementation"
     set:
       service:
         spec:
@@ -87,9 +87,47 @@ tests:
           path: spec.selector["app.kubernetes.io/instance"]
           value: RELEASE-NAME
 
-  - it: should not render when service is not defined
-    skip:
-      reason: "Need to implement conditional rendering in template"
+  - it: should not render when service is disabled
+    set:
+      service:
+        enabled: false
+        spec:
+          ports:
+            http:
+              port: 8080
     asserts:
       - hasDocuments:
           count: 0
+
+  - it: should not render when service ports are empty
+    set:
+      service:
+        enabled: true
+        spec:
+          ports: {}
+    asserts:
+      - hasDocuments:
+          count: 0
+
+  - it: should not render when service ports are not defined
+    set:
+      service:
+        enabled: true
+        spec: {}
+    asserts:
+      - hasDocuments:
+          count: 0
+
+  - it: should render with default enabled state
+    set:
+      service:
+        spec:
+          ports:
+            http:
+              port: 8080
+    asserts:
+      - isKind:
+          of: Service
+      - equal:
+          path: metadata.name
+          value: RELEASE-NAME-base

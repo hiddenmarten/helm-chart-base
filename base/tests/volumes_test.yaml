@@ -1,0 +1,154 @@
+suite: Volumes and VolumeMounts template
+templates:
+  - templates/deployment.tpl
+
+tests:
+  - it: should render deployment with volumes and volumeMounts from configMaps files
+    set:
+      image:
+        repository: nginx
+        tag: latest
+      configMaps:
+        files:
+          data:
+            "/app/config.yaml":
+              server:
+                port: 8080
+    asserts:
+      - isKind:
+          of: Deployment
+      - contains:
+          path: spec.template.spec.volumes
+          content:
+            name: config-map-files
+            configMap:
+              name: RELEASE-NAME-base-files
+      - contains:
+          path: spec.template.spec.containers[0].volumeMounts
+          content:
+            name: config-map-files
+            mountPath: /app/config.yaml
+            subPath: ___app___config.yaml
+            readOnly: true
+
+  - it: should render deployment with volumes and volumeMounts from secrets files
+    set:
+      image:
+        repository: nginx
+        tag: latest
+      secrets:
+        files:
+          data:
+            "/app/secret.key": "secret content"
+    asserts:
+      - isKind:
+          of: Deployment
+      - contains:
+          path: spec.template.spec.volumes
+          content:
+            name: secret-files
+            secret:
+              secretName: RELEASE-NAME-base-files
+      - contains:
+          path: spec.template.spec.containers[0].volumeMounts
+          content:
+            name: secret-files
+            mountPath: /app/secret.key
+            subPath: ___app___secret.key
+            readOnly: true
+
+  - it: should render deployment with volumes and volumeMounts from persistentVolumeClaims
+    set:
+      image:
+        repository: nginx
+        tag: latest
+      persistentVolumeClaims:
+        data:
+          mount:
+            mountPath: /data
+          spec:
+            resources:
+              requests:
+                storage: 10Gi
+    asserts:
+      - isKind:
+          of: Deployment
+      - contains:
+          path: spec.template.spec.volumes
+          content:
+            name: persistent-volume-claim-data
+            persistentVolumeClaim:
+              claimName: RELEASE-NAME-base-data
+      - contains:
+          path: spec.template.spec.containers[0].volumeMounts
+          content:
+            name: persistent-volume-claim-data
+            mountPath: /data
+
+  - it: should not render volumes when no data is provided
+    set:
+      image:
+        repository: nginx
+        tag: latest
+      configMaps:
+        files:
+          data: {}
+      secrets:
+        files:
+          data: {}
+      persistentVolumeClaims: {}
+    asserts:
+      - isKind:
+          of: Deployment
+      - notExists:
+          path: spec.template.spec.volumes
+      - notExists:
+          path: spec.template.spec.containers[0].volumeMounts
+
+  - it: should render multiple volumes of different types
+    set:
+      image:
+        repository: nginx
+        tag: latest
+      configMaps:
+        files:
+          data:
+            "/app/config.yaml":
+              server:
+                port: 8080
+      secrets:
+        files:
+          data:
+            "/app/secret.key": "secret content"
+      persistentVolumeClaims:
+        data:
+          mount:
+            mountPath: /data
+          spec:
+            resources:
+              requests:
+                storage: 10Gi
+    asserts:
+      - isKind:
+          of: Deployment
+      - lengthEqual:
+          path: spec.template.spec.volumes
+          count: 3
+      - contains:
+          path: spec.template.spec.volumes
+          content:
+            name: config-map-files
+            configMap:
+              name: RELEASE-NAME-base-files
+      - contains:
+          path: spec.template.spec.volumes
+          content:
+            name: secret-files
+            secret:
+              secretName: RELEASE-NAME-base-files
+      - contains:
+          path: spec.template.spec.volumes
+          content:
+            name: persistent-volume-claim-data
+            persistentVolumeClaim:
+              claimName: RELEASE-NAME-base-data

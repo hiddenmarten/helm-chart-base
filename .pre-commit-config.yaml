@@ -10,6 +10,11 @@ repos:
     - id: check-added-large-files
 - repo: local
   hooks:
+    - id: make-dependency-update
+      name: make-dependency-update
+      entry: sh -c 'make dependency-update'
+      language: system
+      require_serial: true
     - id: make-schema
       name: make-schema
       entry: sh -c 'make schema'

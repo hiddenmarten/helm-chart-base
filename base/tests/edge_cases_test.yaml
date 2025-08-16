@@ -1,0 +1,162 @@
+suite: Edge cases and error conditions
+templates:
+  - templates/deployment.tpl
+
+tests:
+  - it: should handle minimal configuration gracefully
+    set:
+      image:
+        repository: nginx
+        tag: latest
+    asserts:
+      - hasDocuments:
+          count: 1  # deployment only
+      - isKind:
+          of: Deployment
+
+  - it: should not render service with empty ports but deployment should still render
+    set:
+      image:
+        repository: nginx
+        tag: latest
+      service:
+        spec:
+          ports: {}
+    asserts:
+      - hasDocuments:
+          count: 1  # deployment only (no service)
+      - isKind:
+          of: Deployment
+
+  - it: should handle zero replica count
+    set:
+      image:
+        repository: nginx
+        tag: latest
+      replicaCount: 0
+    asserts:
+      - isKind:
+          of: Deployment
+      - equal:
+          path: spec.replicas
+          value: 0
+
+  - it: should handle complex nested values
+    set:
+      image:
+        repository: nginx
+        tag: latest
+      pod:
+        annotations:
+          complex.annotation/value: "true"
+        labels:
+          environment: "test"
+        securityContext:
+          runAsUser: 1000
+          fsGroup: 2000
+      resources:
+        limits:
+          cpu: "500m"
+          memory: "512Mi"
+        requests:
+          cpu: "100m"
+          memory: "128Mi"
+      nodeSelector:
+        kubernetes.io/os: linux
+      tolerations:
+        - key: "example-key"
+          operator: "Exists"
+          effect: "NoSchedule"
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: kubernetes.io/e2e-az-name
+                operator: In
+                values:
+                - e2e-az1
+                - e2e-az2
+    asserts:
+      - isKind:
+          of: Deployment
+      - equal:
+          path: spec.template.metadata.annotations["complex.annotation/value"]
+          value: "true"
+      - equal:
+          path: spec.template.metadata.labels.environment
+          value: "test"
+      - equal:
+          path: spec.template.spec.securityContext.runAsUser
+          value: 1000
+      - equal:
+          path: spec.template.spec.containers[0].resources.limits.cpu
+          value: "500m"
+      - equal:
+          path: spec.template.spec.nodeSelector["kubernetes.io/os"]
+          value: linux
+      - lengthEqual:
+          path: spec.template.spec.tolerations
+          count: 1
+      - isNotEmpty:
+          path: spec.template.spec.affinity
+
+  - it: should render configmap with special file extensions
+    skip:
+      reason: "Need to verify implementation"
+    set:
+      configMaps:
+        files:
+          data:
+            "/app/config.json":
+              key: "json-value"
+            "/app/config.yaml":
+              key: "yaml-value"
+            "/app/config.toml":
+              key: "toml-value"
+            "/app/config.txt": |
+              plain text content
+              multiple lines
+    asserts:
+      - isKind:
+          of: ConfigMap
+      - equal:
+          path: metadata.name
+          value: RELEASE-NAME-base-files
+      - matchRegex:
+          path: data["___app___config.json"]
+          pattern: '"key":"json-value"'
+      - matchRegex:
+          path: data["___app___config.yaml"]
+          pattern: 'key: yaml-value'
+      - matchRegex:
+          path: data["___app___config.toml"]
+          pattern: 'key = "toml-value"'
+      - contains:
+          path: data["___app___config.txt"]
+          content: |
+            plain text content
+            multiple lines
+
+  - it: should handle empty image tag gracefully
+    set:
+      image:
+        repository: nginx
+        tag: ""
+    asserts:
+      - isKind:
+          of: Deployment
+      - equal:
+          path: spec.template.spec.containers[0].image
+          value: "nginx:"
+
+  - it: should handle missing image tag
+    set:
+      image:
+        repository: nginx
+    asserts:
+      - isKind:
+          of: Deployment
+      - equal:
+          path: spec.template.spec.containers[0].image
+          value: "nginx:"

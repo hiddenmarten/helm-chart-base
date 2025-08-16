@@ -25,4 +25,3 @@ Usage: {{ include "base-lib.volumes" (dict "val" $val "ctx" $ctx) }}
 {{ $volumes | toYaml | indent 8 }}
 {{ end -}}
 {{ end -}}
-

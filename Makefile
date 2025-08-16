@@ -80,6 +80,10 @@ helm-unittest: helm $(HELM_PLUGINS)
 	fi
 
 ##@ Development
+.PHONY: dependency-update
+dependency-update: helm ## Run helm lint over chart
+	cd base && $(HELM) dependency update
+	cd examples/vault && $(HELM) dependency update
 
 .PHONY: lint
 lint: helm ## Run helm lint over chart

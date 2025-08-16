@@ -6,9 +6,10 @@ Usage: {{ include "base-lib.servicemonitor" (dict "val" .Values "ctx" $ctx) }}
 {{ $val := .val -}}
 {{ $ctx := .ctx -}}
 {{ $defaults := include "base-lib.defaults" (dict "ctx" $ctx) | fromYaml -}}
+{{ $val = mustMergeOverwrite $defaults $val -}}
 {{ $spec := include "base-lib.servicemonitor.spec" (dict "spec" $val.serviceMonitor.spec "ctx" $ctx) | fromYaml -}}
 {{ $valSpec := dict "serviceMonitor" (dict "spec" $spec) -}}
-{{ $val = mustMergeOverwrite $defaults $val $valSpec  -}}
+{{ $val = mustMergeOverwrite $val $valSpec -}}
 {{- if and $val.serviceMonitor.enabled $val.serviceMonitor.spec.endpoints }}
 apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor

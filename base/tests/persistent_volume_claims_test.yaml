@@ -115,9 +115,44 @@ tests:
           path: metadata.annotations["volume.beta.kubernetes.io/storage-provisioner"]
           value: kubernetes.io/aws-ebs
 
-  - it: should not render when persistentVolumeClaims is not defined
-    skip:
-      reason: "Need to implement conditional rendering in template"
+  - it: should not render when persistentVolumeClaims is empty
+    set:
+      persistentVolumeClaims: {}
     asserts:
       - hasDocuments:
           count: 0
+
+  - it: should not render when persistentVolumeClaims is not defined
+    asserts:
+      - hasDocuments:
+          count: 0
+
+  - it: should render with default access modes when not specified
+    set:
+      persistentVolumeClaims:
+        data:
+          spec:
+            resources:
+              requests:
+                storage: 10Gi
+    asserts:
+      - isKind:
+          of: PersistentVolumeClaim
+      - contains:
+          path: spec.accessModes
+          content: ReadWriteOnce
+
+  - it: should not render annotations when empty
+    set:
+      persistentVolumeClaims:
+        data:
+          annotations: {}
+          spec:
+            resources:
+              requests:
+                storage: 10Gi
+    asserts:
+      - isKind:
+          of: PersistentVolumeClaim
+      - notExists:
+          path: metadata.annotations

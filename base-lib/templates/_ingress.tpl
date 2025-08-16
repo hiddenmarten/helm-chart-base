@@ -6,9 +6,10 @@ Usage: {{ include "base-lib.ingress" (dict "val" .Values "ctx" $ctx) }}
 {{ $val := .val -}}
 {{ $ctx := .ctx -}}
 {{ $defaults := include "base-lib.defaults" (dict "ctx" $ctx) | fromYaml -}}
+{{ $val = mustMergeOverwrite $defaults $val -}}
 {{ $spec := include "base-lib.ingress.spec" (dict "spec" $val.ingress.spec "ctx" $ctx) | fromYaml -}}
 {{ $valSpec := dict "ingress" (dict "spec" $spec) -}}
-{{ $val = mustMergeOverwrite $defaults $val $valSpec -}}
+{{ $val = mustMergeOverwrite $val $valSpec -}}
 {{- if and $val.ingress.enabled $val.ingress.spec.rules }}
 apiVersion: "networking.k8s.io/v1"
 kind: Ingress
