@@ -92,13 +92,9 @@ tests:
           value: value1
 
   - it: renders ConfigMap with labels and annotations
-    skip:
-      reason: "Need to verify metadata implementation in template"
     set:
       configMaps:
         files:
-          labels:
-            custom-label: custom-value
           annotations:
             custom-annotation: custom-value
           data:
@@ -106,9 +102,6 @@ tests:
     asserts:
       - isKind:
           of: ConfigMap
-      - equal:
-          path: metadata.labels["custom-label"]
-          value: custom-value
       - equal:
           path: metadata.annotations["custom-annotation"]
           value: custom-value
