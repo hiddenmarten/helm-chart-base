@@ -11,5 +11,5 @@ Usage: {{ include "base.configMaps.others.content" (dict "val" .Values "ctx" $) 
 {{ include "base.secrets" (dict "secrets" $val.secrets "ctx" $ctx) }}
 {{ include "base.service" (dict "service" $val.service "ctx" $ctx) }}
 {{ include "base.serviceAccount" (dict "serviceAccount" $val.serviceAccount "ctx" $ctx) }}
-{{ include "base.servicemonitor" (dict "val" $val "ctx" $ctx) }}
+{{ include "base.serviceMonitor" (dict "serviceMonitor" $val.serviceMonitor "ctx" $ctx) }}
 {{- end }}

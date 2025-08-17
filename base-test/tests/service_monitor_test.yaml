@@ -42,25 +42,6 @@ tests:
           path: spec.endpoints
           count: 2
 
-  - it: renders a ServiceMonitor with selector
-    skip:
-      reason: "Need to verify selector implementation in template"
-    set:
-      serviceMonitor:
-        spec:
-          selector:
-            matchLabels:
-              app: my-app
-          endpoints:
-            metrics:
-              port: 9090
-    asserts:
-      - isKind:
-          of: ServiceMonitor
-      - equal:
-          path: spec.selector.matchLabels.app
-          value: my-app
-
   - it: renders a ServiceMonitor with custom interval and scrapeTimeout
     set:
       serviceMonitor:
@@ -94,16 +75,12 @@ tests:
           path: spec.endpoints[0].path
           value: /sys/metrics
 
-  - it: renders a ServiceMonitor with labels and annotations
-    skip:
-      reason: "Need to verify metadata implementation in template"
+  - it: renders a ServiceMonitor with custom metadata labels
     set:
       serviceMonitor:
         metadata:
           labels:
             monitoring: prometheus
-          annotations:
-            prometheus.io/scrape: "true"
         spec:
           endpoints:
             metrics:
@@ -115,8 +92,29 @@ tests:
           path: metadata.labels.monitoring
           value: prometheus
       - equal:
+          path: metadata.labels["app.kubernetes.io/name"]
+          value: base-test
+
+  - it: renders a ServiceMonitor with custom metadata annotations
+    set:
+      serviceMonitor:
+        metadata:
+          annotations:
+            prometheus.io/scrape: "true"
+            monitoring.example.com/team: platform
+        spec:
+          endpoints:
+            metrics:
+              port: 9090
+    asserts:
+      - isKind:
+          of: ServiceMonitor
+      - equal:
           path: metadata.annotations["prometheus.io/scrape"]
           value: "true"
+      - equal:
+          path: metadata.annotations["monitoring.example.com/team"]
+          value: platform
 
   - it: should not render when serviceMonitor is disabled
     set:
@@ -166,7 +164,8 @@ tests:
   - it: should not render annotations when empty
     set:
       serviceMonitor:
-        annotations: {}
+        metadata:
+          annotations: {}
         spec:
           endpoints:
             metrics:
@@ -193,3 +192,160 @@ tests:
       - equal:
           path: spec.selector.matchLabels["app.kubernetes.io/instance"]
           value: RELEASE-NAME
+
+  - it: should respect explicit port when defined
+    set:
+      serviceMonitor:
+        spec:
+          endpoints:
+            metrics:
+              port: 8080
+              path: /metrics
+    asserts:
+      - isKind:
+          of: ServiceMonitor
+      - equal:
+          path: spec.endpoints[0].port
+          value: 8080
+
+  - it: renders ServiceMonitor with complex endpoint configuration
+    set:
+      serviceMonitor:
+        spec:
+          endpoints:
+            metrics:
+              port: 9090
+              path: /metrics
+              interval: 30s
+              scrapeTimeout: 10s
+              honorLabels: true
+              scheme: https
+              tlsConfig:
+                insecureSkipVerify: true
+              params:
+                module:
+                  - http_2xx
+    asserts:
+      - isKind:
+          of: ServiceMonitor
+      - equal:
+          path: spec.endpoints[0].port
+          value: 9090
+      - equal:
+          path: spec.endpoints[0].honorLabels
+          value: true
+      - equal:
+          path: spec.endpoints[0].scheme
+          value: https
+      - equal:
+          path: spec.endpoints[0].tlsConfig.insecureSkipVerify
+          value: true
+      - contains:
+          path: spec.endpoints[0].params.module
+          content: http_2xx
+
+  - it: renders ServiceMonitor with relabeling configuration
+    set:
+      serviceMonitor:
+        spec:
+          endpoints:
+            metrics:
+              port: 9090
+              relabelings:
+                - sourceLabels: [__meta_kubernetes_pod_name]
+                  targetLabel: kubernetes_pod_name
+                - sourceLabels: [__meta_kubernetes_namespace]
+                  targetLabel: kubernetes_namespace
+              metricRelabelings:
+                - sourceLabels: [__name__]
+                  regex: unwanted_metric_.*
+                  action: drop
+    asserts:
+      - isKind:
+          of: ServiceMonitor
+      - lengthEqual:
+          path: spec.endpoints[0].relabelings
+          count: 2
+      - lengthEqual:
+          path: spec.endpoints[0].metricRelabelings
+          count: 1
+      - equal:
+          path: spec.endpoints[0].relabelings[0].targetLabel
+          value: kubernetes_pod_name
+
+  - it: renders ServiceMonitor with jobLabel configuration
+    set:
+      serviceMonitor:
+        spec:
+          jobLabel: app.kubernetes.io/name
+          endpoints:
+            metrics:
+              port: 9090
+    asserts:
+      - isKind:
+          of: ServiceMonitor
+      - equal:
+          path: spec.jobLabel
+          value: app.kubernetes.io/name
+
+  - it: renders ServiceMonitor with namespaceSelector
+    set:
+      serviceMonitor:
+        spec:
+          namespaceSelector:
+            matchNames:
+              - monitoring
+              - default
+          endpoints:
+            metrics:
+              port: 9090
+    asserts:
+      - isKind:
+          of: ServiceMonitor
+      - contains:
+          path: spec.namespaceSelector.matchNames
+          content: monitoring
+      - contains:
+          path: spec.namespaceSelector.matchNames
+          content: default
+
+  - it: should handle template expressions in annotations
+    set:
+      serviceMonitor:
+        metadata:
+          annotations:
+            chart-version: "{{ .Chart.Version }}"
+            release-name: "{{ .Release.Name }}"
+        spec:
+          endpoints:
+            metrics:
+              port: 9090
+    asserts:
+      - isKind:
+          of: ServiceMonitor
+      - matchRegex:
+          path: metadata.annotations.chart-version
+          pattern: "^\\d+\\.\\d+\\.\\d+.*"
+      - equal:
+          path: metadata.annotations.release-name
+          value: RELEASE-NAME
+
+  - it: should merge with custom spec configuration
+    set:
+      serviceMonitor:
+        spec:
+          jobLabel: custom-job
+          namespaceSelector:
+            any: true
+          endpoints:
+            metrics:
+              port: 9090
+    asserts:
+      - isKind:
+          of: ServiceMonitor
+      - equal:
+          path: spec.jobLabel
+          value: custom-job
+      - equal:
+          path: spec.namespaceSelector.any
+          value: true

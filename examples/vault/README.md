@@ -25,6 +25,5 @@ A HashiCorp Vault using base library
 | persistentVolumeClaims.file.spec.resources.requests.storage | string | `"1Gi"` |  |
 | secrets.envVars.data.VAULT_DEV_ROOT_TOKEN_ID | string | `"root"` |  |
 | service.spec.ports.http.port | int | `8200` |  |
-| serviceMonitor.enabled | bool | `false` |  |
 | serviceMonitor.spec.endpoints.http.path | string | `"/sys/metrics"` |  |
 

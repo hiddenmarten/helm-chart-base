@@ -1,46 +1,77 @@
 {{/*
 ServiceMonitor template for baserary chart
-Usage: {{ include "base.servicemonitor" (dict "val" .Values "ctx" $ctx) }}
+Usage: {{ include "base.serviceMonitor" (dict "serviceMonitor" .Values.serviceMonitor "ctx" $) }}
 */}}
-{{ define "base.servicemonitor" -}}
-{{ $val := .val -}}
+{{ define "base.serviceMonitor" -}}
+{{ $serviceMonitor := .serviceMonitor -}}
 {{ $ctx := .ctx -}}
-{{ $defaults := include "base.defaults" (dict "ctx" $ctx) | fromYaml -}}
-{{ $val = mustMergeOverwrite $defaults $val -}}
-{{ $spec := include "base.servicemonitor.spec" (dict "spec" $val.serviceMonitor.spec "ctx" $ctx) | fromYaml -}}
-{{ $valSpec := dict "serviceMonitor" (dict "spec" $spec) -}}
-{{ $val = mustMergeOverwrite $val $valSpec -}}
-{{- if and $val.serviceMonitor.enabled $val.serviceMonitor.spec.endpoints }}
+{{ $content := include "base.serviceMonitor.content" (dict "content" $serviceMonitor "ctx" $ctx) | fromYaml -}}
+{{ if and $content.enabled $content.spec.endpoints -}}
 apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
-metadata:
-  name: {{ include "base.fullname" (dict "ctx" $ctx) }}
-  labels: {{ include "base.labels" (dict "ctx" $ctx) | nindent 4 }}
-  {{- with $val.serviceMonitor.annotations }}
-  annotations: {{ tpl (toYaml .) $ctx | nindent 4 }}
-  {{- end }}
-spec: {{ tpl (toYaml $val.serviceMonitor.spec) $ctx | nindent 2 }}
+{{ $_ := unset $content "enabled" -}}
+{{ $content | toYaml }}
 ---
 {{- end }}
 {{- end }}
 
+{{/*
+Usage: {{ include "base.serviceMonitor.content" (dict "content" $content "ctx" $ctx) }}
+*/}}
+{{ define "base.serviceMonitor.content" -}}
+{{ $content := .content -}}
+{{ $ctx := .ctx -}}
+{{ $defaultContent := include "base.serviceMonitor.default.content" (dict "ctx" $ctx) | fromYaml -}}
+{{ $payload := include "base.serviceMonitor.payload" (dict "content" $content "ctx" $ctx) | fromYaml -}}
+{{ $content = mustMergeOverwrite $defaultContent $content $payload -}}
+{{ if not $content.metadata.annotations -}}
+{{ $_ := unset $content.metadata "annotations" -}}
+{{- end }}
+{{ tpl ($content | toYaml) $ctx }}
+{{- end }}
 
 {{/*
-ServiceMonitor http port name helper
-Usage: {{ include "base.servicemonitor.spec" (dict "spec" $spec "ctx" $ctx) }}
+Usage: {{ include "base.serviceMonitor.payload" (dict "content" $content "ctx" $ctx) }}
 */}}
-{{ define "base.servicemonitor.spec" -}}
+{{ define "base.serviceMonitor.payload" -}}
+{{ $content := .content -}}
 {{ $ctx := .ctx -}}
-{{ $spec := .spec -}}
-{{ $listEndpoints := list -}}
-{{ range $k, $v := $spec.endpoints -}}
+{{ $endpoints := include "base.serviceMonitor.endpoints" (dict "endpoints" $content.spec.endpoints "ctx" $ctx) | fromYaml -}}
+{{ $payload := dict "spec" $endpoints -}}
+{{ $payload | toYaml }}
+{{- end }}
+
+{{/*
+Usage: {{ include "base.serviceMonitor.endpoints" (dict "endpoints" $endpoints "ctx" $ctx) }}
+*/}}
+{{ define "base.serviceMonitor.endpoints" -}}
+{{ $endpoints := .endpoints -}}
+{{ $ctx := .ctx -}}
+{{ $endpointsList := list -}}
+{{- range $k, $v := $endpoints }}
 {{ $endpoint := $v -}}
 {{ if not $endpoint.port -}}
 {{ $_ := set $endpoint "port" $k -}}
+{{ end -}}
+{{ $endpointsList = append $endpointsList $endpoint -}}
 {{- end }}
-{{ $listEndpoints = append $listEndpoints $endpoint -}}
-{{- end }}
+{{ if $endpointsList -}}
 selector:
-  matchLabels: {{ include "base.selectorLabels" (dict "ctx" $ctx) | nindent 6 }}
-endpoints: {{ $listEndpoints | toYaml | nindent 2 }}
+  matchLabels: {{ include "base.selectorLabels" (dict "ctx" $ctx) | nindent 4 }}
+endpoints: {{ $endpointsList | toYaml | nindent 2 }}
+{{- end }}
+{{- end }}
+
+{{/*
+Usage: {{ include "base.serviceMonitor.default.content" (dict "ctx" $ctx) }}
+*/}}
+{{ define "base.serviceMonitor.default.content" -}}
+{{ $ctx := .ctx -}}
+enabled: true
+metadata:
+  name: {{ include "base.fullname" (dict "ctx" $ctx) }}
+  labels: {{ include "base.labels" (dict "ctx" $ctx) | nindent 4 }}
+  annotations: {}
+spec:
+  endpoints: {}
 {{- end }}

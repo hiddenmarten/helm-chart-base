@@ -47,7 +47,6 @@ persistentVolumeClaims:
       mountPath: /vault/file
 
 serviceMonitor:
-  enabled: false
   spec:
     endpoints:
       http:
