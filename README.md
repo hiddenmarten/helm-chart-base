@@ -12,8 +12,7 @@ TODO list:
   - single vault
   - mono chart with vault uses postgres as a backend
   - umbrella chart with vault uses postgres as a backend
-- Add sidecar support
-- Add RBAC support
+- Add RBAC support ???
 - Improve visibility of conditions and loops better within templates (the issue basically in indents)
 
 
