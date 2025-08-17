@@ -1,10 +1,11 @@
 # helm-chart-base
 
 TODO list:
-- refactor ingress
-- refactor pvcs
+- Refactor ingress
+- Refactor pvcs
 - Add custom labels support
 - Add tests for base via base chart
+- Refactor deployment (Implement reusable podSpec section)
 - Implement statefulset support
 - Write chart examples:
   - single postgres
@@ -12,7 +13,6 @@ TODO list:
   - mono chart with vault uses postgres as a backend
   - umbrella chart with vault uses postgres as a backend
 - Add sidecar support
-- Implement reusable podSpec section
 - Add RBAC support
 - Improve visibility of conditions and loops better within templates (the issue basically in indents)
 
