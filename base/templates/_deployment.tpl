@@ -32,7 +32,7 @@ spec:
       {{- with $val.imagePullSecrets }}
       imagePullSecrets: {{ tpl (toYaml .) $ctx | nindent 8 }}
       {{- end }}
-      serviceAccountName: {{ include "base.serviceAccountName" (dict "val" $val.serviceAccount "ctx" $ctx) }}
+      serviceAccountName: {{ include "base.serviceAccount.name" (dict "serviceAccount" $val.serviceAccount "ctx" $ctx) }}
       {{- with $val.pod.securityContext }}
       securityContext: {{ tpl (toYaml .) $ctx | nindent 8 }}
       {{- end }}
