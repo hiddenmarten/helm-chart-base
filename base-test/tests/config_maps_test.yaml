@@ -175,3 +175,45 @@ tests:
       - equal:
           path: metadata.labels["app.kubernetes.io/instance"]
           value: RELEASE-NAME
+
+  - it: renders ConfigMap with templated values
+    release:
+      name: test-app
+      namespace: production
+    set:
+      configMaps:
+        config:
+          metadata:
+            annotations:
+              app-name: "{{ .Release.Name }}"
+              namespace: "{{ .Release.Namespace }}"
+              chart-version: "{{ .Chart.Version }}"
+          data:
+            app-name: "{{ .Release.Name }}"
+            environment: production
+            chart-name: "{{ .Chart.Name }}"
+            release-info: "App {{ .Release.Name }} in {{ .Release.Namespace }}"
+    asserts:
+      - isKind:
+          of: ConfigMap
+      - equal:
+          path: metadata.annotations["app-name"]
+          value: test-app
+      - equal:
+          path: metadata.annotations["namespace"]
+          value: production
+      - equal:
+          path: metadata.annotations["chart-version"]
+          value: 0.0.1
+      - equal:
+          path: data["app-name"]
+          value: test-app
+      - equal:
+          path: data["environment"]
+          value: production
+      - equal:
+          path: data["chart-name"]
+          value: base-test
+      - equal:
+          path: data["release-info"]
+          value: "App test-app in production"
