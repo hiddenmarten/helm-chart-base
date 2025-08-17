@@ -1,5 +1,5 @@
 ---
-# Source: vault/templates/all.tpl
+# Source: vault/templates/base.tpl
 apiVersion: v1
 kind: ServiceAccount
 metadata:
@@ -11,7 +11,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
 automountServiceAccountToken: true
 ---
-# Source: vault/templates/all.tpl
+# Source: vault/templates/base.tpl
 apiVersion: v1
 kind: Secret
 metadata:
@@ -24,7 +24,7 @@ metadata:
 data:
   VAULT_DEV_ROOT_TOKEN_ID: cm9vdA==
 ---
-# Source: vault/templates/all.tpl
+# Source: vault/templates/base.tpl
 apiVersion: v1
 kind: ConfigMap
 binaryData: {}
@@ -40,7 +40,7 @@ metadata:
     helm.sh/chart: vault-0.1.0
   name: release-name-vault-files
 ---
-# Source: vault/templates/all.tpl
+# Source: vault/templates/base.tpl
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
@@ -57,7 +57,7 @@ spec:
     requests:
       storage: 1Gi
 ---
-# Source: vault/templates/all.tpl
+# Source: vault/templates/base.tpl
 apiVersion: v1
 kind: Service
 metadata:
@@ -72,7 +72,7 @@ spec:
   - name: http
     port: 8200
 ---
-# Source: vault/templates/all.tpl
+# Source: vault/templates/base.tpl
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -118,7 +118,7 @@ spec:
           persistentVolumeClaim:
             claimName: release-name-vault-file
 ---
-# Source: vault/templates/all.tpl
+# Source: vault/templates/base.tpl
 apiVersion: "networking.k8s.io/v1"
 kind: Ingress
 metadata:
@@ -145,7 +145,7 @@ spec:
     - vault.example.local
     secretName: vault-tls-secret
 ---
-# Source: vault/templates/all.tpl
+# Source: vault/templates/base.tpl
 apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
 metadata:
