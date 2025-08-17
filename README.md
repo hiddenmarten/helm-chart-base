@@ -24,7 +24,7 @@ TODO list:
 Render template
 ```shell
 make dependency-update
-helm template ./examples/vault -n vault --debug > ./examples/vault/manifest.yaml
+helm template vault ./examples/vault -n vault --debug > ./examples/vault/manifest.yaml
 ```
 
 Install to vault namespace

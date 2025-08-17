@@ -36,9 +36,16 @@ Usage: {{ include "base.configMaps.content" (dict "postfix" $postfix "content" $
 {{- end }}
 {{ if $payload.data -}}
 {{ $_ := set $content "data" $payload.data -}}
+{{ else -}}
+{{ $_ := unset $content "data" -}}
 {{- end }}
 {{ if $payload.binaryData -}}
 {{ $_ := set $content "binaryData" $payload.binaryData -}}
+{{ else -}}
+{{ $_ := unset $content "binaryData" -}}
+{{- end }}
+{{ if not $content.metadata.annotations -}}
+{{ $_ := unset $content.metadata "annotations" -}}
 {{- end }}
 {{ tpl ($content | toYaml) $ctx }}
 {{- end }}

@@ -14,25 +14,23 @@ automountServiceAccountToken: true
 # Source: vault/templates/base.tpl
 apiVersion: v1
 kind: Secret
-metadata:
-  name: vault-env-vars
-  labels:
-    app.kubernetes.io/name: vault
-    app.kubernetes.io/instance: vault
-    helm.sh/chart: vault-0.1.0
-    app.kubernetes.io/managed-by: Helm
 data:
   VAULT_DEV_ROOT_TOKEN_ID: cm9vdA==
+metadata:
+  labels:
+    app.kubernetes.io/instance: vault
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: vault
+    helm.sh/chart: vault-0.1.0
+  name: vault-env-vars
 ---
 # Source: vault/templates/base.tpl
 apiVersion: v1
 kind: ConfigMap
-binaryData: {}
 data:
   ___vault___config.d___config.json: |
     {"disable_mlock":true,"storage":{"file":{"path":"/vault/file"}},"ui":true}
 metadata:
-  annotations: {}
   labels:
     app.kubernetes.io/instance: vault
     app.kubernetes.io/managed-by: Helm
@@ -144,22 +142,3 @@ spec:
   - hosts:
     - vault.example.local
     secretName: vault-tls-secret
----
-# Source: vault/templates/base.tpl
-apiVersion: monitoring.coreos.com/v1
-kind: ServiceMonitor
-metadata:
-  name: vault
-  labels:
-    app.kubernetes.io/name: vault
-    app.kubernetes.io/instance: vault
-    helm.sh/chart: vault-0.1.0
-    app.kubernetes.io/managed-by: Helm
-spec:
-  endpoints:
-  - path: /sys/metrics
-    port: http
-  selector:
-    matchLabels:
-      app.kubernetes.io/instance: vault
-      app.kubernetes.io/name: vault
