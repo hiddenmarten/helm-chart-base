@@ -1,54 +1,53 @@
-base-test:
-  image:
-    repository: hashicorp/vault
-    tag: 1.20.2
+image:
+  repository: hashicorp/vault
+  tag: 1.20.2
 
-  configMaps:
-    files:
-      data:
-        "/vault/config.d/config.json":
-          ui: true
-          disable_mlock: true
-          storage:
-            file:
-              path: /vault/file
+configMaps:
+  files:
+    data:
+      "/vault/config.d/config.json":
+        ui: true
+        disable_mlock: true
+        storage:
+          file:
+            path: /vault/file
 
-  secrets:
-    envVars:
-      data:
-        VAULT_DEV_ROOT_TOKEN_ID: root
+secrets:
+  envVars:
+    data:
+      VAULT_DEV_ROOT_TOKEN_ID: root
 
-  service:
-    spec:
-      ports:
+service:
+  spec:
+    ports:
+      http:
+        port: 8200
+
+ingress:
+  spec:
+    rules:
+      "vault.example.local":
+        tls:
+          secretName: vault-tls-secret
         http:
-          port: 8200
+          paths:
+            "/":
+              backend:
+                service:
+                  port:
+                    name: http
 
-  ingress:
+serviceMonitor:
+  spec:
+    endpoints:
+      http:
+        path: /sys/metrics
+
+persistentVolumeClaims:
+  file:
     spec:
-      rules:
-        "vault.example.local":
-          tls:
-            secretName: vault-tls-secret
-          http:
-            paths:
-              "/":
-                backend:
-                  service:
-                    port:
-                      name: http
-
-  serviceMonitor:
-    spec:
-      endpoints:
-        http:
-          path: /sys/metrics
-
-  persistentVolumeClaims:
-    file:
-      spec:
-        resources:
-          requests:
-            storage: 1Gi
-      mount:
-        mountPath: /vault/file
+      resources:
+        requests:
+          storage: 1Gi
+    mount:
+      mountPath: /vault/file

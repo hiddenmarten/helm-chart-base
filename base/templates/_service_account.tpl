@@ -22,6 +22,7 @@ imagePullSecrets: {{ tpl (toYaml .) $ctx | nindent 2 }}
 {{- with $sa.automountServiceAccountToken }}
 automountServiceAccountToken: {{ tpl (toYaml .) $ctx }}
 {{- end }}
+---
 {{- end }}
 {{- end }}
 

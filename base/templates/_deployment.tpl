@@ -84,4 +84,5 @@ spec:
       {{- with $val.tolerations }}
       tolerations: {{ tpl (toYaml .) $ctx | nindent 8 }}
       {{- end }}
+---
 {{- end }}

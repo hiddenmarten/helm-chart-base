@@ -4,6 +4,6 @@ description: A HashiCorp Vault helm chart using base
 type: application
 version: 0.1.0
 dependencies:
-  - name: base-test
+  - name: base
     version: 0.0.1
-    repository: file://../../base-test
+    repository: file://../../base

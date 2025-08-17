@@ -20,6 +20,7 @@ metadata:
   annotations: {{ tpl (toYaml .) $ctx | nindent 4 }}
   {{- end }}
 spec: {{ tpl (toYaml $val.serviceMonitor.spec) $ctx | nindent 2 }}
+---
 {{- end }}
 {{- end }}
 
