@@ -2,7 +2,7 @@
 
 TODO list:
 - Add custom labels support
-- Add tests for base-lib via base chart
+- Add tests for base via base chart
 - Implement statefulset support
 - Write chart examples:
   - single postgres
@@ -23,11 +23,11 @@ TODO list:
 Render template
 ```shell
 make dependency-update
-cd ../.. && helm template ./examples/vault
+helm template ./examples/vault > ./examples/vault/manifest.yaml
 ```
 
 Install to vault namespace
 ```shell
 make dependency-update
-cd ../.. && helm upgrade vault ./examples/vault -i -n vault --create-namespace
+helm upgrade vault ./examples/vault -i -n vault --create-namespace
 ```

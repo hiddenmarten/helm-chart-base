@@ -8,5 +8,5 @@ A Helm chart for creating a base workloads with configuration
 
 | Repository | Name | Version |
 |------------|------|---------|
-| file://../base-lib | base-lib | 0.0.1 |
+| file://../base | base | 0.0.1 |
 

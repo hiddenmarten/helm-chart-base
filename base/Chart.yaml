@@ -1,0 +1,5 @@
+apiVersion: v2
+name: base
+description: A base library for rendering base workloads with configuration
+type: library
+version: 0.0.1

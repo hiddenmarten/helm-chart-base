@@ -1,30 +1,30 @@
 {{/*
-Deployment template for base-library chart
-Usage: {{ include "base-lib.deployment" (dict "val" .Values "ctx" $) }}
+Deployment template for baserary chart
+Usage: {{ include "base.deployment" (dict "val" .Values "ctx" $) }}
 */}}
-{{ define "base-lib.deployment" -}}
+{{ define "base.deployment" -}}
 {{ $ctx := .ctx -}}
 {{ $val := .val -}}
-{{ $defaults := include "base-lib.defaults" (dict "ctx" $ctx) | fromYaml -}}
+{{ $defaults := include "base.defaults" (dict "ctx" $ctx) | fromYaml -}}
 {{ $val = mustMergeOverwrite $defaults $val -}}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "base-lib.fullname" (dict "ctx" $ctx) }}
-  labels: {{ include "base-lib.labels" (dict "ctx" $ctx) | nindent 4 }}
+  name: {{ include "base.fullname" (dict "ctx" $ctx) }}
+  labels: {{ include "base.labels" (dict "ctx" $ctx) | nindent 4 }}
 spec:
   {{- if not $val.autoscaling }}
   replicas: {{ tpl (toYaml $val.replicaCount) $ctx }}
   {{- end }}
   selector:
-    matchLabels: {{ include "base-lib.selectorLabels" (dict "ctx" $ctx) | nindent 6 }}
+    matchLabels: {{ include "base.selectorLabels" (dict "ctx" $ctx) | nindent 6 }}
   template:
     metadata:
       {{- with $val.pod.annotations }}
       annotations:
         {{ tpl (toYaml .) $ctx | nindent 8 }}
       {{- end }}
-      labels: {{ include "base-lib.labels" (dict "ctx" $ctx) | nindent 8 }}
+      labels: {{ include "base.labels" (dict "ctx" $ctx) | nindent 8 }}
         {{- with $val.pod.labels }}
         {{ tpl (toYaml .) $ctx | nindent 8 }}
         {{- end }}
@@ -32,12 +32,12 @@ spec:
       {{- with $val.imagePullSecrets }}
       imagePullSecrets: {{ tpl (toYaml .) $ctx | nindent 8 }}
       {{- end }}
-      serviceAccountName: {{ include "base-lib.serviceAccountName" (dict "val" $val.serviceAccount "ctx" $ctx) }}
+      serviceAccountName: {{ include "base.serviceAccountName" (dict "val" $val.serviceAccount "ctx" $ctx) }}
       {{- with $val.pod.securityContext }}
       securityContext: {{ tpl (toYaml .) $ctx | nindent 8 }}
       {{- end }}
       containers:
-        - name: {{ include "base-lib.name" (dict "ctx" $ctx) }}
+        - name: {{ include "base.name" (dict "ctx" $ctx) }}
           {{- with $val.securityContext }}
           securityContext: {{ tpl (toYaml .) $ctx | nindent 12 }}
           {{- end }}
@@ -66,15 +66,15 @@ spec:
           envFrom:
           {{- if $val.configMaps.envVars.data }}
             - configMapRef:
-                name: {{ include "base-lib.configMaps.name" (dict "postfix" "envVars" "ctx" $ctx) }}
+                name: {{ include "base.configMaps.name" (dict "postfix" "envVars" "ctx" $ctx) }}
           {{- end }}
           {{- if $val.secrets.envVars.data }}
             - secretRef:
-                name: {{ include "base-lib.secrets.name" (dict "postfix" "envVars" "ctx" $ctx) }}
+                name: {{ include "base.secrets.name" (dict "postfix" "envVars" "ctx" $ctx) }}
           {{- end }}
           {{- end }}
-{{ include "base-lib.volumeMounts" (dict "val" $val "ctx" $ctx) }}
-{{ include "base-lib.volumes" (dict "val" $val "ctx" $ctx) }}
+{{ include "base.volumeMounts" (dict "val" $val "ctx" $ctx) }}
+{{ include "base.volumes" (dict "val" $val "ctx" $ctx) }}
       {{- with $val.nodeSelector }}
       nodeSelector: {{ tpl (toYaml .) $ctx | nindent 8 }}
       {{- end }}

@@ -1,1 +1,1 @@
-{{ include "base-lib.configMaps" (dict "configMaps" .Values.configMaps "ctx" $) }}
+{{ include "base.configMaps" (dict "configMaps" .Values.configMaps "ctx" $) }}

@@ -1,20 +1,20 @@
 {{/*
-Service template for base-library chart
-Usage: {{ include "base-lib.service" (dict "service" .Values.service "ctx" $) }}
+Service template for baserary chart
+Usage: {{ include "base.service" (dict "service" .Values.service "ctx" $) }}
 */}}
-{{ define "base-lib.service" -}}
+{{ define "base.service" -}}
 {{ $service := .service -}}
 {{ $ctx := .ctx -}}
-{{ $defaults := include "base-lib.defaults" (dict "ctx" $ctx) | fromYaml -}}
+{{ $defaults := include "base.defaults" (dict "ctx" $ctx) | fromYaml -}}
 {{ $service = mustMergeOverwrite $defaults.service $service -}}
-{{ $ports := include "base-lib.service.ports" (dict "ports" $service.spec.ports "ctx" $ctx) | fromYaml -}}
+{{ $ports := include "base.service.ports" (dict "ports" $service.spec.ports "ctx" $ctx) | fromYaml -}}
 {{ $service = mustMergeOverwrite $service (dict "spec" $ports) -}}
 {{ if and $service.enabled $service.spec.ports -}}
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ include "base-lib.fullname" (dict "ctx" $ctx) }}
-  labels: {{ include "base-lib.labels" (dict "ctx" $ctx) | nindent 4 }}
+  name: {{ include "base.fullname" (dict "ctx" $ctx) }}
+  labels: {{ include "base.labels" (dict "ctx" $ctx) | nindent 4 }}
   {{- with $service.annotations }}
   annotations: {{ tpl (toYaml .) $ctx | nindent 4 }}
   {{- end }}
@@ -24,9 +24,9 @@ spec: {{ tpl (toYaml $service.spec) $ctx | nindent 2 }}
 
 {{/*
 Tempate rewriting ports as a map to ports as a list
-Usage: {{ include "base-lib.service" (dict "ports" $ports "ctx" $ctx) }}
+Usage: {{ include "base.service" (dict "ports" $ports "ctx" $ctx) }}
 */}}
-{{ define "base-lib.service.ports" -}}
+{{ define "base.service.ports" -}}
 {{ $ports := .ports -}}
 {{ $ctx := .ctx -}}
 {{ $portsList := list -}}

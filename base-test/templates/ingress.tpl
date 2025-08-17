@@ -1,1 +1,1 @@
-{{ include "base-lib.ingress" (dict "val" .Values "ctx" $) }}
+{{ include "base.ingress" (dict "val" .Values "ctx" $) }}

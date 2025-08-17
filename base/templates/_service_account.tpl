@@ -1,18 +1,18 @@
 {{/*
-ServiceAccount template for base-library chart
-Usage: {{ include "base-lib.serviceAccount" (dict "sa" .Values.serviceAccount "ctx" $) }}
+ServiceAccount template for baserary chart
+Usage: {{ include "base.serviceAccount" (dict "sa" .Values.serviceAccount "ctx" $) }}
 */}}
-{{ define "base-lib.serviceAccount" -}}
+{{ define "base.serviceAccount" -}}
 {{ $sa := .sa -}}
 {{ $ctx := .ctx -}}
-{{ $defaults := include "base-lib.defaults" (dict "ctx" $ctx) | fromYaml -}}
+{{ $defaults := include "base.defaults" (dict "ctx" $ctx) | fromYaml -}}
 {{ $sa = mustMergeOverwrite $defaults.serviceAccount $sa -}}
 {{- if $sa.create }}
 apiVersion: v1
 kind: ServiceAccount
 metadata:
-  name: {{ include "base-lib.serviceAccountName" (dict "sa" $sa "ctx" $ctx) }}
-  labels: {{ include "base-lib.labels" (dict "ctx" $ctx) | nindent 4 }}
+  name: {{ include "base.serviceAccountName" (dict "sa" $sa "ctx" $ctx) }}
+  labels: {{ include "base.labels" (dict "ctx" $ctx) | nindent 4 }}
   {{- with $sa.annotations }}
   annotations: {{ tpl (toYaml .) $ctx | nindent 4 }}
   {{- end }}
@@ -27,10 +27,10 @@ automountServiceAccountToken: {{ tpl (toYaml .) $ctx }}
 
 {{/*
 ServiceAccount template rendering the name of service account
-Usage: {{ include "base-lib.serviceAccount" (dict "sa" .Values.serviceAccount "ctx" $) }}
+Usage: {{ include "base.serviceAccount" (dict "sa" .Values.serviceAccount "ctx" $) }}
 */}}
-{{ define "base-lib.serviceAccountName" -}}
+{{ define "base.serviceAccountName" -}}
 {{ $sa := .sa -}}
 {{ $ctx := .ctx -}}
-{{ default (include "base-lib.fullname" (dict "ctx" $ctx)) $sa.name }}
+{{ default (include "base.fullname" (dict "ctx" $ctx)) $sa.name }}
 {{- end }}

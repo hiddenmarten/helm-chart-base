@@ -1,1 +1,1 @@
-{{ include "base-lib.deployment" (dict "val" .Values "ctx" $) }}
+{{ include "base.deployment" (dict "val" .Values "ctx" $) }}

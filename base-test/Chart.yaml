@@ -18,6 +18,6 @@ type: application
 version: 0.0.1
 
 dependencies:
-  - name: base-lib
+  - name: base
     version: 0.0.1
-    repository: file://../base-lib
+    repository: file://../base

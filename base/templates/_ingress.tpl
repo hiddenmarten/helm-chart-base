@@ -1,20 +1,20 @@
 {{/*
-Usage: {{ include "base-lib.ingress" (dict "val" .Values "ctx" $ctx) }}
+Usage: {{ include "base.ingress" (dict "val" .Values "ctx" $ctx) }}
 */}}
-{{ define "base-lib.ingress" -}}
+{{ define "base.ingress" -}}
 {{ $val := .val -}}
 {{ $ctx := .ctx -}}
-{{ $defaults := include "base-lib.defaults" (dict "ctx" $ctx) | fromYaml -}}
+{{ $defaults := include "base.defaults" (dict "ctx" $ctx) | fromYaml -}}
 {{ $val = mustMergeOverwrite $defaults $val -}}
-{{ $spec := include "base-lib.ingress.spec" (dict "spec" $val.ingress.spec "ctx" $ctx) | fromYaml -}}
+{{ $spec := include "base.ingress.spec" (dict "spec" $val.ingress.spec "ctx" $ctx) | fromYaml -}}
 {{ $valSpec := dict "ingress" (dict "spec" $spec) -}}
 {{ $val = mustMergeOverwrite $val $valSpec -}}
 {{- if and $val.ingress.enabled $val.ingress.spec.rules }}
 apiVersion: "networking.k8s.io/v1"
 kind: Ingress
 metadata:
-  name: {{ include "base-lib.fullname" (dict "ctx" $ctx) }}
-  labels: {{ include "base-lib.labels" (dict "ctx" $ctx) | nindent 4 }}
+  name: {{ include "base.fullname" (dict "ctx" $ctx) }}
+  labels: {{ include "base.labels" (dict "ctx" $ctx) | nindent 4 }}
   {{- with $val.ingress.annotations }}
   annotations: {{ tpl (toYaml .) $ctx | nindent 4 }}
   {{- end }}
@@ -24,21 +24,21 @@ spec: {{ tpl (toYaml $val.ingress.spec) $ctx | nindent 2 }}
 
 {{/*
 TLS sections template for ingress
-Usage: {{ include "base-lib.ingress.spec" (dict "spec" .Values.ingress.spec "ctx" $ctx) }}
+Usage: {{ include "base.ingress.spec" (dict "spec" .Values.ingress.spec "ctx" $ctx) }}
 */}}
-{{ define "base-lib.ingress.spec" -}}
+{{ define "base.ingress.spec" -}}
 {{ $spec := .spec -}}
 {{ $ctx := .ctx -}}
-{{ $spec = mustMergeOverwrite $spec (include "base-lib.ingress.tls" (dict "rules" $spec.rules "ctx" $ctx) | fromYaml) }}
-{{ $spec = mustMergeOverwrite $spec (include "base-lib.ingress.rules" (dict "rules" $spec.rules "ctx" $ctx) | fromYaml) }}
+{{ $spec = mustMergeOverwrite $spec (include "base.ingress.tls" (dict "rules" $spec.rules "ctx" $ctx) | fromYaml) }}
+{{ $spec = mustMergeOverwrite $spec (include "base.ingress.rules" (dict "rules" $spec.rules "ctx" $ctx) | fromYaml) }}
 {{ $spec | toYaml }}
 {{- end }}
 
 {{/*
 TLS sections template for ingress
-Usage: {{ include "base-lib.ingress.tls" (dict "rules" .Values.ingress.spec.rules "ctx" $ctx) }}
+Usage: {{ include "base.ingress.tls" (dict "rules" .Values.ingress.spec.rules "ctx" $ctx) }}
 */}}
-{{ define "base-lib.ingress.tls" -}}
+{{ define "base.ingress.tls" -}}
   {{ $rules := .rules -}}
   {{ $ctx := .ctx -}}
   {{ $tlsDict := dict -}}
@@ -61,14 +61,14 @@ Usage: {{ include "base-lib.ingress.tls" (dict "rules" .Values.ingress.spec.rule
 
 {{/*
 Rules sections template for ingress
-Usage: {{ include "base-lib.ingress.rules" (dict "rules" .Values.ingress.spec.rules "ctx" $ctx) }}
+Usage: {{ include "base.ingress.rules" (dict "rules" .Values.ingress.spec.rules "ctx" $ctx) }}
 */}}
-{{ define "base-lib.ingress.rules" -}}
+{{ define "base.ingress.rules" -}}
   {{ $rules := .rules -}}
   {{ $ctx := .ctx -}}
   {{ $rulesList := list -}}
   {{ range $k, $v := $rules -}}
-    {{ $rule := include "base-lib.ingress.rule.default" (dict "ctx" $ctx) | fromYaml -}}
+    {{ $rule := include "base.ingress.rule.default" (dict "ctx" $ctx) | fromYaml -}}
     {{ if $v -}}
     {{ $rule = mustMergeOverwrite $rule $v -}}
     {{ end -}}
@@ -80,7 +80,7 @@ Usage: {{ include "base-lib.ingress.rules" (dict "rules" .Values.ingress.spec.ru
     {{ end -}}
     {{ $pathsList := list -}}
     {{ range $kk, $vv := $rule.http.paths -}}
-      {{ $defaultPath := include "base-lib.ingress.path.default" (dict "ctx" $ctx) | fromYaml -}}
+      {{ $defaultPath := include "base.ingress.path.default" (dict "ctx" $ctx) | fromYaml -}}
       {{ $path := mustMergeOverwrite $defaultPath $vv -}}
       {{ $_ := set $path "path" $kk -}}
       {{ $pathsList = append $pathsList $path -}}
@@ -93,21 +93,21 @@ Usage: {{ include "base-lib.ingress.rules" (dict "rules" .Values.ingress.spec.ru
 
 {{/*
 Path section sctracture
-Usage: {{ include "base-lib.ingress.path.default" (dict "ctx" $ctx) }}
+Usage: {{ include "base.ingress.path.default" (dict "ctx" $ctx) }}
 */}}
-{{ define "base-lib.ingress.path.default" -}}
+{{ define "base.ingress.path.default" -}}
 {{ $ctx := .ctx -}}
 pathType: Prefix
 backend:
   service:
-    name: {{ include "base-lib.fullname" (dict "ctx" $ctx) }}
+    name: {{ include "base.fullname" (dict "ctx" $ctx) }}
 {{- end }}
 
 {{/*
 Rule section sctracture
-Usage: {{ include "base-lib.ingress.path.default" (dict "ctx" $ctx) }}
+Usage: {{ include "base.ingress.path.default" (dict "ctx" $ctx) }}
 */}}
-{{ define "base-lib.ingress.rule.default" -}}
+{{ define "base.ingress.rule.default" -}}
 {{ $ctx := .ctx -}}
 host: ""
 http:

@@ -1,8 +1,8 @@
 {{/*
 Expand the name of the chart.
-Usage: {{ include "base-lib.name" (dict "ctx" $) }}
+Usage: {{ include "base.name" (dict "ctx" $) }}
 */}}
-{{ define "base-lib.name" -}}
+{{ define "base.name" -}}
 {{ $ctx := .ctx -}}
 {{ default $ctx.Chart.Name $ctx.Values.nameOverride | trunc 63 | trimSuffix "-" }}
 {{- end }}
@@ -11,9 +11,9 @@ Usage: {{ include "base-lib.name" (dict "ctx" $) }}
 Create a default fully qualified val name.
 We truncate at 63 chars because some Kubernetes name fields are limited to this (by the DNS naming spec).
 If release name contains chart name it will be used as a full name.
-Usage: {{ include "base-lib.fullname" (dict "ctx" $) }}
+Usage: {{ include "base.fullname" (dict "ctx" $) }}
 */}}
-{{ define "base-lib.fullname" -}}
+{{ define "base.fullname" -}}
 {{ $ctx := .ctx -}}
 {{- if $ctx.Values.fullnameOverride }}
 {{ $ctx.Values.fullnameOverride | trunc 63 | trimSuffix "-" }}
@@ -29,30 +29,30 @@ Usage: {{ include "base-lib.fullname" (dict "ctx" $) }}
 
 {{/*
 Create chart name and version as used by the chart label.
-Usage: {{ include "base-lib.chart" (dict "ctx" $) }}
+Usage: {{ include "base.chart" (dict "ctx" $) }}
 */}}
-{{ define "base-lib.chart" -}}
+{{ define "base.chart" -}}
 {{ $ctx := .ctx -}}
 {{ printf "%s-%s" $ctx.Chart.Name $ctx.Chart.Version | replace "+" "_" | trunc 63 | trimSuffix "-" }}
 {{- end }}
 
 {{/*
 Selector labels
-Usage: {{ include "base-lib.selectorLabels" (dict "ctx" $) }}
+Usage: {{ include "base.selectorLabels" (dict "ctx" $) }}
 */}}
-{{ define "base-lib.selectorLabels" -}}
+{{ define "base.selectorLabels" -}}
 {{ $ctx := .ctx -}}
-app.kubernetes.io/name: {{ include "base-lib.name" (dict "ctx" $ctx) }}
+app.kubernetes.io/name: {{ include "base.name" (dict "ctx" $ctx) }}
 app.kubernetes.io/instance: {{ $ctx.Release.Name }}
 {{- end }}
 
 {{/*
 Common labels
-Usage: {{ include "base-lib.labels" (dict "ctx" $) }}
+Usage: {{ include "base.labels" (dict "ctx" $) }}
 */}}
-{{ define "base-lib.labels" -}}
+{{ define "base.labels" -}}
 {{ $ctx := .ctx -}}
-{{ include "base-lib.selectorLabels" (dict "ctx" $ctx) }}
-helm.sh/chart: {{ include "base-lib.chart" (dict "ctx" $ctx) }}
+{{ include "base.selectorLabels" (dict "ctx" $ctx) }}
+helm.sh/chart: {{ include "base.chart" (dict "ctx" $ctx) }}
 app.kubernetes.io/managed-by: {{ $ctx.Release.Service }}
 {{- end }}

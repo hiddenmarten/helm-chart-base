@@ -1,10 +1,10 @@
 {{/*
-Default template for base-library chart
-Usage: {{ include "base-lib.defaults" (dict "ctx" $ctx) }}
+Default template for baserary chart
+Usage: {{ include "base.defaults" (dict "ctx" $ctx) }}
 */}}
-{{ define "base-lib.defaults" -}}
+{{ define "base.defaults" -}}
 {{ $ctx := .ctx }}
-# Default values for base-lib.
+# Default values for base.
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 

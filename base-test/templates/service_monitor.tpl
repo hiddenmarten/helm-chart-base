@@ -1,1 +1,1 @@
-{{ include "base-lib.servicemonitor" (dict "val" .Values "ctx" $) }}
+{{ include "base.servicemonitor" (dict "val" .Values "ctx" $) }}

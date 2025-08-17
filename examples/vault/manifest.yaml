@@ -1,30 +1,30 @@
 ---
-# Source: vault/charts/base/templates/service_account.tpl
+# Source: vault/charts/base-test/templates/service_account.tpl
 apiVersion: v1
 kind: ServiceAccount
 metadata:
-  name: release-name-base
+  name: release-name-base-test
   labels:
-    app.kubernetes.io/name: base
+    app.kubernetes.io/name: base-test
     app.kubernetes.io/instance: release-name
-    helm.sh/chart: base-0.0.1
+    helm.sh/chart: base-test-0.0.1
     app.kubernetes.io/managed-by: Helm
 automountServiceAccountToken: true
 ---
-# Source: vault/charts/base/templates/secrets.tpl
+# Source: vault/charts/base-test/templates/secrets.tpl
 apiVersion: v1
 kind: Secret
 metadata:
-  name: release-name-base-env-vars
+  name: release-name-base-test-env-vars
   labels:
-    app.kubernetes.io/name: base
+    app.kubernetes.io/name: base-test
     app.kubernetes.io/instance: release-name
-    helm.sh/chart: base-0.0.1
+    helm.sh/chart: base-test-0.0.1
     app.kubernetes.io/managed-by: Helm
 data:
   VAULT_DEV_ROOT_TOKEN_ID: cm9vdA==
 ---
-# Source: vault/charts/base/templates/config_maps.tpl
+# Source: vault/charts/base-test/templates/config_maps.tpl
 apiVersion: v1
 kind: ConfigMap
 binaryData: {}
@@ -36,19 +36,19 @@ metadata:
   labels:
     app.kubernetes.io/instance: release-name
     app.kubernetes.io/managed-by: Helm
-    app.kubernetes.io/name: base
-    helm.sh/chart: base-0.0.1
-  name: release-name-base-files
+    app.kubernetes.io/name: base-test
+    helm.sh/chart: base-test-0.0.1
+  name: release-name-base-test-files
 ---
-# Source: vault/charts/base/templates/persistent_volume_claims.tpl
+# Source: vault/charts/base-test/templates/persistent_volume_claims.tpl
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: release-name-base-file
+  name: release-name-base-test-file
   labels:
-    app.kubernetes.io/name: base
+    app.kubernetes.io/name: base-test
     app.kubernetes.io/instance: release-name
-    helm.sh/chart: base-0.0.1
+    helm.sh/chart: base-test-0.0.1
     app.kubernetes.io/managed-by: Helm
 spec:
   accessModes:
@@ -57,52 +57,52 @@ spec:
     requests:
       storage: 1Gi
 ---
-# Source: vault/charts/base/templates/service.tpl
+# Source: vault/charts/base-test/templates/service.tpl
 apiVersion: v1
 kind: Service
 metadata:
-  name: release-name-base
+  name: release-name-base-test
   labels:
-    app.kubernetes.io/name: base
+    app.kubernetes.io/name: base-test
     app.kubernetes.io/instance: release-name
-    helm.sh/chart: base-0.0.1
+    helm.sh/chart: base-test-0.0.1
     app.kubernetes.io/managed-by: Helm
 spec:
   ports:
   - name: http
     port: 8200
 ---
-# Source: vault/charts/base/templates/deployment.tpl
+# Source: vault/charts/base-test/templates/deployment.tpl
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: release-name-base
+  name: release-name-base-test
   labels:
-    app.kubernetes.io/name: base
+    app.kubernetes.io/name: base-test
     app.kubernetes.io/instance: release-name
-    helm.sh/chart: base-0.0.1
+    helm.sh/chart: base-test-0.0.1
     app.kubernetes.io/managed-by: Helm
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app.kubernetes.io/name: base
+      app.kubernetes.io/name: base-test
       app.kubernetes.io/instance: release-name
   template:
     metadata:
       labels:
-        app.kubernetes.io/name: base
+        app.kubernetes.io/name: base-test
         app.kubernetes.io/instance: release-name
-        helm.sh/chart: base-0.0.1
+        helm.sh/chart: base-test-0.0.1
         app.kubernetes.io/managed-by: Helm
     spec:
-      serviceAccountName: release-name-base
+      serviceAccountName: release-name-base-test
       containers:
-        - name: base
+        - name: base-test
           image: "hashicorp/vault:1.20.2"
           envFrom:
             - secretRef:
-                name: release-name-base-env-vars
+                name: release-name-base-test-env-vars
           volumeMounts:
             - mountPath: /vault/config.d/config.json
               name: config-map-files
@@ -112,21 +112,21 @@ spec:
               name: persistent-volume-claim-file
       volumes:
         - configMap:
-            name: release-name-base-files
+            name: release-name-base-test-files
           name: config-map-files
         - name: persistent-volume-claim-file
           persistentVolumeClaim:
-            claimName: release-name-base-file
+            claimName: release-name-base-test-file
 ---
-# Source: vault/charts/base/templates/ingress.tpl
+# Source: vault/charts/base-test/templates/ingress.tpl
 apiVersion: "networking.k8s.io/v1"
 kind: Ingress
 metadata:
-  name: release-name-base
+  name: release-name-base-test
   labels:
-    app.kubernetes.io/name: base
+    app.kubernetes.io/name: base-test
     app.kubernetes.io/instance: release-name
-    helm.sh/chart: base-0.0.1
+    helm.sh/chart: base-test-0.0.1
     app.kubernetes.io/managed-by: Helm
 spec:
   rules:
@@ -135,7 +135,7 @@ spec:
       paths:
       - backend:
           service:
-            name: release-name-base
+            name: release-name-base-test
             port:
               name: http
         path: /
@@ -145,15 +145,15 @@ spec:
     - vault.example.local
     secretName: vault-tls-secret
 ---
-# Source: vault/charts/base/templates/service_monitor.tpl
+# Source: vault/charts/base-test/templates/service_monitor.tpl
 apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
 metadata:
-  name: release-name-base
+  name: release-name-base-test
   labels:
-    app.kubernetes.io/name: base
+    app.kubernetes.io/name: base-test
     app.kubernetes.io/instance: release-name
-    helm.sh/chart: base-0.0.1
+    helm.sh/chart: base-test-0.0.1
     app.kubernetes.io/managed-by: Helm
 spec:
   endpoints:
@@ -162,4 +162,4 @@ spec:
   selector:
     matchLabels:
       app.kubernetes.io/instance: release-name
-      app.kubernetes.io/name: base
+      app.kubernetes.io/name: base-test
