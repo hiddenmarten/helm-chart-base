@@ -1,0 +1,119 @@
+suite: All-in-one template tests
+templates:
+  - templates/all_in_one.tpl
+
+tests:
+  - it: renders all-in-one with basic configuration and default release name
+    set:
+      image:
+        repository: nginx
+        tag: latest
+    asserts:
+      - hasDocuments:
+          count: 2
+      - equal:
+          path: metadata.name
+          value: RELEASE-NAME-base-test
+          documentIndex: 0
+      - equal:
+          path: metadata.name
+          value: RELEASE-NAME-base-test
+          documentIndex: 1
+
+  - it: renders all-in-one with custom release name
+    release:
+      name: custom-release
+    set:
+      image:
+        repository: nginx
+        tag: latest
+    asserts:
+      - hasDocuments:
+          count: 2
+      - equal:
+          path: metadata.name
+          value: custom-release-base-test
+          documentIndex: 0
+      - equal:
+          path: metadata.name
+          value: custom-release-base-test
+          documentIndex: 1
+
+  - it: renders all-in-one with custom namespace
+    release:
+      namespace: custom-namespace
+    set:
+      image:
+        repository: nginx
+        tag: latest
+    asserts:
+      - hasDocuments:
+          count: 2
+      - equal:
+          path: metadata.name
+          value: RELEASE-NAME-base-test
+          documentIndex: 0
+      - equal:
+          path: metadata.name
+          value: RELEASE-NAME-base-test
+          documentIndex: 1
+
+  - it: renders all-in-one with custom release name and namespace
+    release:
+      name: my-custom-app
+      namespace: production
+    set:
+      image:
+        repository: nginx
+        tag: latest
+    asserts:
+      - hasDocuments:
+          count: 2
+      - equal:
+          path: metadata.name
+          value: my-custom-app-base-test
+          documentIndex: 0
+      - equal:
+          path: metadata.name
+          value: my-custom-app-base-test
+          documentIndex: 1
+
+  - it: renders all-in-one with fullnameOverride and custom release name
+    release:
+      name: custom-release
+    set:
+      image:
+        repository: nginx
+        tag: latest
+      fullnameOverride: overridden-name
+    asserts:
+      - hasDocuments:
+          count: 2
+      - equal:
+          path: metadata.name
+          value: overridden-name
+          documentIndex: 0
+      - equal:
+          path: metadata.name
+          value: overridden-name
+          documentIndex: 1
+
+  - it: renders all-in-one with nameOverride and custom release name
+    release:
+      name: custom-release
+    set:
+      image:
+        repository: nginx
+        tag: latest
+      nameOverride: custom-base
+    asserts:
+      - hasDocuments:
+          count: 2
+      - equal:
+          path: metadata.name
+          value: custom-release-custom-base
+          documentIndex: 0
+      - equal:
+          path: metadata.name
+          value: custom-release-custom-base
+          documentIndex: 1
