@@ -21,7 +21,7 @@ tests:
           of: ConfigMap
       - equal:
           path: metadata.name
-          value: RELEASE-NAME-base-files
+          value: RELEASE-NAME-base-test-files
       - equal:
           path: data["___app___file.txt"]
           value: |
@@ -51,7 +51,7 @@ tests:
           of: ConfigMap
       - equal:
           path: metadata.name
-          value: RELEASE-NAME-base-env-vars
+          value: RELEASE-NAME-base-test-env-vars
       - equal:
           path: data.DATABASE_URL
           value: postgresql://localhost:5432/mydb
@@ -88,7 +88,7 @@ tests:
           of: ConfigMap
       - equal:
           path: metadata.name
-          value: RELEASE-NAME-base-custom-config
+          value: RELEASE-NAME-base-test-custom-config
       - equal:
           path: data.key1
           value: value1
@@ -159,7 +159,7 @@ tests:
           of: ConfigMap
       - equal:
           path: metadata.name
-          value: RELEASE-NAME-base-custom-config
+          value: RELEASE-NAME-base-test-custom-config
       - equal:
           path: metadata.labels.environment
           value: production
@@ -171,7 +171,7 @@ tests:
           value: v1.2.3
       - equal:
           path: metadata.labels["app.kubernetes.io/name"]
-          value: base
+          value: base-test
       - equal:
           path: metadata.labels["app.kubernetes.io/instance"]
           value: RELEASE-NAME

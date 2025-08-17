@@ -22,7 +22,7 @@ tests:
           content:
             name: config-map-files
             configMap:
-              name: RELEASE-NAME-base-files
+              name: RELEASE-NAME-base-test-files
       - contains:
           path: spec.template.spec.containers[0].volumeMounts
           content:
@@ -48,7 +48,7 @@ tests:
           content:
             name: secret-files
             secret:
-              secretName: RELEASE-NAME-base-files
+              secretName: RELEASE-NAME-base-test-files
       - contains:
           path: spec.template.spec.containers[0].volumeMounts
           content:
@@ -78,7 +78,7 @@ tests:
           content:
             name: persistent-volume-claim-data
             persistentVolumeClaim:
-              claimName: RELEASE-NAME-base-data
+              claimName: RELEASE-NAME-base-test-data
       - contains:
           path: spec.template.spec.containers[0].volumeMounts
           content:
@@ -139,16 +139,16 @@ tests:
           content:
             name: config-map-files
             configMap:
-              name: RELEASE-NAME-base-files
+              name: RELEASE-NAME-base-test-files
       - contains:
           path: spec.template.spec.volumes
           content:
             name: secret-files
             secret:
-              secretName: RELEASE-NAME-base-files
+              secretName: RELEASE-NAME-base-test-files
       - contains:
           path: spec.template.spec.volumes
           content:
             name: persistent-volume-claim-data
             persistentVolumeClaim:
-              claimName: RELEASE-NAME-base-data
+              claimName: RELEASE-NAME-base-test-data

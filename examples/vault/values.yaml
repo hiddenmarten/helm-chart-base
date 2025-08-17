@@ -1,4 +1,4 @@
-base:
+base-test:
   image:
     repository: hashicorp/vault
     tag: 1.20.2

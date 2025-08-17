@@ -16,7 +16,7 @@ tests:
           of: ServiceMonitor
       - equal:
           path: metadata.name
-          value: RELEASE-NAME-base
+          value: RELEASE-NAME-base-test
       - equal:
           path: spec.endpoints[0].port
           value: 9090
@@ -161,7 +161,7 @@ tests:
           of: ServiceMonitor
       - equal:
           path: metadata.name
-          value: RELEASE-NAME-base
+          value: RELEASE-NAME-base-test
 
   - it: should not render annotations when empty
     set:
@@ -189,7 +189,7 @@ tests:
           of: ServiceMonitor
       - equal:
           path: spec.selector.matchLabels["app.kubernetes.io/name"]
-          value: base
+          value: base-test
       - equal:
           path: spec.selector.matchLabels["app.kubernetes.io/instance"]
           value: RELEASE-NAME

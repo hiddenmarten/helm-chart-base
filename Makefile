@@ -82,16 +82,16 @@ helm-unittest: helm $(HELM_PLUGINS)
 ##@ Development
 .PHONY: dependency-update
 dependency-update: helm ## Run helm lint over chart
-	cd base && $(HELM) dependency update
+	cd base-test && $(HELM) dependency update
 	cd examples/vault && $(HELM) dependency update
 
 .PHONY: lint
 lint: helm ## Run helm lint over chart
-	$(HELM) lint base
+	$(HELM) lint base-test
 
 .PHONY: schema
 schema: helm-schema ## Run helm schema over chart
-	cd base && $(HELM) schema
+	cd base-test && $(HELM) schema
 
 .PHONY: docs
 docs: helm-docs ## Run helm schema over chart
@@ -99,4 +99,4 @@ docs: helm-docs ## Run helm schema over chart
 
 .PHONY: unittest
 unittest: helm-unittest ## Run helm unittests over chart
-	$(HELM) unittest base
+	$(HELM) unittest base-test

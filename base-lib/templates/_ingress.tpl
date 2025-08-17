@@ -1,5 +1,4 @@
 {{/*
-Ingress template for base-library chart
 Usage: {{ include "base-lib.ingress" (dict "val" .Values "ctx" $ctx) }}
 */}}
 {{ define "base-lib.ingress" -}}

@@ -22,14 +22,12 @@ TODO list:
 
 Render template
 ```shell
-cd base && helm dependency update
-cd ../examples/vault && helm dependency update
+make dependency-update
 cd ../.. && helm template ./examples/vault
 ```
 
 Install to vault namespace
 ```shell
-cd base && helm dependency update
-cd ../examples/vault && helm dependency update
+make dependency-update
 cd ../.. && helm upgrade vault ./examples/vault -i -n vault --create-namespace
 ```
