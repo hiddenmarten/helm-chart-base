@@ -1,7 +1,6 @@
 # helm-chart-base
 
 TODO list:
-- Add test for custom release-name (and namespace?) in all_in_one tests.
 - Add custom labels support
 - Add tests for base via base chart
 - Implement statefulset support

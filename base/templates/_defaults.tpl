@@ -67,12 +67,11 @@ pod:
   # fsGroup: 2000
 
 # This is for setting up a service more information can be found here: https://kubernetes.io/docs/concepts/services-networking/service/
-service:
-  enabled: true
-  annotations: {}
-  spec:
-    # This sets the ports more information can be found here: https://kubernetes.io/docs/concepts/services-networking/service/#field-spec-ports
-    ports: {}
+service: {}
+#  spec:
+#    ports:
+#      http:
+#        port: 8080
 
 # This is for setting up ingress more information can be found here: https://kubernetes.io/docs/concepts/services-networking/ingress/
 ingress:

@@ -59,16 +59,19 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: vault
   labels:
-    app.kubernetes.io/name: vault
     app.kubernetes.io/instance: vault
-    helm.sh/chart: vault-0.1.0
     app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: vault
+    helm.sh/chart: vault-0.1.0
+  name: vault
 spec:
   ports:
   - name: http
     port: 8200
+  selector:
+    app.kubernetes.io/instance: vault
+    app.kubernetes.io/name: vault
 ---
 # Source: vault/templates/base.tpl
 apiVersion: apps/v1

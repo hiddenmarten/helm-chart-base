@@ -5,27 +5,44 @@ Usage: {{ include "base.service" (dict "service" .Values.service "ctx" $) }}
 {{ define "base.service" -}}
 {{ $service := .service -}}
 {{ $ctx := .ctx -}}
-{{ $defaults := include "base.defaults" (dict "ctx" $ctx) | fromYaml -}}
-{{ $service = mustMergeOverwrite $defaults.service $service -}}
-{{ $ports := include "base.service.ports" (dict "ports" $service.spec.ports "ctx" $ctx) | fromYaml -}}
-{{ $service = mustMergeOverwrite $service (dict "spec" $ports) -}}
-{{ if and $service.enabled $service.spec.ports -}}
+{{ $content := include "base.service.content" (dict "content" $service "ctx" $ctx) | fromYaml -}}
+{{ if and $content.enabled $content.spec.ports -}}
 apiVersion: v1
 kind: Service
-metadata:
-  name: {{ include "base.fullname" (dict "ctx" $ctx) }}
-  labels: {{ include "base.labels" (dict "ctx" $ctx) | nindent 4 }}
-  {{- with $service.annotations }}
-  annotations: {{ tpl (toYaml .) $ctx | nindent 4 }}
-  {{- end }}
-spec: {{ tpl (toYaml $service.spec) $ctx | nindent 2 }}
+{{ $_ := unset $content "enabled" -}}
+{{ $content | toYaml }}
 ---
 {{- end }}
 {{- end }}
 
 {{/*
-Tempate rewriting ports as a map to ports as a list
-Usage: {{ include "base.service" (dict "ports" $ports "ctx" $ctx) }}
+Usage: {{ include "base.service.content" (dict "content" $content "ctx" $ctx) }}
+*/}}
+{{ define "base.service.content" -}}
+{{ $content := .content -}}
+{{ $ctx := .ctx -}}
+{{ $defaultContent := include "base.service.default.content" (dict "ctx" $ctx) | fromYaml -}}
+{{ $payload := include "base.service.payload" (dict "content" $content "ctx" $ctx) | fromYaml -}}
+{{ $content = mustMergeOverwrite $defaultContent $content $payload -}}
+{{ if not $content.metadata.annotations -}}
+{{ $_ := unset $content.metadata "annotations" -}}
+{{- end }}
+{{ tpl ($content | toYaml) $ctx }}
+{{- end }}
+
+{{/*
+Usage: {{ include "base.service.payload" (dict "content" $content "ctx" $ctx) }}
+*/}}
+{{ define "base.service.payload" -}}
+{{ $content := .content -}}
+{{ $ctx := .ctx -}}
+{{ $ports := include "base.service.ports" (dict "ports" $content.spec.ports "ctx" $ctx) | fromYaml -}}
+{{ $payload := dict "spec" $ports -}}
+{{ $payload | toYaml | nindent 2 }}
+{{- end }}
+
+{{/*
+Usage: {{ include "base.service.ports" (dict "ports" $ports "ctx" $ctx) }}
 */}}
 {{ define "base.service.ports" -}}
 {{ $ports := .ports -}}
@@ -41,4 +58,19 @@ Usage: {{ include "base.service" (dict "ports" $ports "ctx" $ctx) }}
 {{ if $portsList -}}
 ports: {{ $portsList | toYaml | nindent 2 }}
 {{- end }}
+{{- end }}
+
+{{/*
+Usage: {{ include "base.service.default.content" (dict "ctx" $ctx) }}
+*/}}
+{{ define "base.service.default.content" -}}
+{{ $ctx := .ctx -}}
+enabled: true
+metadata:
+  name: {{ include "base.fullname" (dict "ctx" $ctx) }}
+  labels: {{ include "base.labels" (dict "ctx" $ctx) | nindent 4 }}
+  annotations: {}
+spec:
+  ports: {}
+  selector: {{ include "base.selectorLabels" (dict "ctx" $ctx) | nindent 4 }}
 {{- end }}

@@ -69,8 +69,6 @@ tests:
           value: LoadBalancer
 
   - it: renders a Service with selector labels
-    skip:
-      reason: "Need to verify implementation"
     set:
       service:
         spec:
