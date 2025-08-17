@@ -1,6 +1,8 @@
 # helm-chart-base
 
 TODO list:
+- refactor ingress
+- refactor pvcs
 - Add custom labels support
 - Add tests for base via base chart
 - Implement statefulset support
