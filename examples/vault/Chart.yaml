@@ -1,6 +1,6 @@
 apiVersion: v2
 name: vault
-description: A HashiCorp Vault helm chart using base
+description: A HashiCorp Vault using base library
 type: application
 version: 0.1.0
 dependencies:

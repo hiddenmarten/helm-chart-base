@@ -1,6 +1,7 @@
 # helm-chart-base
 
 TODO list:
+- Add test for custom release-name (and namespace?) in all_in_one tests.
 - Add custom labels support
 - Add tests for base via base chart
 - Implement statefulset support
@@ -23,11 +24,11 @@ TODO list:
 Render template
 ```shell
 make dependency-update
-helm template ./examples/vault > ./examples/vault/manifest.yaml
+helm template ./examples/vault -n vault --debug > ./examples/vault/manifest.yaml
 ```
 
 Install to vault namespace
 ```shell
 make dependency-update
-helm upgrade vault ./examples/vault -i -n vault --create-namespace
+helm upgrade vault ./examples/vault -i -n vault --create-namespace --debug
 ```

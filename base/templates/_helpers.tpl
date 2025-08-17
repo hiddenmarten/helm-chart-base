@@ -13,18 +13,18 @@ We truncate at 63 chars because some Kubernetes name fields are limited to this 
 If release name contains chart name it will be used as a full name.
 Usage: {{ include "base.fullname" (dict "ctx" $) }}
 */}}
-{{ define "base.fullname" -}}
-{{ $ctx := .ctx -}}
-{{- if $ctx.Values.fullnameOverride }}
+{{- define "base.fullname" -}}
+{{- $ctx := .ctx -}}
+{{- if $ctx.Values.fullnameOverride -}}
 {{ $ctx.Values.fullnameOverride | trunc 63 | trimSuffix "-" }}
-{{ else -}}
-{{- $name := default $ctx.Chart.Name $ctx.Values.nameOverride }}
-{{- if contains $name $ctx.Release.Name }}
+{{- else -}}
+{{ $name := default $ctx.Chart.Name $ctx.Values.nameOverride -}}
+{{- if contains $name $ctx.Release.Name -}}
 {{ $ctx.Release.Name | trunc 63 | trimSuffix "-" }}
-{{ else -}}
+{{- else -}}
 {{ printf "%s-%s" $ctx.Release.Name $name | trunc 63 | trimSuffix "-" }}
-{{- end }}
-{{- end }}
+{{- end -}}
+{{- end -}}
 {{- end }}
 
 {{/*
