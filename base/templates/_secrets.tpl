@@ -97,9 +97,24 @@ Usage: {{ include "base.secrets.files.payload" (dict "content" $content "ctx" $c
 {{/*
 Usage: {{ include "base.secrets.files.name" (dict "ctx" $ctx) }}
 */}}
-{{ define "base.secrets.files.name" -}}
+{{ define "base.secrets.files.volume.name" -}}
 {{ $ctx := .ctx -}}
 {{ print "secret-files" }}
+{{- end }}
+
+{{/*
+Usage: {{ include "base.volumes.configMap.volumes" (dict "ctx" $ctx) }}
+*/}}
+{{ define "base.secrets.files.volumes" -}}
+{{ $ctx := .ctx -}}
+{{ $content := .content -}}
+{{ $defaultContent := include "base.secrets.default.content" (dict "postfix" "files" "ctx" $ctx) | fromYaml -}}
+{{ $content = mustMergeOverwrite $defaultContent $content -}}
+{{ $volumes := list -}}
+{{ if and $content.enabled $content.data -}}
+{{ $volumes = append $volumes (include "base.secrets.files.volume" (dict "ctx" $ctx) | fromYaml) -}}
+{{- end }}
+volumes: {{ $volumes | toYaml | nindent 2 }}
 {{- end }}
 
 {{/*
@@ -107,7 +122,7 @@ Usage: {{ include "base.secrets.files.volume" (dict "ctx" $ctx) }}
 */}}
 {{ define "base.secrets.files.volume" -}}
 {{ $ctx := .ctx -}}
-name: {{ include "base.secrets.files.name" (dict "ctx" $ctx) }}
+name: {{ include "base.secrets.files.volume.name" (dict "ctx" $ctx) }}
 secret:
   secretName: {{ include "base.secrets.name" (dict "postfix" "files" "ctx" $ctx) }}
 {{- end }}
@@ -116,14 +131,18 @@ secret:
 Usage: {{ include "base.secrets.files.volumeMounts" (dict "files" $files "ctx" $ctx) }}
 */}}
 {{ define "base.secrets.files.volumeMounts" -}}
-{{ $files := .files -}}
+{{ $content := .content -}}
 {{ $ctx := .ctx -}}
+{{ $defaultContent := include "base.secrets.default.content" (dict "postfix" "files" "ctx" $ctx) | fromYaml -}}
+{{ $content = mustMergeOverwrite $defaultContent $content -}}
 {{ $mounts := list -}}
-{{ range $path, $_ := $files.data -}}
-{{ $name := include "base.secrets.files.name" (dict "ctx" $ctx) -}}
+{{ if and $content.enabled $content.data -}}
+{{ range $path, $_ := $content.data -}}
+{{ $name := include "base.secrets.files.volume.name" (dict "ctx" $ctx) -}}
 {{ $defaultMount := include "base.volumeMounts.files.default" (dict "path" $path "name" $name "ctx" $ctx) | fromYaml -}}
-{{ $mount := mustMergeOverwrite $defaultMount $files.mount -}}
+{{ $mount := mustMergeOverwrite $defaultMount $content.mount -}}
 {{ $mounts = append $mounts $mount -}}
+{{- end }}
 {{- end }}
 volumeMounts: {{ $mounts | toYaml | nindent 2 }}
 {{- end }}

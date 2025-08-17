@@ -46,14 +46,9 @@ readinessProbe: {}
 imagePullSecrets: []
 
 # This section builds out the service account more information can be found here: https://kubernetes.io/docs/concepts/security/service-accounts/
-serviceAccount:
-  create: true
-  # Automatically mount a ServiceAccount's API credentials?
-  automountServiceAccountToken: true
-  # Annotations to add to the service account
-  annotations: {}
-  # Name of ServiceAccount
-  # name: ""
+serviceAccount: {}
+#  create: true
+#  annotations: {}
 
 pod:
   # This is for setting Kubernetes Annotations to a Pod.
@@ -92,13 +87,9 @@ ingress:
   #                port:
   #                  number: 8080
 
-serviceMonitor:
-  enabled: true
-  annotations: {}
-  spec:
-    selector:
-      matchLabels: {}
-    endpoints: {}
+serviceMonitor: {}
+#  spec:
+#    endpoints:
 #      http:
 #        path: /metrics
 #        interval: 30s
@@ -123,16 +114,11 @@ configMaps:
 
 # Secrets to render
 secrets:
-  envVars:
-    enabled: true
-    annotations: {}
-    data: {}
+  envVars: {}
+#    data:
 #      SECRET_ENV_VAR_KEY: "SECRET_ENV_VAR_VALUE"
-  files:
-    enabled: true
-    annotations: {}
-    mount: {}
-    data: {}
+  files: {}
+#    data:
 #      "/app/secret.json":
 #        key: value
 #      "/app/secret.yaml":

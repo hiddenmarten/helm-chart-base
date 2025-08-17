@@ -10,9 +10,9 @@ Usage: {{ include "base.volumes" (dict "val" $val "ctx" $ctx) }}
 {{ range $cmVolumes.volumes -}}
 {{ $volumes = append $volumes . -}}
 {{ end -}}
-{{ if and $val.secrets.files.enabled $val.secrets.files.data -}}
-{{ $volume := include "base.secrets.files.volume" (dict "ctx" $ctx) | fromYaml -}}
-{{ $volumes = append $volumes $volume -}}
+{{ $secretVolumes := include "base.secrets.files.volumes" (dict "content" $val.secrets.files "ctx" $ctx) | fromYaml -}}
+{{ range $secretVolumes.volumes -}}
+{{ $volumes = append $volumes . -}}
 {{ end -}}
 {{ if $val.persistentVolumeClaims -}}
 {{ range $k, $_ := $val.persistentVolumeClaims -}}
