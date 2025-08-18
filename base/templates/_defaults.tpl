@@ -69,12 +69,10 @@ service: {}
 #        port: 8080
 
 # This is for setting up ingress more information can be found here: https://kubernetes.io/docs/concepts/services-networking/ingress/
-ingress:
-  enabled: true
+ingress: {}
   # ingressClassName: ""
-  annotations: {}
-  spec:
-    rules: {}
+  # spec:
+  #  rules:
   #    "chart-example.local":
   #      tls:
   #        secretName: chart-example-tls

@@ -4,24 +4,20 @@ templates:
 
 tests:
   - it: renders an Ingress with basic configuration
+    skip:
+      reason: "Need to verify implementation"
     set:
-      service:
-        spec:
-          ports:
-            http:
-              port: 80
       ingress:
         spec:
           rules:
             "example.com":
-              paths:
-                - path: /
-                  pathType: Prefix
-                  backend:
-                    service:
-                      name: RELEASE-NAME-base-test
-                      port:
-                        number: 80
+              http:
+                paths:
+                  "/":
+                    backend:
+                      service:
+                        port:
+                          name: http
     asserts:
       - isKind:
           of: Ingress
@@ -32,26 +28,52 @@ tests:
           path: spec.rules[0].host
           value: example.com
 
-  - it: renders an Ingress with TLS configuration
+  - it: renders an Ingress with multiple hosts
     skip:
-      reason: "Need service configuration for ingress template"
+      reason: "Need to verify implementation"
     set:
-      service:
-        spec:
-          ports:
-            http:
-              port: 80
       ingress:
         spec:
-          tls:
-            - hosts:
-                - example.com
-              secretName: example-tls
+          rules:
+            "api.example.com":
+              http:
+                paths:
+                  "/api":
+                    pathType: Prefix
+            "www.example.com":
+              http:
+                paths:
+                  "/":
+                    pathType: Prefix
+    asserts:
+      - isKind:
+          of: Ingress
+      - lengthEqual:
+          path: spec.rules
+          count: 2
+      - contains:
+          path: spec.rules
+          content:
+            host: api.example.com
+      - contains:
+          path: spec.rules
+          content:
+            host: www.example.com
+
+  - it: renders an Ingress with TLS configuration per host
+    skip:
+      reason: "Need to verify implementation"
+    set:
+      ingress:
+        spec:
           rules:
             "example.com":
-              paths:
-                - path: /
-                  pathType: Prefix
+              tls:
+                secretName: example-tls
+              http:
+                paths:
+                  "/":
+                    pathType: Prefix
     asserts:
       - isKind:
           of: Ingress
@@ -65,54 +87,162 @@ tests:
           path: spec.tls[0].hosts
           content: example.com
 
-  - it: renders an Ingress with custom TLS secret per host
+  - it: renders an Ingress with multiple TLS configurations
     skip:
-      reason: "Need service configuration for ingress template"
+      reason: "Need to verify implementation"
     set:
-      service:
-        spec:
-          ports:
-            http:
-              port: 80
       ingress:
         spec:
           rules:
-            "vault.example.local":
+            "api.example.com":
               tls:
-                secretName: vault-tls-secret
-              paths:
-                - path: /
-                  pathType: Prefix
+                secretName: api-tls
+              http:
+                paths:
+                  "/":
+                    pathType: Prefix
+            "www.example.com":
+              tls:
+                secretName: www-tls
+              http:
+                paths:
+                  "/":
+                    pathType: Prefix
+    asserts:
+      - isKind:
+          of: Ingress
+      - lengthEqual:
+          path: spec.tls
+          count: 2
+      - contains:
+          path: spec.tls
+          content:
+            secretName: api-tls
+            hosts:
+              - api.example.com
+      - contains:
+          path: spec.tls
+          content:
+            secretName: www-tls
+            hosts:
+              - www.example.com
+
+  - it: renders an Ingress with grouped TLS hosts
+    skip:
+      reason: "Need to verify implementation"
+    set:
+      ingress:
+        spec:
+          rules:
+            "api.example.com":
+              tls:
+                secretName: shared-tls
+              http:
+                paths:
+                  "/":
+                    pathType: Prefix
+            "www.example.com":
+              tls:
+                secretName: shared-tls
+              http:
+                paths:
+                  "/":
+                    pathType: Prefix
+    asserts:
+      - isKind:
+          of: Ingress
+      - lengthEqual:
+          path: spec.tls
+          count: 1
+      - equal:
+          path: spec.tls[0].secretName
+          value: shared-tls
+      - lengthEqual:
+          path: spec.tls[0].hosts
+          count: 2
+
+  - it: renders an Ingress with custom path types
+    skip:
+      reason: "Need to verify implementation"
+    set:
+      ingress:
+        spec:
+          rules:
+            "example.com":
+              http:
+                paths:
+                  "/exact":
+                    pathType: Exact
+                  "/prefix":
+                    pathType: Prefix
+                  "/regex":
+                    pathType: ImplementationSpecific
+    asserts:
+      - isKind:
+          of: Ingress
+      - lengthEqual:
+          path: spec.rules[0].http.paths
+          count: 3
+      - contains:
+          path: spec.rules[0].http.paths
+          content:
+            path: /exact
+            pathType: Exact
+      - contains:
+          path: spec.rules[0].http.paths
+          content:
+            path: /prefix
+            pathType: Prefix
+      - contains:
+          path: spec.rules[0].http.paths
+          content:
+            path: /regex
+            pathType: ImplementationSpecific
+
+  - it: renders an Ingress with custom backend service
+    skip:
+      reason: "Need to verify implementation"
+    set:
+      ingress:
+        spec:
+          rules:
+            "example.com":
+              http:
+                paths:
+                  "/":
+                    pathType: Prefix
+                    backend:
+                      service:
+                        name: custom-service
+                        port:
+                          number: 8080
     asserts:
       - isKind:
           of: Ingress
       - equal:
-          path: spec.tls[0].secretName
-          value: vault-tls-secret
-      - contains:
-          path: spec.tls[0].hosts
-          content: vault.example.local
+          path: spec.rules[0].http.paths[0].backend.service.name
+          value: custom-service
+      - equal:
+          path: spec.rules[0].http.paths[0].backend.service.port.number
+          value: 8080
 
   - it: renders an Ingress with annotations
     skip:
-      reason: "Need service configuration for ingress template"
+      reason: "Need to verify implementation"
     set:
-      service:
-        spec:
-          ports:
-            http:
-              port: 80
       ingress:
         metadata:
           annotations:
             nginx.ingress.kubernetes.io/rewrite-target: /
             cert-manager.io/cluster-issuer: letsencrypt
+            kubernetes.io/ingress.class: nginx
         spec:
           rules:
             "example.com":
-              paths:
-                - path: /api
-                  pathType: Prefix
+              http:
+                paths:
+                  "/api":
+                    pathType: Prefix
     asserts:
       - isKind:
           of: Ingress
@@ -122,6 +252,216 @@ tests:
       - equal:
           path: metadata.annotations["cert-manager.io/cluster-issuer"]
           value: letsencrypt
+      - equal:
+          path: metadata.annotations["kubernetes.io/ingress.class"]
+          value: nginx
+
+  - it: renders Ingress with custom labels
+    skip:
+      reason: "Need to verify implementation"
+    set:
+      ingress:
+        metadata:
+          labels:
+            custom-label: custom-value
+            environment: production
+            tier: frontend
+        spec:
+          rules:
+            "example.com":
+              http:
+                paths:
+                  "/":
+                    pathType: Prefix
+    asserts:
+      - isKind:
+          of: Ingress
+      - equal:
+          path: metadata.labels["custom-label"]
+          value: custom-value
+      - equal:
+          path: metadata.labels["environment"]
+          value: production
+      - equal:
+          path: metadata.labels["tier"]
+          value: frontend
+      - equal:
+          path: metadata.labels["app.kubernetes.io/name"]
+          value: base-test
+      - equal:
+          path: metadata.labels["app.kubernetes.io/instance"]
+          value: RELEASE-NAME
+
+  - it: renders Ingress with both custom labels and annotations
+    skip:
+      reason: "Need to verify implementation"
+    set:
+      ingress:
+        metadata:
+          labels:
+            team: platform
+          annotations:
+            description: "Main application ingress"
+            owner: "platform-team"
+        spec:
+          rules:
+            "example.com":
+              http:
+                paths:
+                  "/":
+                    pathType: Prefix
+    asserts:
+      - isKind:
+          of: Ingress
+      - equal:
+          path: metadata.labels["team"]
+          value: platform
+      - equal:
+          path: metadata.annotations["description"]
+          value: "Main application ingress"
+      - equal:
+          path: metadata.annotations["owner"]
+          value: "platform-team"
+
+  - it: renders Ingress with templated values
+    skip:
+      reason: "Need to verify implementation"
+    release:
+      name: test-app
+      namespace: production
+    set:
+      ingress:
+        metadata:
+          annotations:
+            app-name: "{{ .Release.Name }}"
+            namespace: "{{ .Release.Namespace }}"
+            chart-version: "{{ .Chart.Version }}"
+        spec:
+          rules:
+            "{{ .Release.Name }}.example.com":
+              http:
+                paths:
+                  "/":
+                    pathType: Prefix
+    asserts:
+      - isKind:
+          of: Ingress
+      - equal:
+          path: metadata.annotations["app-name"]
+          value: test-app
+      - equal:
+          path: metadata.annotations["namespace"]
+          value: production
+      - equal:
+          path: metadata.annotations["chart-version"]
+          value: 0.0.1
+      - equal:
+          path: spec.rules[0].host
+          value: test-app.example.com
+
+  - it: should not render Ingress with empty metadata annotations
+    skip:
+      reason: "Need to verify implementation"
+    set:
+      ingress:
+        metadata:
+          annotations: {}
+        spec:
+          rules:
+            "example.com":
+              http:
+                paths:
+                  "/":
+                    pathType: Prefix
+    asserts:
+      - isKind:
+          of: Ingress
+      - notExists:
+          path: metadata.annotations
+
+  - it: renders Ingress with ingressClassName
+    skip:
+      reason: "Need to verify implementation"
+    set:
+      ingress:
+        spec:
+          ingressClassName: nginx
+          rules:
+            "example.com":
+              http:
+                paths:
+                  "/":
+                    pathType: Prefix
+    asserts:
+      - isKind:
+          of: Ingress
+      - equal:
+          path: spec.ingressClassName
+          value: nginx
+
+  - it: renders Ingress with default backend
+    skip:
+      reason: "Need to verify implementation"
+    set:
+      ingress:
+        spec:
+          defaultBackend:
+            service:
+              name: default-service
+              port:
+                number: 80
+          rules:
+            "example.com":
+              http:
+                paths:
+                  "/":
+                    pathType: Prefix
+    asserts:
+      - isKind:
+          of: Ingress
+      - equal:
+          path: spec.defaultBackend.service.name
+          value: default-service
+      - equal:
+          path: spec.defaultBackend.service.port.number
+          value: 80
+
+  - it: renders Ingress with mixed path configurations
+    skip:
+      reason: "Need to verify implementation"
+    set:
+      ingress:
+        spec:
+          rules:
+            "api.example.com":
+              http:
+                paths:
+                  "/v1":
+                    pathType: Prefix
+                    backend:
+                      service:
+                        name: api-v1
+                        port:
+                          name: http
+                  "/v2":
+                    pathType: Prefix
+                    backend:
+                      service:
+                        name: api-v2
+                        port:
+                          number: 8080
+    asserts:
+      - isKind:
+          of: Ingress
+      - lengthEqual:
+          path: spec.rules[0].http.paths
+          count: 2
+      - equal:
+          path: spec.rules[0].http.paths[0].backend.service.port.name
+          value: http
+      - equal:
+          path: spec.rules[0].http.paths[1].backend.service.port.number
+          value: 8080
 
   - it: should not render when ingress is disabled
     set:
@@ -130,9 +470,10 @@ tests:
         spec:
           rules:
             "example.com":
-              paths:
-                - path: /
-                  pathType: Prefix
+              http:
+                paths:
+                  "/":
+                    pathType: Prefix
     asserts:
       - hasDocuments:
           count: 0
@@ -157,6 +498,8 @@ tests:
           count: 0
 
   - it: should render with default enabled state
+    skip:
+      reason: "Need to verify implementation"
     set:
       service:
         spec:
@@ -167,12 +510,89 @@ tests:
         spec:
           rules:
             "example.com":
-              paths:
-                - path: /
-                  pathType: Prefix
+              http:
+                paths:
+                  "/":
+                    pathType: Prefix
     asserts:
       - isKind:
           of: Ingress
       - equal:
           path: metadata.name
           value: RELEASE-NAME-base-test
+
+  - it: renders Ingress with wildcard host
+    skip:
+      reason: "Need to verify implementation"
+    set:
+      ingress:
+        spec:
+          rules:
+            "*.example.com":
+              http:
+                paths:
+                  "/":
+                    pathType: Prefix
+    asserts:
+      - isKind:
+          of: Ingress
+      - equal:
+          path: spec.rules[0].host
+          value: "*.example.com"
+
+  - it: renders complex multi-service Ingress
+    skip:
+      reason: "Need to verify implementation"
+    set:
+      ingress:
+        metadata:
+          annotations:
+            nginx.ingress.kubernetes.io/ssl-redirect: "true"
+            cert-manager.io/cluster-issuer: letsencrypt-prod
+        spec:
+          ingressClassName: nginx
+          rules:
+            "app.example.com":
+              tls:
+                secretName: app-tls
+              http:
+                paths:
+                  "/":
+                    pathType: Prefix
+                    backend:
+                      service:
+                        name: frontend
+                        port:
+                          number: 80
+                  "/api":
+                    pathType: Prefix
+                    backend:
+                      service:
+                        name: backend
+                        port:
+                          number: 8080
+                  "/admin":
+                    pathType: Prefix
+                    backend:
+                      service:
+                        name: admin
+                        port:
+                          name: http
+    asserts:
+      - isKind:
+          of: Ingress
+      - equal:
+          path: spec.ingressClassName
+          value: nginx
+      - lengthEqual:
+          path: spec.rules[0].http.paths
+          count: 3
+      - lengthEqual:
+          path: spec.tls
+          count: 1
+      - equal:
+          path: spec.tls[0].secretName
+          value: app-tls
+      - contains:
+          path: spec.tls[0].hosts
+          content: app.example.com

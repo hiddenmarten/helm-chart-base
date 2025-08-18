@@ -1,31 +1,48 @@
 {{/*
-Usage: {{ include "base.ingress" (dict "val" .Values "ctx" $ctx) }}
+Ingress template for baserary chart
+Usage: {{ include "base.ingress" (dict "ingress" .Values.ingress "ctx" $) }}
 */}}
 {{ define "base.ingress" -}}
-{{ $val := .val -}}
+{{ $ingress := .ingress -}}
 {{ $ctx := .ctx -}}
-{{ $defaults := include "base.defaults" (dict "ctx" $ctx) | fromYaml -}}
-{{ $val = mustMergeOverwrite $defaults $val -}}
-{{ $spec := include "base.ingress.spec" (dict "spec" $val.ingress.spec "ctx" $ctx) | fromYaml -}}
-{{ $valSpec := dict "ingress" (dict "spec" $spec) -}}
-{{ $val = mustMergeOverwrite $val $valSpec -}}
-{{- if and $val.ingress.enabled $val.ingress.spec.rules }}
-apiVersion: "networking.k8s.io/v1"
+{{ $content := include "base.ingress.content" (dict "content" $ingress "ctx" $ctx) | fromYaml -}}
+{{ if and $content.enabled $content.spec.rules -}}
+apiVersion: networking.k8s.io/v1
 kind: Ingress
-metadata:
-  name: {{ include "base.fullname" (dict "ctx" $ctx) }}
-  labels: {{ include "base.labels" (dict "ctx" $ctx) | nindent 4 }}
-  {{- with $val.ingress.annotations }}
-  annotations: {{ tpl (toYaml .) $ctx | nindent 4 }}
-  {{- end }}
-spec: {{ tpl (toYaml $val.ingress.spec) $ctx | nindent 2 }}
+{{ $_ := unset $content "enabled" -}}
+{{ $content | toYaml }}
 ---
 {{- end }}
 {{- end }}
 
 {{/*
-TLS sections template for ingress
-Usage: {{ include "base.ingress.spec" (dict "spec" .Values.ingress.spec "ctx" $ctx) }}
+Usage: {{ include "base.ingress.content" (dict "content" $content "ctx" $ctx) }}
+*/}}
+{{ define "base.ingress.content" -}}
+{{ $content := .content -}}
+{{ $ctx := .ctx -}}
+{{ $defaultContent := include "base.ingress.default.content" (dict "ctx" $ctx) | fromYaml -}}
+{{ $payload := include "base.ingress.payload" (dict "content" $content "ctx" $ctx) | fromYaml -}}
+{{ $content = mustMergeOverwrite $defaultContent $content $payload -}}
+{{ if not $content.metadata.annotations -}}
+{{ $_ := unset $content.metadata "annotations" -}}
+{{- end }}
+{{ tpl ($content | toYaml) $ctx }}
+{{- end }}
+
+{{/*
+Usage: {{ include "base.ingress.payload" (dict "content" $content "ctx" $ctx) }}
+*/}}
+{{ define "base.ingress.payload" -}}
+{{ $content := .content -}}
+{{ $ctx := .ctx -}}
+{{ $spec := include "base.ingress.spec" (dict "spec" $content.spec "ctx" $ctx) | fromYaml -}}
+{{ $payload := dict "spec" $spec -}}
+{{ $payload | toYaml }}
+{{- end }}
+
+{{/*
+Usage: {{ include "base.ingress.spec" (dict "spec" $spec "ctx" $ctx) }}
 */}}
 {{ define "base.ingress.spec" -}}
 {{ $spec := .spec -}}
@@ -113,4 +130,18 @@ Usage: {{ include "base.ingress.path.default" (dict "ctx" $ctx) }}
 host: ""
 http:
   paths: {}
+{{- end }}
+
+{{/*
+Usage: {{ include "base.ingress.default.content" (dict "ctx" $ctx) }}
+*/}}
+{{ define "base.ingress.default.content" -}}
+{{ $ctx := .ctx -}}
+enabled: true
+metadata:
+  name: {{ include "base.fullname" (dict "ctx" $ctx) }}
+  labels: {{ include "base.labels" (dict "ctx" $ctx) | nindent 4 }}
+  annotations: {}
+spec:
+  rules: {}
 {{- end }}
