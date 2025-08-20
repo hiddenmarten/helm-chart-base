@@ -690,3 +690,19 @@ tests:
       - contains:
           path: spec.tls[0].hosts
           content: vault.example.local
+
+
+  - it: should not render Ingress when all paths lack a valid backend
+    set:
+      ingress:
+        spec:
+          rules:
+            "vault.example.local":
+              http:
+                paths:
+                  "/":
+                    backend:
+                      service: null
+    asserts:
+      - hasDocuments:
+          count: 0
