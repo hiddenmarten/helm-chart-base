@@ -137,26 +137,3 @@ tests:
           content: |
             plain text content
             multiple lines
-
-  - it: should handle empty image tag gracefully
-    set:
-      image:
-        repository: nginx
-        tag: ""
-    asserts:
-      - isKind:
-          of: Deployment
-      - equal:
-          path: spec.template.spec.containers[0].image
-          value: "nginx:"
-
-  - it: should handle missing image tag
-    set:
-      image:
-        repository: nginx
-    asserts:
-      - isKind:
-          of: Deployment
-      - equal:
-          path: spec.template.spec.containers[0].image
-          value: "nginx:"

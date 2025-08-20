@@ -1,5 +1,4 @@
 {{/*
-Deployment template for baserary chart
 Usage: {{ include "base.deployment" (dict "val" .Values "ctx" $) }}
 */}}
 {{ define "base.deployment" -}}
@@ -7,8 +6,19 @@ Usage: {{ include "base.deployment" (dict "val" .Values "ctx" $) }}
 {{ $val := .val -}}
 {{ $defaults := include "base.defaults" (dict "ctx" $ctx) | fromYaml -}}
 {{ $val = mustMergeOverwrite $defaults $val -}}
+{{ $content := include "base.deployment.content" (dict "val" $val "ctx" $ctx) | fromYaml -}}
 apiVersion: apps/v1
 kind: Deployment
+{{ $content | toYaml }}
+---
+{{- end }}
+
+{{/*
+Usage: {{ include "base.deployment" (dict "val" $val "ctx" $ctx) }}
+*/}}
+{{ define "base.deployment.content" -}}
+{{ $ctx := .ctx -}}
+{{ $val := .val -}}
 metadata:
   name: {{ include "base.fullname" (dict "ctx" $ctx) }}
   labels: {{ include "base.labels" (dict "ctx" $ctx) | nindent 4 }}
@@ -84,5 +94,4 @@ spec:
       {{- with $val.tolerations }}
       tolerations: {{ tpl (toYaml .) $ctx | nindent 8 }}
       {{- end }}
----
 {{- end }}
