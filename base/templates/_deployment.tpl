@@ -6,10 +6,9 @@ Usage: {{ include "base.deployment" (dict "val" .Values "ctx" $) }}
 {{ $val := .val -}}
 {{ $defaults := include "base.defaults" (dict "ctx" $ctx) | fromYaml -}}
 {{ $val = mustMergeOverwrite $defaults $val -}}
-{{ $content := include "base.deployment.content" (dict "val" $val "ctx" $ctx) | fromYaml -}}
 apiVersion: apps/v1
 kind: Deployment
-{{ $content | toYaml }}
+{{ include "base.deployment.content" (dict "val" $val "ctx" $ctx) }}
 ---
 {{- end }}
 
@@ -83,8 +82,14 @@ spec:
                 name: {{ include "base.secrets.name" (dict "postfix" "envVars" "ctx" $ctx) }}
           {{- end }}
           {{- end }}
-{{ include "base.volumeMounts" (dict "val" $val "ctx" $ctx) }}
-{{ include "base.volumes" (dict "val" $val "ctx" $ctx) }}
+          {{ $volumeMounts := include "base.volumeMounts" (dict "val" $val "ctx" $ctx) | fromYaml -}}
+          {{ if $volumeMounts -}}
+          volumeMounts: {{ $volumeMounts.volumeMounts | toYaml | nindent 12 }}
+          {{- end }}
+      {{ $volumes := include "base.volumes" (dict "val" $val "ctx" $ctx) | fromYaml -}}
+      {{ if $volumes -}}
+      volumes: {{ $volumes.volumes | toYaml | nindent 8 }}
+      {{- end }}
       {{- with $val.nodeSelector }}
       nodeSelector: {{ tpl (toYaml .) $ctx | nindent 8 }}
       {{- end }}

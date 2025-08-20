@@ -21,8 +21,7 @@ Usage: {{ include "base.volumeMounts" (dict "val" $val "ctx" $ctx) }}
 {{ end -}}
 {{ end -}}
 {{ if ne (len $volumeMounts) 0 -}}
-{{ print "volumeMounts:" | indent 10 }}
-{{ toYaml $volumeMounts | indent 12 }}
+volumeMounts: {{ toYaml $volumeMounts | nindent 2 }}
 {{- end }}
 {{- end }}
 
