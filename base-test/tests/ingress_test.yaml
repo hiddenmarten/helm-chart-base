@@ -27,8 +27,6 @@ tests:
           value: example.com
 
   - it: renders an Ingress with multiple hosts
-    skip:
-      reason: "Need to verify implementation"
     set:
       ingress:
         spec:
@@ -59,10 +57,28 @@ tests:
           path: spec.rules
           content:
             host: api.example.com
+            http:
+              paths:
+              - backend:
+                  service:
+                    name: RELEASE-NAME-base-test
+                    port:
+                      name: http
+                path: /api
+                pathType: Prefix
       - contains:
           path: spec.rules
           content:
             host: www.example.com
+            http:
+              paths:
+              - backend:
+                  service:
+                    name: RELEASE-NAME-base-test
+                    port:
+                      name: http
+                path: /
+                pathType: Prefix
 
   - it: renders an Ingress with TLS configuration per host
     set:
@@ -175,8 +191,6 @@ tests:
           count: 2
 
   - it: renders an Ingress with custom path types
-    skip:
-      reason: "Need to verify implementation"
     set:
       ingress:
         spec:
@@ -213,16 +227,31 @@ tests:
           content:
             path: /exact
             pathType: Exact
+            backend:
+              service:
+                name: RELEASE-NAME-base-test
+                port:
+                  name: http
       - contains:
           path: spec.rules[0].http.paths
           content:
             path: /prefix
             pathType: Prefix
+            backend:
+              service:
+                name: RELEASE-NAME-base-test
+                port:
+                  name: http
       - contains:
           path: spec.rules[0].http.paths
           content:
             path: /regex
             pathType: ImplementationSpecific
+            backend:
+              service:
+                name: RELEASE-NAME-base-test
+                port:
+                  name: http
 
   - it: renders an Ingress with custom backend service
     set:
@@ -526,8 +555,6 @@ tests:
           count: 0
 
   - it: should render with default enabled state
-    skip:
-      reason: "Need to verify implementation"
     set:
       ingress:
         spec:
@@ -548,8 +575,6 @@ tests:
           value: RELEASE-NAME-base-test
 
   - it: renders Ingress with wildcard host
-    skip:
-      reason: "Need to verify implementation"
     set:
       ingress:
         spec:
