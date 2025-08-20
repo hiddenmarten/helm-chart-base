@@ -33,7 +33,9 @@ ingress:
           paths:
             "/":
               backend:
-                service: null
+                service:
+                  port:
+                    name: http
 
 persistentVolumeClaims:
   file:

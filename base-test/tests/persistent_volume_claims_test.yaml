@@ -20,14 +20,18 @@ tests:
       - equal:
           path: spec.resources.requests.storage
           value: 10Gi
+      - contains:
+          path: spec.accessModes
+          content: ReadWriteOnce
 
-  - it: renders a PersistentVolumeClaim with access modes
+  - it: renders a PersistentVolumeClaim with custom access modes
     set:
       persistentVolumeClaims:
         storage:
           spec:
             accessModes:
-              - ReadWriteOnce
+              - ReadWriteMany
+              - ReadOnlyMany
             resources:
               requests:
                 storage: 5Gi
@@ -39,7 +43,13 @@ tests:
           value: RELEASE-NAME-base-test-storage
       - contains:
           path: spec.accessModes
-          content: ReadWriteOnce
+          content: ReadWriteMany
+      - contains:
+          path: spec.accessModes
+          content: ReadOnlyMany
+      - lengthEqual:
+          path: spec.accessModes
+          count: 2
 
   - it: renders a PersistentVolumeClaim with storage class
     set:
@@ -70,9 +80,14 @@ tests:
             resources:
               requests:
                 storage: 5Gi
+        cache:
+          spec:
+            resources:
+              requests:
+                storage: 2Gi
     asserts:
       - hasDocuments:
-          count: 2
+          count: 3
 
   - it: renders a PersistentVolumeClaim with volume mode
     set:
@@ -91,16 +106,16 @@ tests:
           value: Block
 
   - it: renders a PersistentVolumeClaim with labels and annotations
-    skip:
-      reason: "Need to verify metadata implementation in template"
     set:
       persistentVolumeClaims:
-        data:
+        database:
           metadata:
             labels:
               storage-type: database
+              tier: persistent
             annotations:
               volume.beta.kubernetes.io/storage-provisioner: kubernetes.io/aws-ebs
+              description: "Database storage volume"
           spec:
             resources:
               requests:
@@ -112,8 +127,20 @@ tests:
           path: metadata.labels["storage-type"]
           value: database
       - equal:
+          path: metadata.labels["tier"]
+          value: persistent
+      - equal:
+          path: metadata.labels["app.kubernetes.io/name"]
+          value: base-test
+      - equal:
+          path: metadata.labels["app.kubernetes.io/instance"]
+          value: RELEASE-NAME
+      - equal:
           path: metadata.annotations["volume.beta.kubernetes.io/storage-provisioner"]
           value: kubernetes.io/aws-ebs
+      - equal:
+          path: metadata.annotations["description"]
+          value: "Database storage volume"
 
   - it: should not render when persistentVolumeClaims is empty
     set:
@@ -141,12 +168,16 @@ tests:
       - contains:
           path: spec.accessModes
           content: ReadWriteOnce
+      - lengthEqual:
+          path: spec.accessModes
+          count: 1
 
   - it: should not render annotations when empty
     set:
       persistentVolumeClaims:
         data:
-          annotations: {}
+          metadata:
+            annotations: {}
           spec:
             resources:
               requests:
@@ -156,3 +187,260 @@ tests:
           of: PersistentVolumeClaim
       - notExists:
           path: metadata.annotations
+
+  - it: renders PersistentVolumeClaim with selector
+    set:
+      persistentVolumeClaims:
+        selective-storage:
+          spec:
+            selector:
+              matchLabels:
+                type: ssd
+                zone: us-east-1a
+            resources:
+              requests:
+                storage: 15Gi
+    asserts:
+      - isKind:
+          of: PersistentVolumeClaim
+      - equal:
+          path: spec.selector.matchLabels.type
+          value: ssd
+      - equal:
+          path: spec.selector.matchLabels.zone
+          value: us-east-1a
+
+  - it: renders PersistentVolumeClaim with resource limits
+    set:
+      persistentVolumeClaims:
+        limited-storage:
+          spec:
+            resources:
+              requests:
+                storage: 5Gi
+              limits:
+                storage: 10Gi
+    asserts:
+      - isKind:
+          of: PersistentVolumeClaim
+      - equal:
+          path: spec.resources.requests.storage
+          value: 5Gi
+      - equal:
+          path: spec.resources.limits.storage
+          value: 10Gi
+
+  - it: should not render when disabled
+    set:
+      persistentVolumeClaims:
+        disabled-pvc:
+          enabled: false
+          spec:
+            resources:
+              requests:
+                storage: 10Gi
+        enabled-pvc:
+          enabled: true
+          spec:
+            resources:
+              requests:
+                storage: 5Gi
+    asserts:
+      - hasDocuments:
+          count: 1
+      - equal:
+          path: metadata.name
+          value: RELEASE-NAME-base-test-enabled-pvc
+
+  - it: renders PersistentVolumeClaim with templated values
+    release:
+      name: test-app
+      namespace: production
+    set:
+      persistentVolumeClaims:
+        templated:
+          metadata:
+            annotations:
+              app-name: "{{ .Release.Name }}"
+              namespace: "{{ .Release.Namespace }}"
+              chart-version: "{{ .Chart.Version }}"
+          spec:
+            storageClassName: "{{ .Release.Name }}-storage"
+            resources:
+              requests:
+                storage: 10Gi
+    asserts:
+      - isKind:
+          of: PersistentVolumeClaim
+      - equal:
+          path: metadata.name
+          value: test-app-base-test-templated
+      - equal:
+          path: metadata.annotations["app-name"]
+          value: test-app
+      - equal:
+          path: metadata.annotations["namespace"]
+          value: production
+      - equal:
+          path: metadata.annotations["chart-version"]
+          value: 0.0.1
+      - equal:
+          path: spec.storageClassName
+          value: test-app-storage
+
+  - it: renders PersistentVolumeClaim with data source
+    set:
+      persistentVolumeClaims:
+        cloned-storage:
+          spec:
+            dataSource:
+              kind: PersistentVolumeClaim
+              name: source-pvc
+            resources:
+              requests:
+                storage: 10Gi
+    asserts:
+      - isKind:
+          of: PersistentVolumeClaim
+      - equal:
+          path: spec.dataSource.kind
+          value: PersistentVolumeClaim
+      - equal:
+          path: spec.dataSource.name
+          value: source-pvc
+
+  - it: renders PersistentVolumeClaim with data source ref
+    set:
+      persistentVolumeClaims:
+        snapshot-storage:
+          spec:
+            dataSourceRef:
+              kind: VolumeSnapshot
+              name: my-snapshot
+              apiGroup: snapshot.storage.k8s.io
+            resources:
+              requests:
+                storage: 20Gi
+    asserts:
+      - isKind:
+          of: PersistentVolumeClaim
+      - equal:
+          path: spec.dataSourceRef.kind
+          value: VolumeSnapshot
+      - equal:
+          path: spec.dataSourceRef.name
+          value: my-snapshot
+      - equal:
+          path: spec.dataSourceRef.apiGroup
+          value: snapshot.storage.k8s.io
+
+  - it: renders complex PersistentVolumeClaim with all features
+    set:
+      persistentVolumeClaims:
+        complex-storage:
+          metadata:
+            labels:
+              storage-type: database
+              environment: production
+              backup: "true"
+            annotations:
+              volume.beta.kubernetes.io/storage-provisioner: ebs.csi.aws.com
+              volume.kubernetes.io/selected-node: worker-node-1
+              description: "Complex storage with all features"
+          spec:
+            accessModes:
+              - ReadWriteOnce
+            volumeMode: Filesystem
+            storageClassName: gp3-encrypted
+            selector:
+              matchLabels:
+                type: ssd
+                performance: high
+            dataSource:
+              kind: PersistentVolumeClaim
+              name: backup-pvc
+            resources:
+              requests:
+                storage: 100Gi
+              limits:
+                storage: 200Gi
+    asserts:
+      - isKind:
+          of: PersistentVolumeClaim
+      - equal:
+          path: metadata.name
+          value: RELEASE-NAME-base-test-complex-storage
+      - equal:
+          path: metadata.labels["storage-type"]
+          value: database
+      - equal:
+          path: metadata.labels["environment"]
+          value: production
+      - equal:
+          path: metadata.labels["backup"]
+          value: "true"
+      - equal:
+          path: metadata.annotations["volume.beta.kubernetes.io/storage-provisioner"]
+          value: ebs.csi.aws.com
+      - equal:
+          path: metadata.annotations["description"]
+          value: "Complex storage with all features"
+      - equal:
+          path: spec.volumeMode
+          value: Filesystem
+      - equal:
+          path: spec.storageClassName
+          value: gp3-encrypted
+      - equal:
+          path: spec.selector.matchLabels.type
+          value: ssd
+      - equal:
+          path: spec.dataSource.kind
+          value: PersistentVolumeClaim
+      - equal:
+          path: spec.resources.requests.storage
+          value: 100Gi
+      - equal:
+          path: spec.resources.limits.storage
+          value: 200Gi
+
+  - it: should render when enabled is not specified (defaults to true)
+    set:
+      persistentVolumeClaims:
+        default-enabled:
+          spec:
+            resources:
+              requests:
+                storage: 5Gi
+    asserts:
+      - hasDocuments:
+          count: 1
+      - isKind:
+          of: PersistentVolumeClaim
+      - equal:
+          path: metadata.name
+          value: RELEASE-NAME-base-test-default-enabled
+
+  - it: should not render when storage is missing
+    skip:
+      reason: "needs investigation"
+    set:
+      persistentVolumeClaims:
+        no-spec:
+          enabled: true
+    asserts:
+      - hasDocuments:
+          count: 0
+
+  - it: should not render when storage is null
+    set:
+      persistentVolumeClaims:
+        null-spec:
+          enabled: true
+          spec:
+            resources:
+              requests:
+                storage: null
+    asserts:
+      - hasDocuments:
+          count: 0

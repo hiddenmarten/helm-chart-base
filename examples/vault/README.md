@@ -19,7 +19,7 @@ A HashiCorp Vault using base library
 | configMaps.files.data."/vault/config.d/config.json".ui | bool | `true` |  |
 | image.repository | string | `"hashicorp/vault"` |  |
 | image.tag | string | `"1.20.2"` |  |
-| ingress.spec.rules."vault.example.local".http.paths./.backend.service | string | `nil` |  |
+| ingress.spec.rules."vault.example.local".http.paths./.backend.service.port.name | string | `"http"` |  |
 | ingress.spec.rules."vault.example.local".tls.secretName | string | `"vault-tls-secret"` |  |
 | persistentVolumeClaims.file.mount.mountPath | string | `"/vault/file"` |  |
 | persistentVolumeClaims.file.spec.resources.requests.storage | string | `"1Gi"` |  |

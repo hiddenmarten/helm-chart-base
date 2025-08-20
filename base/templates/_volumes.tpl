@@ -15,9 +15,9 @@ Usage: {{ include "base.volumes" (dict "val" $val "ctx" $ctx) }}
 {{ $volumes = append $volumes . -}}
 {{ end -}}
 {{ if $val.persistentVolumeClaims -}}
-{{ range $k, $_ := $val.persistentVolumeClaims -}}
-{{ $volume := include "base.persistentVolumeClaims.volume" (dict "postfix" $k "ctx" $ctx) | fromYaml -}}
-{{ $volumes = append $volumes $volume -}}
+{{ $pvcVolumes := include "base.persistentVolumeClaims.volumes" (dict "persistentVolumeClaims" $val.persistentVolumeClaims "ctx" $ctx) | fromYaml -}}
+{{ range $pvcVolumes.volumes -}}
+{{ $volumes = append $volumes . -}}
 {{ end -}}
 {{ end -}}
 {{ if ne (len $volumes) 0 -}}

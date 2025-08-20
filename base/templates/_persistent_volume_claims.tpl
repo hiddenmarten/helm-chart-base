@@ -1,41 +1,39 @@
 {{/*
 PersistentVolumeClaim template for baserary chart
-Usage: {{ include "base.persistentVolumeClaims" (dict "pvcs" .Values.persistentVolumeClaims "ctx" $) }}
+Usage: {{ include "base.persistentVolumeClaims" (dict "persistentVolumeClaims" .Values.persistentVolumeClaims "ctx" $) }}
 */}}
 {{ define "base.persistentVolumeClaims" -}}
-{{ $pvcs := .pvcs -}}
+{{ $persistentVolumeClaims := .persistentVolumeClaims -}}
 {{ $ctx := .ctx -}}
-{{ $defaults := include "base.defaults" (dict "ctx" $ctx) | fromYaml -}}
-{{ $pvcs = mustMergeOverwrite $defaults.persistentVolumeClaims $pvcs -}}
-{{- range $k, $v := $pvcs }}
-{{ $pvcSpec := include "base.persistentVolumeClaims.spec" (dict "spec" $v.spec "ctx" $ctx) | fromYaml -}}
+{{- range $postfix, $content := $persistentVolumeClaims }}
+{{ $content = include "base.persistentVolumeClaims.content" (dict "postfix" $postfix "content" $content "ctx" $ctx) | fromYaml -}}
+{{ if and $content.enabled $content.spec.resources.requests.storage -}}
 apiVersion: v1
 kind: PersistentVolumeClaim
-metadata:
-  name: {{ include "base.persistentVolumeClaims.name" (dict "postfix" $k "ctx" $ctx) }}
-  labels: {{ include "base.labels" (dict "ctx" $ctx) | nindent 4 }}
-  {{- with $v.annotations }}
-  annotations: {{ tpl (toYaml .) $ctx | nindent 4 }}
-  {{- end }}
-spec: {{ tpl (toYaml $pvcSpec) $ctx | nindent 2 }}
+{{ $_ := unset $content "enabled" -}}
+{{ $_ = unset $content "mount" -}}
+{{ $content | toYaml }}
 ---
 {{- end }}
 {{- end }}
-
-{{/*
-PersistentVolumeClaim spec helper
-Usage: {{ include "base.persistentVolumeClaims.spec" (dict "pvc" $pvc "ctx" $ctx) }}
-*/}}
-{{ define "base.persistentVolumeClaims.spec" -}}
-{{ $spec := .spec -}}
-{{ $ctx := .ctx -}}
-{{ $defaultSpec := include "base.persistentVolumeClaims.spec.default" (dict "ctx" $ctx) | fromYaml -}}
-{{ $spec = mustMergeOverwrite $defaultSpec $spec -}}
-{{ $spec | toYaml }}
 {{- end }}
 
 {{/*
-PersistentVolumeClaim name helper
+Usage: {{ include "base.persistentVolumeClaims.content" (dict "postfix" $postfix "content" $content "ctx" $ctx) }}
+*/}}
+{{ define "base.persistentVolumeClaims.content" -}}
+{{ $postfix := .postfix -}}
+{{ $content := .content -}}
+{{ $ctx := .ctx -}}
+{{ $defaultContent := include "base.persistentVolumeClaims.default.content" (dict "postfix" $postfix "ctx" $ctx) | fromYaml -}}
+{{ $content = mustMergeOverwrite $defaultContent $content -}}
+{{ if not $content.metadata.annotations -}}
+{{ $_ := unset $content.metadata "annotations" -}}
+{{- end }}
+{{ tpl ($content | toYaml) $ctx }}
+{{- end }}
+
+{{/*
 Usage: {{ include "base.persistentVolumeClaims.name" (dict "postfix" $postfix "ctx" $) }}
 */}}
 {{ define "base.persistentVolumeClaims.name" -}}
@@ -45,29 +43,36 @@ Usage: {{ include "base.persistentVolumeClaims.name" (dict "postfix" $postfix "c
 {{- end }}
 
 {{/*
-PersistentVolumeClaim spec helper
-Usage: {{ include "base.persistentVolumeClaims.spec.default" (dict "ctx" $ctx) }}
+Usage: {{ include "base.persistentVolumeClaims.default.content" (dict "postfix" $postfix "ctx" $ctx) }}
 */}}
-{{ define "base.persistentVolumeClaims.spec.default" -}}
+{{ define "base.persistentVolumeClaims.default.content" -}}
 {{ $ctx := .ctx -}}
-accessModes:
-- ReadWriteOnce
-resources:
-  requests:
-    storage: null
+{{ $postfix := .postfix -}}
+enabled: true
+metadata:
+  name: {{ include "base.persistentVolumeClaims.name" (dict "postfix" $postfix "ctx" $ctx) }}
+  labels: {{ include "base.labels" (dict "ctx" $ctx) | nindent 4 }}
+  annotations: {}
+spec:
+  accessModes:
+  - ReadWriteOnce
+  resources:
+    requests:
+      storage: null
+mount: {}
 {{- end }}
 
 {{/*
-Usage: {{ include "base.volumes.persistentVolumeClaims.name" (dict "postfix" $postfix "ctx" $ctx) }}
+Usage: {{ include "base.persistentVolumeClaims.volume.name" (dict "postfix" $postfix "ctx" $ctx) }}
 */}}
 {{ define "base.persistentVolumeClaims.volume.name" -}}
 {{ $ctx := .ctx -}}
 {{ $postfix := .postfix -}}
-{{ printf "%s-%s" ("persistentVolumeClaim" | kebabcase) $postfix }}
+{{ printf "%s-%s" ("persistent-volume-claim" | kebabcase) ($postfix | kebabcase) }}
 {{- end }}
 
 {{/*
-Usage: {{ include "base.volumes.persistentVolumeClaims.volume" (dict "postfix" $postfix "ctx" $ctx) }}
+Usage: {{ include "base.persistentVolumeClaims.volume" (dict "postfix" $postfix "ctx" $ctx) }}
 */}}
 {{ define "base.persistentVolumeClaims.volume" -}}
 {{ $ctx := .ctx -}}
@@ -78,26 +83,46 @@ persistentVolumeClaim:
 {{- end }}
 
 {{/*
-Usage: {{ include "base.volumes.persistentVolumeClaims.volumeMounts" (dict "persistentVolumeClaims" $persistentVolumeClaims "ctx" $ctx) }}
+Usage: {{ include "base.persistentVolumeClaims.volumes" (dict "persistentVolumeClaims" $persistentVolumeClaims "ctx" $ctx) }}
+*/}}
+{{ define "base.persistentVolumeClaims.volumes" -}}
+{{ $ctx := .ctx -}}
+{{ $persistentVolumeClaims := .persistentVolumeClaims }}
+{{ $volumes := list -}}
+{{ range $postfix, $content := $persistentVolumeClaims -}}
+{{ $defaultContent := include "base.persistentVolumeClaims.default.content" (dict "postfix" $postfix "ctx" $ctx) | fromYaml -}}
+{{ $content = mustMergeOverwrite $defaultContent $content -}}
+{{ if and $content.enabled $content.spec -}}
+{{ $volumes = append $volumes (include "base.persistentVolumeClaims.volume" (dict "postfix" $postfix "ctx" $ctx) | fromYaml) -}}
+{{- end }}
+{{- end }}
+volumes: {{ $volumes | toYaml | nindent 2 }}
+{{- end }}
+
+{{/*
+Usage: {{ include "base.persistentVolumeClaims.volumeMounts" (dict "persistentVolumeClaims" $persistentVolumeClaims "ctx" $ctx) }}
 */}}
 {{ define "base.persistentVolumeClaims.volumeMounts" -}}
 {{ $ctx := .ctx -}}
 {{ $persistentVolumeClaims := .persistentVolumeClaims }}
 {{ $mounts := list -}}
 {{ range $postfix, $content := $persistentVolumeClaims -}}
+{{ $defaultContent := include "base.persistentVolumeClaims.default.content" (dict "postfix" $postfix "ctx" $ctx) | fromYaml -}}
+{{ $content = mustMergeOverwrite $defaultContent $content -}}
+{{ if and $content.enabled $content.spec -}}
 {{ $name := include "base.persistentVolumeClaims.volume.name" (dict "postfix" $postfix "ctx" $ctx) -}}
 {{ $defaultMount := include "base.persistentVolumeClaims.volumeMount.default" (dict "name" $name "ctx" $ctx) | fromYaml -}}
 {{ $mount := mustMergeOverwrite $defaultMount $content.mount -}}
 {{ $mounts = append $mounts $mount -}}
 {{- end }}
+{{- end }}
 volumeMounts: {{ $mounts | toYaml | nindent 2 }}
 {{- end }}
 
 {{/*
-Usage: {{ include "base.volumes.persistentVolumeClaims.volumeMount" (dict "ctx" $ctx) }}
+Usage: {{ include "base.persistentVolumeClaims.volumeMount.default" (dict "name" $name "ctx" $ctx) }}
 */}}
 {{ define "base.persistentVolumeClaims.volumeMount.default" -}}
-{{ $path := .path -}}
 {{ $name := .name -}}
 {{ $ctx := .ctx -}}
 name: {{ $name }}
