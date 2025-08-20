@@ -4,8 +4,7 @@ Usage: {{ include "base.defaults" (dict "ctx" $ctx) }}
 */}}
 {{ define "base.defaults" -}}
 {{ $ctx := .ctx }}
-
-# This is to override the chart name. Put them to global?
+# Put them to global?
 nameOverride: ""
 fullnameOverride: ""
 
