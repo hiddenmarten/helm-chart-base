@@ -101,6 +101,11 @@ Usage: {{ include "base.ingress.rules" (dict "rules" .Values.ingress.spec.rules 
       {{ $defaultPath := include "base.ingress.path.default" (dict "ctx" $ctx) | fromYaml -}}
       {{ $path := mustMergeOverwrite $defaultPath $vv -}}
       {{ $_ := set $path "path" $kk -}}
+      {{ if not $path.backend.service -}}
+      {{ $backend := $path.backend -}}
+      {{ $_ := unset $backend "service" -}}
+      {{ $_ = set $path "backend" $backend -}}
+      {{ end -}}
       {{ $pathsList = append $pathsList $path -}}
     {{ end -}}
     {{ $_ := set $rule.http "paths" $pathsList -}}
