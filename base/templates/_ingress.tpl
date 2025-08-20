@@ -104,6 +104,9 @@ Usage: {{ include "base.ingress.rules" (dict "rules" .Values.ingress.spec.rules 
       {{ if not $path.backend.service -}}
       {{ $backend := $path.backend -}}
       {{ $_ := unset $backend "service" -}}
+      {{ if not $backend -}}
+      {{ fail "backend is empty in ingress" }}
+      {{ end -}}
       {{ $_ = set $path "backend" $backend -}}
       {{ end -}}
       {{ $pathsList = append $pathsList $path -}}
