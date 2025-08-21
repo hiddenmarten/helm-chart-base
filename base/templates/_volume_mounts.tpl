@@ -1,24 +1,24 @@
 {{/*
 Template for volume mounts
-Usage: {{ include "base.volumeMounts" (dict "val" $val "ctx" $ctx) }}
+Usage: {{ include "base.volumeMounts" (dict "configMaps" $configMaps "secrets" $secrets "persistentVolumeClaims" $persistentVolumeClaims "ctx" $ctx) }}
 */}}
 {{ define "base.volumeMounts" -}}
 {{ $ctx := .ctx -}}
-{{ $val := .val -}}
+{{ $configMaps := .configMaps -}}
+{{ $secrets := .secrets -}}
+{{ $persistentVolumeClaims := .persistentVolumeClaims -}}
 {{ $volumeMounts := list -}}
-{{ $cmVolumeMounts := include "base.configMaps.files.volumeMounts" (dict "content" $val.configMaps.files "ctx" $ctx) | fromYaml -}}
+{{ $cmVolumeMounts := include "base.configMaps.files.volumeMounts" (dict "content" $configMaps.files "ctx" $ctx) | fromYaml -}}
 {{ range $cmVolumeMounts.volumeMounts -}}
 {{ $volumeMounts = append $volumeMounts . -}}
 {{ end -}}
-{{ $secretVolumeMounts := include "base.secrets.files.volumeMounts" (dict "content" $val.secrets.files "ctx" $ctx) | fromYaml -}}
+{{ $secretVolumeMounts := include "base.secrets.files.volumeMounts" (dict "content" $secrets.files "ctx" $ctx) | fromYaml -}}
 {{ range $secretVolumeMounts.volumeMounts -}}
 {{ $volumeMounts = append $volumeMounts . -}}
 {{ end -}}
-{{ if $val.persistentVolumeClaims -}}
-{{ $pvcVolumeMounts := include "base.persistentVolumeClaims.volumeMounts" (dict "persistentVolumeClaims" $val.persistentVolumeClaims "ctx" $ctx) | fromYaml -}}
+{{ $pvcVolumeMounts := include "base.persistentVolumeClaims.volumeMounts" (dict "persistentVolumeClaims" $persistentVolumeClaims "ctx" $ctx) | fromYaml -}}
 {{ range $pvcVolumeMounts.volumeMounts -}}
 {{ $volumeMounts = append $volumeMounts . -}}
-{{ end -}}
 {{ end -}}
 {{ if ne (len $volumeMounts) 0 -}}
 volumeMounts: {{ toYaml $volumeMounts | nindent 2 }}

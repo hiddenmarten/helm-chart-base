@@ -83,7 +83,6 @@ metadata:
     helm.sh/chart: vault-0.1.0
   name: vault
 spec:
-  replicas: 1
   selector:
     matchLabels:
       app.kubernetes.io/instance: vault

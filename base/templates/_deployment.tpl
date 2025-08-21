@@ -25,9 +25,6 @@ metadata:
   name: {{ include "base.fullname" (dict "ctx" $ctx) }}
   labels: {{ include "base.labels" (dict "ctx" $ctx) | nindent 4 }}
 spec:
-  {{- if not $val.autoscaling }}
-  replicas: {{ tpl ($val.replicaCount | toYaml) $ctx }}
-  {{- end }}
   selector:
     matchLabels: {{ include "base.selectorLabels" (dict "ctx" $ctx) | nindent 6 }}
   {{ $pod := include "base.pod" (dict "val" $val "ctx" $ctx) | fromYaml -}}
