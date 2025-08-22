@@ -33,7 +33,7 @@ Usage: {{ include "base.pod.container" (dict "val" $val "ctx" $ctx) }}
 {{ define "base.pod.container" -}}
 {{ $ctx := .ctx -}}
 {{ $val := .val -}}
-name: {{ include "base.name" (dict "ctx" $ctx) }}
+{{ dict "name" (include "base.name" (dict "ctx" $ctx)) | toYaml }}
 {{ include "base.pod.container.image" (dict "image" $val.image "ctx" $ctx) }}
 {{ $ports := include "base.pod.container.ports" (dict "val" $val.service "ctx" $ctx) | fromYaml -}}
 {{ if len $ports.ports -}}
@@ -71,9 +71,7 @@ Usage: {{ include "base.pod.container.image.default" (dict "ctx" $ctx) }}
 */}}
 {{ define "base.pod.container.image.default" -}}
 {{ $ctx := .ctx -}}
-registry: ""
-repository: ""
-tag: latest
+{{ dict "registry" "" "repository" "" "tag" "latest" | toYaml }}
 {{- end }}
 
 {{/*
