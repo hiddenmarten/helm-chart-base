@@ -55,8 +55,8 @@ Usage: {{ include "base.service.ports" (dict "ports" $ports "ctx" $ctx) }}
 {{ end -}}
 {{ $portsList = append $portsList $port -}}
 {{- end }}
-{{ if $portsList -}}
-ports: {{ $portsList | toYaml | nindent 2 }}
+{{ if len $portsList -}}
+{{ dict "ports" $portsList | toYaml }}
 {{- end }}
 {{- end }}
 

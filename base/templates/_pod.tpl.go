@@ -35,13 +35,9 @@ Usage: {{ include "base.pod.container" (dict "val" $val "ctx" $ctx) }}
 {{ $val := .val -}}
 name: {{ include "base.name" (dict "ctx" $ctx) }}
 image: "{{ $val.image.repository }}:{{ $val.image.tag }}"
-{{- if $val.service.ports }}
-ports:
-{{- range $k, $v := $val.service.ports }}
-  - name: {{ $k }}
-    containerPort: {{ $v.port }}
-    protocol: {{ $v.protocol | default "TCP" }}
-{{- end }}
+{{ $ports := include "base.pod.container.ports" (dict "val" $val.service "ctx" $ctx) | fromYaml -}}
+{{ if len $ports.ports -}}
+{{ $ports | toYaml }}
 {{- end }}
 {{ $envFrom := include "base.pod.container.envFrom" (dict "val" $val "ctx" $ctx) | fromYaml -}}
 {{ if len $envFrom.envFrom -}}
@@ -53,6 +49,21 @@ ports:
 {{- end }}
 {{- end }}
 
+{{/*
+Usage: {{ include "base.pod.container.envFrom" (dict "service" $service "ctx" $ctx) }}
+*/}}
+{{ define "base.pod.container.ports" -}}
+{{ $ctx := .ctx -}}
+{{ $service := .service -}}
+{{ $items := list -}}
+{{ $defaultService := include "base.service.default.content" (dict "ctx" $ctx) | fromYaml -}}
+{{ $service = mustMergeOverwrite $defaultService $service -}}
+{{- range $k, $v := $service.spec.ports }}
+{{ $item := dict "name" $k "containerPort" $v.port -}}
+{{ $items = append $items $item -}}
+{{- end }}
+{{ dict "ports" $items | toYaml }}
+{{- end }}
 
 {{/*
 Usage: {{ include "base.pod.container.envFrom" (dict "val" $val "ctx" $ctx) }}
@@ -67,7 +78,6 @@ Usage: {{ include "base.pod.container.envFrom" (dict "val" $val "ctx" $ctx) }}
 {{- end }}
 
 {{/*
-Template for volume mounts
 Usage: {{ include "base.pod.container.volumeMounts" (dict "configMaps" $configMaps "secrets" $secrets "persistentVolumeClaims" $persistentVolumeClaims "ctx" $ctx) }}
 */}}
 {{ define "base.pod.container.volumeMounts" -}}
