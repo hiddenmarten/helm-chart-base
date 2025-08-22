@@ -10,16 +10,6 @@ Usage: {{ include "base.pod" (dict "val" $val "ctx" $ctx) }}
 {{- end }}
 
 {{/*
-Usage: {{ include "base.pod.default" (dict "ctx" $ctx) }}
-*/}}
-{{ define "base.pod.default" -}}
-{{ $ctx := .ctx -}}
-metadata:
-  labels: {{ include "base.labels" (dict "ctx" $ctx) | nindent 4 }}
-spec: {}
-{{- end }}
-
-{{/*
 Usage: {{ include "base.pod.override" (dict "val" $val "ctx" $ctx) }}
 */}}
 {{ define "base.pod.override" -}}
@@ -40,4 +30,14 @@ Usage: {{ include "base.pod.override" (dict "val" $val "ctx" $ctx) }}
 {{ $serviceAccountName := dict "serviceAccountName" (include "base.serviceAccount.name" (dict "serviceAccount" $val.serviceAccount "ctx" $ctx)) -}}
 {{ $spec = mustMergeOverwrite $spec $containers $serviceAccountName -}}
 {{ dict "spec" $spec | toYaml }}
+{{- end }}
+
+{{/*
+Usage: {{ include "base.pod.default" (dict "ctx" $ctx) }}
+*/}}
+{{ define "base.pod.default" -}}
+{{ $ctx := .ctx -}}
+metadata:
+  labels: {{ include "base.labels" (dict "ctx" $ctx) | nindent 4 }}
+spec: {}
 {{- end }}
