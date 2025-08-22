@@ -1,6 +1,6 @@
 {{/*
 Ingress template for baserary chart
-Usage: {{ include "base.ingress" (dict "ingress" .Values.ingress "ctx" $) }}
+Usage: {{ include "base.ingress" (dict "ingress" $ingress "ctx" $ctx) }}
 */}}
 {{ define "base.ingress" -}}
 {{ $ingress := .ingress -}}

@@ -1,6 +1,6 @@
 {{/*
 Expand the name of the chart.
-Usage: {{ include "base.name" (dict "ctx" $) }}
+Usage: {{ include "base.name" (dict "ctx" $ctx) }}
 */}}
 {{ define "base.name" -}}
 {{ $ctx := .ctx -}}
@@ -11,7 +11,7 @@ Usage: {{ include "base.name" (dict "ctx" $) }}
 Create a default fully qualified val name.
 We truncate at 63 chars because some Kubernetes name fields are limited to this (by the DNS naming spec).
 If release name contains chart name it will be used as a full name.
-Usage: {{ include "base.fullname" (dict "ctx" $) }}
+Usage: {{ include "base.fullname" (dict "ctx" $ctx) }}
 */}}
 {{- define "base.fullname" -}}
 {{- $ctx := .ctx -}}
@@ -29,7 +29,7 @@ Usage: {{ include "base.fullname" (dict "ctx" $) }}
 
 {{/*
 Create chart name and version as used by the chart label.
-Usage: {{ include "base.chart" (dict "ctx" $) }}
+Usage: {{ include "base.chart" (dict "ctx" $ctx) }}
 */}}
 {{ define "base.chart" -}}
 {{ $ctx := .ctx -}}
@@ -38,7 +38,7 @@ Usage: {{ include "base.chart" (dict "ctx" $) }}
 
 {{/*
 Selector labels
-Usage: {{ include "base.selectorLabels" (dict "ctx" $) }}
+Usage: {{ include "base.selectorLabels" (dict "ctx" $ctx) }}
 */}}
 {{ define "base.selectorLabels" -}}
 {{ $ctx := .ctx -}}
@@ -48,7 +48,7 @@ app.kubernetes.io/instance: {{ $ctx.Release.Name }}
 
 {{/*
 Common labels
-Usage: {{ include "base.labels" (dict "ctx" $) }}
+Usage: {{ include "base.labels" (dict "ctx" $ctx) }}
 */}}
 {{ define "base.labels" -}}
 {{ $ctx := .ctx -}}

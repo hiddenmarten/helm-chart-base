@@ -1,5 +1,5 @@
 {{/*
-Usage: {{ include "base.deployment" (dict "val" .Values "ctx" $) }}
+Usage: {{ include "base.deployment" (dict "val" $val "ctx" $ctx) }}
 */}}
 {{ define "base.deployment" -}}
 {{ $ctx := .ctx -}}

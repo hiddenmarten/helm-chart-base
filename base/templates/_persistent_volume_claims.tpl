@@ -1,6 +1,6 @@
 {{/*
 PersistentVolumeClaim template for baserary chart
-Usage: {{ include "base.persistentVolumeClaims" (dict "persistentVolumeClaims" .Values.persistentVolumeClaims "ctx" $) }}
+Usage: {{ include "base.persistentVolumeClaims" (dict "persistentVolumeClaims" .Values.persistentVolumeClaims "ctx" $ctx) }}
 */}}
 {{ define "base.persistentVolumeClaims" -}}
 {{ $persistentVolumeClaims := .persistentVolumeClaims -}}
@@ -34,7 +34,7 @@ Usage: {{ include "base.persistentVolumeClaims.content" (dict "postfix" $postfix
 {{- end }}
 
 {{/*
-Usage: {{ include "base.persistentVolumeClaims.name" (dict "postfix" $postfix "ctx" $) }}
+Usage: {{ include "base.persistentVolumeClaims.name" (dict "postfix" $postfix "ctx" $ctx) }}
 */}}
 {{ define "base.persistentVolumeClaims.name" -}}
 {{ $postfix := .postfix -}}

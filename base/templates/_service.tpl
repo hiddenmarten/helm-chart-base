@@ -1,6 +1,6 @@
 {{/*
 Service template for baserary chart
-Usage: {{ include "base.service" (dict "service" .Values.service "ctx" $) }}
+Usage: {{ include "base.service" (dict "service" $service "ctx" $ctx) }}
 */}}
 {{ define "base.service" -}}
 {{ $service := .service -}}

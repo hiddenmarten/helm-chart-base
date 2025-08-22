@@ -1,6 +1,6 @@
 {{/*
 ServiceMonitor template for baserary chart
-Usage: {{ include "base.serviceMonitor" (dict "serviceMonitor" .Values.serviceMonitor "ctx" $) }}
+Usage: {{ include "base.serviceMonitor" (dict "serviceMonitor" .Values.serviceMonitor "ctx" $ctx) }}
 */}}
 {{ define "base.serviceMonitor" -}}
 {{ $serviceMonitor := .serviceMonitor -}}

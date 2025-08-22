@@ -43,19 +43,41 @@ ports:
     protocol: {{ $v.protocol | default "TCP" }}
 {{- end }}
 {{- end }}
-{{- if or $val.configMaps.envVars.data $val.secrets.envVars.data }}
-envFrom:
-{{- if $val.configMaps.envVars.data }}
-  - configMapRef:
-      name: {{ include "base.configMaps.name" (dict "postfix" "envVars" "ctx" $ctx) }}
+{{ $envFrom := include "base.pod.container.envFrom" (dict "val" $val "ctx" $ctx) | fromYaml -}}
+{{ if len $envFrom.envFrom -}}
+{{ $envFrom | toYaml }}
 {{- end }}
-{{- if $val.secrets.envVars.data }}
-  - secretRef:
-      name: {{ include "base.secrets.name" (dict "postfix" "envVars" "ctx" $ctx) }}
+{{ $volumeMounts := include "base.pod.container.volumeMounts" (dict "configMaps" $val.configMaps "secrets" $val.secrets "persistentVolumeClaims" $val.persistentVolumeClaims "ctx" $ctx) | fromYaml -}}
+{{ if len $volumeMounts.volumeMounts -}}
+{{ $volumeMounts | toYaml }}
 {{- end }}
 {{- end }}
-{{ $volumeMounts := include "base.volumeMounts" (dict "configMaps" $val.configMaps "secrets" $val.secrets "persistentVolumeClaims" $val.persistentVolumeClaims "ctx" $ctx) | fromYaml -}}
-{{ if $volumeMounts -}}
-volumeMounts: {{ $volumeMounts.volumeMounts | toYaml | nindent 8 }}
+
+
+{{/*
+Usage: {{ include "base.pod.container.envFrom" (dict "val" $val "ctx" $ctx) }}
+*/}}
+{{ define "base.pod.container.envFrom" -}}
+{{ $ctx := .ctx -}}
+{{ $val := .val -}}
+{{ $configMapRefs := include "base.configMaps.envFrom" (dict "envVars" $val.configMaps.envVars "ctx" $ctx) | fromYaml -}}
+{{ $secretRefs := include "base.secrets.envFrom" (dict "envVars" $val.secrets.envVars "ctx" $ctx) | fromYaml -}}
+{{ $items := concat $configMapRefs.envFrom $secretRefs.envFrom | default list -}}
+{{ dict "envFrom" $items | toYaml }}
 {{- end }}
+
+{{/*
+Template for volume mounts
+Usage: {{ include "base.pod.container.volumeMounts" (dict "configMaps" $configMaps "secrets" $secrets "persistentVolumeClaims" $persistentVolumeClaims "ctx" $ctx) }}
+*/}}
+{{ define "base.pod.container.volumeMounts" -}}
+{{ $ctx := .ctx -}}
+{{ $configMaps := .configMaps -}}
+{{ $secrets := .secrets -}}
+{{ $persistentVolumeClaims := .persistentVolumeClaims -}}
+{{ $cmVolumeMounts := include "base.configMaps.files.volumeMounts" (dict "content" $configMaps.files "ctx" $ctx) | fromYaml -}}
+{{ $secretVolumeMounts := include "base.secrets.files.volumeMounts" (dict "content" $secrets.files "ctx" $ctx) | fromYaml -}}
+{{ $pvcVolumeMounts := include "base.persistentVolumeClaims.volumeMounts" (dict "persistentVolumeClaims" $persistentVolumeClaims "ctx" $ctx) | fromYaml -}}
+{{ $items := concat $cmVolumeMounts.volumeMounts $secretVolumeMounts.volumeMounts $pvcVolumeMounts.volumeMounts | default list -}}
+{{ dict "volumeMounts" $items | toYaml }}
 {{- end }}

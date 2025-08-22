@@ -1,5 +1,5 @@
 {{/*
-Usage: {{ include "base.secrets" (dict "secrets" .Values.secrets "ctx" $) }}
+Usage: {{ include "base.secrets" (dict "secrets" .Values.secrets "ctx" $ctx) }}
 */}}
 {{ define "base.secrets" -}}
 {{ $secrets := .secrets -}}
@@ -148,6 +148,21 @@ volumeMounts: {{ $mounts | toYaml | nindent 2 }}
 {{- end }}
 
 {{/*
+Usage: {{ include "base.secrets.envFrom" (dict "envVars" $envVars "ctx" $ctx) }}
+*/}}
+{{ define "base.secrets.envFrom" -}}
+{{ $envVars := .envVars -}}
+{{ $ctx := .ctx -}}
+{{ $default := include "base.secrets.default.content" (dict "postfix" "envVars" "ctx" $ctx) | fromYaml -}}
+{{ $envVars = mustMergeOverwrite $default $envVars -}}
+{{ $items := list -}}
+{{ if and $envVars.data $envVars.enabled -}}
+{{ $items = append $items (dict "secretRef" (dict "name" $envVars.metadata.name)) -}}
+{{- end }}
+{{ dict "envFrom" $items | toYaml }}
+{{- end }}
+
+{{/*
 Usage: {{ include "base.secrets.others.payload" (dict "content" $content "ctx" $ctx) }}
 */}}
 {{ define "base.secrets.others.payload" -}}
@@ -162,7 +177,7 @@ stringData: {{ tpl (. | toYaml) $ctx | nindent 2 }}
 {{- end }}
 
 {{/*
-Usage: {{ include "base.secrets.name" (dict "postfix" $postfix "ctx" $) }}
+Usage: {{ include "base.secrets.name" (dict "postfix" $postfix "ctx" $ctx) }}
 */}}
 {{ define "base.secrets.name" -}}
 {{ $postfix := .postfix -}}

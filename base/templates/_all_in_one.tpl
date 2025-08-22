@@ -1,5 +1,5 @@
 {{/*
-Usage: {{ include "base.configMaps.others.content" (dict "val" .Values "ctx" $) }}
+Usage: {{ include "base.allInOne.deployment" (dict "val" $val "ctx" $ctx) }}
 */}}
 {{ define "base.allInOne.deployment" -}}
 {{ $val := .val -}}

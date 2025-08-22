@@ -1,5 +1,5 @@
 {{/*
-Usage: {{ include "base.configMaps" (dict "configMaps" .Values.configMaps "ctx" $) }}
+Usage: {{ include "base.configMaps" (dict "configMaps" $configMaps "ctx" $ctx) }}
 */}}
 {{ define "base.configMaps" -}}
 {{ $configMaps := .configMaps -}}
@@ -145,6 +145,21 @@ Usage: {{ include "base.configMaps.files.volumeMounts" (dict "content" $content 
 {{- end }}
 {{- end }}
 volumeMounts: {{ $mounts | toYaml | nindent 2 }}
+{{- end }}
+
+{{/*
+Usage: {{ include "base.configMaps.envFrom" (dict "envVars" $envVars "ctx" $ctx) }}
+*/}}
+{{ define "base.configMaps.envFrom" -}}
+{{ $envVars := .envVars -}}
+{{ $ctx := .ctx -}}
+{{ $default := include "base.configMaps.default.content" (dict "postfix" "envVars" "ctx" $ctx) | fromYaml -}}
+{{ $envVars = mustMergeOverwrite $default $envVars -}}
+{{ $items := list -}}
+{{ if and $envVars.data $envVars.enabled -}}
+{{ $items = append $items (dict "configMapRef" (dict "name" $envVars.metadata.name)) -}}
+{{- end }}
+{{ dict "envFrom" $items | toYaml }}
 {{- end }}
 
 {{/*
