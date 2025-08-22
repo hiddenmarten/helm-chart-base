@@ -101,9 +101,13 @@ spec:
             name: vault-env-vars
         image: hashicorp/vault:1.20.2
         name: vault
-        ports:
-        - containerPort: 8200
-          name: http
+        resources:
+          limits:
+            cpu: 100m
+            memory: 128Mi
+          requests:
+            cpu: 100m
+            memory: 128Mi
         volumeMounts:
         - mountPath: /vault/config.d/config.json
           name: config-map-files
@@ -119,6 +123,33 @@ spec:
       - name: persistent-volume-claim-file
         persistentVolumeClaim:
           claimName: vault-file
+---
+# Source: vault/templates/base.tpl
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  labels:
+    app.kubernetes.io/instance: vault
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: vault
+    helm.sh/chart: vault-0.1.0
+  name: vault
+spec:
+  rules:
+  - host: vault.example.local
+    http:
+      paths:
+      - backend:
+          service:
+            name: vault
+            port:
+              name: http
+        path: /
+        pathType: Prefix
+  tls:
+  - hosts:
+    - vault.example.local
+    secretName: vault-tls-secret
 ---
 # Source: vault/templates/base.tpl
 apiVersion: monitoring.coreos.com/v1

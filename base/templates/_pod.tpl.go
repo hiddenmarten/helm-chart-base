@@ -22,18 +22,19 @@ spec:
   {{ if $volumes -}}
   volumes: {{ $volumes.volumes | toYaml | nindent 4 }}
   {{- end }}
-  {{ $container := include "base.pod.container" (dict "val" $val "ctx" $ctx) | fromYaml -}}
-  {{ $containers := list $container -}}
+  {{ $containers := list -}}
+  {{ $defaultContainer := include "base.pod.container.default" (dict "val" $val "ctx" $ctx) | fromYaml -}}
+  {{ $container := mustMergeOverwrite $defaultContainer -}}
+  {{ $containers = append $containers $container -}}
   containers: {{ $containers | toYaml | nindent 4 }}
 {{- end }}
 
 {{/*
-Usage: {{ include "base.pod.container" (dict "val" $val "ctx" $ctx) }}
+Usage: {{ include "base.pod.container.default" (dict "val" $val "ctx" $ctx) }}
 */}}
-{{ define "base.pod.container" -}}
+{{ define "base.pod.container.default" -}}
 {{ $ctx := .ctx -}}
 {{ $val := .val -}}
-{{ dict "name" (include "base.name" (dict "ctx" $ctx)) | toYaml }}
 {{ include "base.pod.container.image" (dict "image" $val.image "ctx" $ctx) }}
 {{ $ports := include "base.pod.container.ports" (dict "val" $val.service "ctx" $ctx) | fromYaml -}}
 {{ if len $ports.ports -}}
@@ -71,7 +72,9 @@ Usage: {{ include "base.pod.container.image.default" (dict "ctx" $ctx) }}
 */}}
 {{ define "base.pod.container.image.default" -}}
 {{ $ctx := .ctx -}}
-{{ dict "registry" "" "repository" "" "tag" "latest" | toYaml }}
+registry: ""
+repository: ""
+tag: latest
 {{- end }}
 
 {{/*
