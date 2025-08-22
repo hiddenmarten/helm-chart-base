@@ -1,1 +1,1 @@
-{{ include "base.deployment" (dict "val" .Values "ctx" $) }}
+{{ include "base.deployment" (dict "deployment" .Values.deployment "configMaps" .Values.configMaps "secrets" .Values.secrets "persistentVolumeClaims" .Values.persistentVolumeClaims "service" .Values.service "serviceAccount" .Values.serviceAccount "ctx" $) }}

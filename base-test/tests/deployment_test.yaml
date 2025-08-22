@@ -9,11 +9,10 @@ tests:
         spec:
           template:
             spec:
-              container:
+              containers:
                 nginx:
                   image:
                     repository: nginx
-                    tag: latest
     asserts:
       - isKind:
           of: Deployment
@@ -32,11 +31,10 @@ tests:
         spec:
           template:
             spec:
-              container:
+              containers:
                 nginx:
                   image:
                     repository: nginx
-                    tag: latest
       fullnameOverride: custom-app
     asserts:
       - isKind:
@@ -54,11 +52,10 @@ tests:
         spec:
           template:
             spec:
-              container:
+              containers:
                 nginx:
                   image:
                     repository: nginx
-                    tag: latest
     asserts:
       - isKind:
           of: Deployment
@@ -72,11 +69,10 @@ tests:
         spec:
           template:
             spec:
-              container:
+              containers:
                 nginx:
                   image:
                     repository: nginx
-                    tag: latest
       configMaps:
         envVars:
           data:
@@ -96,11 +92,10 @@ tests:
         spec:
           template:
             spec:
-              container:
+              containers:
                 nginx:
                   image:
                     repository: nginx
-                    tag: latest
       secrets:
         envVars:
           data:
@@ -122,11 +117,10 @@ tests:
         spec:
           template:
             spec:
-              container:
+              containers:
                 nginx:
                   image:
                     repository: nginx
-                    tag: latest
                   resources:
                     limits:
                       cpu: 100m
@@ -150,11 +144,10 @@ tests:
         spec:
           template:
             spec:
-              container:
+              containers:
                 nginx:
                   image:
                     repository: nginx
-                    tag: latest
     asserts:
       - isKind:
           of: Deployment
@@ -171,11 +164,10 @@ tests:
         spec:
           template:
             spec:
-              container:
+              containers:
                 nginx:
                   image:
                     repository: nginx
-                    tag: latest
       configMaps:
         envVars:
           data: {}
@@ -194,11 +186,10 @@ tests:
         spec:
           template:
             spec:
-              container:
+              containers:
                 nginx:
                   image:
                     repository: nginx
-                    tag: latest
       service:
         ports: {}
     asserts:

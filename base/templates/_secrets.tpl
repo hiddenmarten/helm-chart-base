@@ -4,6 +4,8 @@ Usage: {{ include "base.secrets" (dict "secrets" .Values.secrets "ctx" $ctx) }}
 {{ define "base.secrets" -}}
 {{ $secrets := .secrets -}}
 {{ $ctx := .ctx -}}
+{{ $default := include "base.secrets.default" (dict "ctx" $ctx) | fromYaml -}}
+{{ $secrets = mustMergeOverwrite $secrets $default -}}
 {{- range $postfix, $content := $secrets }}
 {{ $content = include "base.secrets.content" (dict "postfix" $postfix "content" $content "ctx" $ctx) | fromYaml -}}
 {{ if and $content.enabled (or $content.data $content.stringData) -}}
@@ -199,4 +201,13 @@ metadata:
 data: {}
 stringData: {}
 mount: {}
+{{- end }}
+
+{{/*
+Usage: {{ include "base.secrets.default" (dict "ctx" $ctx) }}
+*/}}
+{{ define "base.secrets.default" -}}
+{{ $ctx := .ctx -}}
+envVars: {}
+files: {}
 {{- end }}

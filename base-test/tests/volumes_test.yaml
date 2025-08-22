@@ -9,11 +9,10 @@ tests:
         spec:
           template:
             spec:
-              container:
+              containers:
                 nginx:
                   image:
                     repository: nginx
-                    tag: latest
       configMaps:
         files:
           data:
@@ -43,11 +42,10 @@ tests:
         spec:
           template:
             spec:
-              container:
+              containers:
                 nginx:
                   image:
                     repository: nginx
-                    tag: latest
       secrets:
         files:
           data:
@@ -75,11 +73,10 @@ tests:
         spec:
           template:
             spec:
-              container:
+              containers:
                 nginx:
                   image:
                     repository: nginx
-                    tag: latest
       persistentVolumeClaims:
         data:
           mount:
@@ -109,11 +106,10 @@ tests:
         spec:
           template:
             spec:
-              container:
+              containers:
                 nginx:
                   image:
                     repository: nginx
-                    tag: latest
       configMaps:
         files:
           data: {}
@@ -135,11 +131,10 @@ tests:
         spec:
           template:
             spec:
-              container:
+              containers:
                 nginx:
                   image:
                     repository: nginx
-                    tag: latest
       configMaps:
         files:
           data:

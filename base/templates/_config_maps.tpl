@@ -4,6 +4,8 @@ Usage: {{ include "base.configMaps" (dict "configMaps" $configMaps "ctx" $ctx) }
 {{ define "base.configMaps" -}}
 {{ $configMaps := .configMaps -}}
 {{ $ctx := .ctx -}}
+{{ $default := include "base.configMaps.default" (dict "ctx" $ctx) | fromYaml -}}
+{{ $configMaps = mustMergeOverwrite $configMaps $default -}}
 {{- range $postfix, $content := $configMaps }}
 {{ $content = include "base.configMaps.content" (dict "postfix" $postfix "content" $content "ctx" $ctx) | fromYaml -}}
 {{ if and $content.enabled (or $content.data $content.binaryData) -}}
@@ -199,4 +201,13 @@ metadata:
 data: {}
 binaryData: {}
 mount: {}
+{{- end }}
+
+{{/*
+Usage: {{ include "base.configMaps.default" (dict "ctx" $ctx) }}
+*/}}
+{{ define "base.configMaps.default" -}}
+{{ $ctx := .ctx -}}
+envVars: {}
+files: {}
 {{- end }}

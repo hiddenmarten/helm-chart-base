@@ -17,8 +17,8 @@ A HashiCorp Vault using base library
 | configMaps.files.data."/vault/config.d/config.json".disable_mlock | bool | `true` |  |
 | configMaps.files.data."/vault/config.d/config.json".storage.file.path | string | `"/vault/file"` |  |
 | configMaps.files.data."/vault/config.d/config.json".ui | bool | `true` |  |
-| deployment.spec.template.spec.container.vault.image.repository | string | `"hashicorp/vault"` |  |
-| deployment.spec.template.spec.container.vault.image.tag | string | `"1.20.2"` |  |
+| deployment.spec.template.spec.containers.vault.image.repository | string | `"hashicorp/vault"` |  |
+| deployment.spec.template.spec.containers.vault.image.tag | string | `"1.20.2"` |  |
 | ingress.spec.rules."vault.example.local".http.paths./.backend.service.port.name | string | `"http"` |  |
 | ingress.spec.rules."vault.example.local".tls.secretName | string | `"vault-tls-secret"` |  |
 | persistentVolumeClaims.file.mount.mountPath | string | `"/vault/file"` |  |

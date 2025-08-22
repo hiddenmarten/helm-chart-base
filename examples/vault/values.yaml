@@ -2,7 +2,7 @@ deployment:
   spec:
     template:
       spec:
-        container:
+        containers:
           vault:
             image:
               repository: hashicorp/vault
