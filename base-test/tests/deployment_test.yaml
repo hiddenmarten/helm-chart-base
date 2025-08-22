@@ -5,9 +5,15 @@ templates:
 tests:
   - it: renders a Deployment with basic configuration
     set:
-      image:
-        repository: nginx
-        tag: latest
+      deployment:
+        spec:
+          template:
+            spec:
+              container:
+                nginx:
+                  image:
+                    repository: nginx
+                    tag: latest
     asserts:
       - isKind:
           of: Deployment
@@ -22,9 +28,15 @@ tests:
     skip:
       reason: "YAML formatting issue needs investigation"
     set:
-      image:
-        repository: nginx
-        tag: latest
+      deployment:
+        spec:
+          template:
+            spec:
+              container:
+                nginx:
+                  image:
+                    repository: nginx
+                    tag: latest
       fullnameOverride: custom-app
     asserts:
       - isKind:
@@ -37,10 +49,16 @@ tests:
     skip:
       reason: "under implementation"
     set:
-      image:
-        repository: nginx
-        tag: latest
-      replicaCount: 3
+      deployment:
+        replicas: 3
+        spec:
+          template:
+            spec:
+              container:
+                nginx:
+                  image:
+                    repository: nginx
+                    tag: latest
     asserts:
       - isKind:
           of: Deployment
@@ -50,9 +68,15 @@ tests:
 
   - it: renders a Deployment with environment variables from configMaps
     set:
-      image:
-        repository: nginx
-        tag: latest
+      deployment:
+        spec:
+          template:
+            spec:
+              container:
+                nginx:
+                  image:
+                    repository: nginx
+                    tag: latest
       configMaps:
         envVars:
           data:
@@ -68,9 +92,15 @@ tests:
 
   - it: renders a Deployment with environment variables from secrets
     set:
-      image:
-        repository: nginx
-        tag: latest
+      deployment:
+        spec:
+          template:
+            spec:
+              container:
+                nginx:
+                  image:
+                    repository: nginx
+                    tag: latest
       secrets:
         envVars:
           data:
@@ -88,16 +118,22 @@ tests:
     skip:
       reason: "under implementation"
     set:
-      image:
-        repository: nginx
-        tag: latest
-      resources:
-        limits:
-          cpu: 100m
-          memory: 128Mi
-        requests:
-          cpu: 50m
-          memory: 64Mi
+      deployment:
+        spec:
+          template:
+            spec:
+              container:
+                nginx:
+                  image:
+                    repository: nginx
+                    tag: latest
+                  resources:
+                    limits:
+                      cpu: 100m
+                      memory: 128Mi
+                    requests:
+                      cpu: 50m
+                      memory: 64Mi
     asserts:
       - isKind:
           of: Deployment
@@ -110,9 +146,15 @@ tests:
 
   - it: should render deployment with only image configured
     set:
-      image:
-        repository: nginx
-        tag: latest
+      deployment:
+        spec:
+          template:
+            spec:
+              container:
+                nginx:
+                  image:
+                    repository: nginx
+                    tag: latest
     asserts:
       - isKind:
           of: Deployment
@@ -125,9 +167,15 @@ tests:
 
   - it: should not render envFrom when no config maps or secrets have data
     set:
-      image:
-        repository: nginx
-        tag: latest
+      deployment:
+        spec:
+          template:
+            spec:
+              container:
+                nginx:
+                  image:
+                    repository: nginx
+                    tag: latest
       configMaps:
         envVars:
           data: {}
@@ -140,120 +188,17 @@ tests:
       - notExists:
           path: spec.template.spec.containers[0].envFrom
 
-  - it: should not render livenessProbe when empty
-    set:
-      image:
-        repository: nginx
-        tag: latest
-      livenessProbe: {}
-    asserts:
-      - isKind:
-          of: Deployment
-      - notExists:
-          path: spec.template.spec.containers[0].livenessProbe
-
-  - it: should not render readinessProbe when empty
-    set:
-      image:
-        repository: nginx
-        tag: latest
-      readinessProbe: {}
-    asserts:
-      - isKind:
-          of: Deployment
-      - notExists:
-          path: spec.template.spec.containers[0].readinessProbe
-
-  - it: should not render resources when empty
-    set:
-      image:
-        repository: nginx
-        tag: latest
-      resources: {}
-    asserts:
-      - isKind:
-          of: Deployment
-      - notExists:
-          path: spec.template.spec.containers[0].resources
-
-  - it: should not render securityContext when empty
-    set:
-      image:
-        repository: nginx
-        tag: latest
-      securityContext: {}
-    asserts:
-      - isKind:
-          of: Deployment
-      - notExists:
-          path: spec.template.spec.containers[0].securityContext
-
-  - it: should not render pod securityContext when empty
-    set:
-      image:
-        repository: nginx
-        tag: latest
-      pod:
-        securityContext: {}
-    asserts:
-      - isKind:
-          of: Deployment
-      - notExists:
-          path: spec.template.spec.securityContext
-
-  - it: should not render imagePullSecrets when empty
-    set:
-      image:
-        repository: nginx
-        tag: latest
-      imagePullSecrets: []
-    asserts:
-      - isKind:
-          of: Deployment
-      - notExists:
-          path: spec.template.spec.imagePullSecrets
-
-  - it: should not render nodeSelector when empty
-    set:
-      image:
-        repository: nginx
-        tag: latest
-      nodeSelector: {}
-    asserts:
-      - isKind:
-          of: Deployment
-      - notExists:
-          path: spec.template.spec.nodeSelector
-
-  - it: should not render affinity when empty
-    set:
-      image:
-        repository: nginx
-        tag: latest
-      affinity: {}
-    asserts:
-      - isKind:
-          of: Deployment
-      - notExists:
-          path: spec.template.spec.affinity
-
-  - it: should not render tolerations when empty
-    set:
-      image:
-        repository: nginx
-        tag: latest
-      tolerations: []
-    asserts:
-      - isKind:
-          of: Deployment
-      - notExists:
-          path: spec.template.spec.tolerations
-
   - it: should not render ports when service.ports is empty
     set:
-      image:
-        repository: nginx
-        tag: latest
+      deployment:
+        spec:
+          template:
+            spec:
+              container:
+                nginx:
+                  image:
+                    repository: nginx
+                    tag: latest
       service:
         ports: {}
     asserts:

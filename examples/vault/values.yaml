@@ -4,17 +4,9 @@ deployment:
       spec:
         container:
           vault:
-            resources:
-              limits:
-                cpu: 100m
-                memory: 128Mi
-              requests:
-                cpu: 100m
-                memory: 128Mi
-
-image:
-  repository: hashicorp/vault
-  tag: 1.20.2
+            image:
+              repository: hashicorp/vault
+              tag: 1.20.2
 
 service:
   spec:

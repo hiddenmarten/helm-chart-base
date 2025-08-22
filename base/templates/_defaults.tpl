@@ -8,23 +8,13 @@ Usage: {{ include "base.defaults" (dict "ctx" $ctx) }}
 nameOverride: ""
 fullnameOverride: ""
 
-# Workload section
-replicaCount: 1
-image: {}
-securityContext: {}
-resources: {}
-livenessProbe: {}
-readinessProbe: {}
-imagePullSecrets: []
-nodeSelector: {}
-tolerations: []
-affinity: {}
-pod:
-  annotations: {}
-  labels: {}
-  securityContext: {}
+deployment:
+  spec:
+    replicas: 1
+    template:
+      spec:
+        container: {}
 
-# Non-workload
 serviceAccount: {}
 service: {}
 ingress: {}

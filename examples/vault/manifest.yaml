@@ -101,13 +101,9 @@ spec:
             name: vault-env-vars
         image: hashicorp/vault:1.20.2
         name: vault
-        resources:
-          limits:
-            cpu: 100m
-            memory: 128Mi
-          requests:
-            cpu: 100m
-            memory: 128Mi
+        ports:
+        - containerPort: 8200
+          name: http
         volumeMounts:
         - mountPath: /vault/config.d/config.json
           name: config-map-files

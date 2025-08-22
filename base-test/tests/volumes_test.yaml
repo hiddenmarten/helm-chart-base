@@ -5,9 +5,15 @@ templates:
 tests:
   - it: should render deployment with volumes and volumeMounts from configMaps files
     set:
-      image:
-        repository: nginx
-        tag: latest
+      deployment:
+        spec:
+          template:
+            spec:
+              container:
+                nginx:
+                  image:
+                    repository: nginx
+                    tag: latest
       configMaps:
         files:
           data:
@@ -33,9 +39,15 @@ tests:
 
   - it: should render deployment with volumes and volumeMounts from secrets files
     set:
-      image:
-        repository: nginx
-        tag: latest
+      deployment:
+        spec:
+          template:
+            spec:
+              container:
+                nginx:
+                  image:
+                    repository: nginx
+                    tag: latest
       secrets:
         files:
           data:
@@ -59,9 +71,15 @@ tests:
 
   - it: should render deployment with volumes and volumeMounts from persistentVolumeClaims
     set:
-      image:
-        repository: nginx
-        tag: latest
+      deployment:
+        spec:
+          template:
+            spec:
+              container:
+                nginx:
+                  image:
+                    repository: nginx
+                    tag: latest
       persistentVolumeClaims:
         data:
           mount:
@@ -87,9 +105,15 @@ tests:
 
   - it: should not render volumes when no data is provided
     set:
-      image:
-        repository: nginx
-        tag: latest
+      deployment:
+        spec:
+          template:
+            spec:
+              container:
+                nginx:
+                  image:
+                    repository: nginx
+                    tag: latest
       configMaps:
         files:
           data: {}
@@ -107,9 +131,15 @@ tests:
 
   - it: should render multiple volumes of different types
     set:
-      image:
-        repository: nginx
-        tag: latest
+      deployment:
+        spec:
+          template:
+            spec:
+              container:
+                nginx:
+                  image:
+                    repository: nginx
+                    tag: latest
       configMaps:
         files:
           data:
