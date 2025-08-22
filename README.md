@@ -12,7 +12,10 @@ TODO list:
 
 
 # Agreements:
- - no lists allowed in helm chart values, lists break the merge flow in chart inheritance
+ - no lists of dictionaries are allowed in helm chart, helm lists flow breaks the merge flow in chart inheritance
+ - loose coupling, dependencies between resources made only via default names
+   - e.g., if a developer wants to rename Service, they have to update the service reference name in Ingress and ServiceMonitor
+
 
 # Commands:
 
