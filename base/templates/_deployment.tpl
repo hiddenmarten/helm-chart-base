@@ -16,9 +16,22 @@ kind: Deployment
 {{- end }}
 
 {{/*
-Usage: {{ include "base.deployment" (dict "val" $val "ctx" $ctx) }}
+Usage: {{ include "base.deployment.content" (dict "val" $val "ctx" $ctx) }}
 */}}
 {{ define "base.deployment.content" -}}
+{{ $ctx := .ctx -}}
+{{ $val := .val -}}
+{{ $default := include "base.deployment.default" (dict "ctx" $ctx) | fromYaml -}}
+{{ $pod := include "base.pod" (dict "val" $val "ctx" $ctx) | fromYaml -}}
+{{ $spec := dict "spec" (dict "template" $pod) -}}
+{{ $content := mustMergeOverwrite $default $spec -}}
+{{ $content | toYaml }}
+{{- end }}
+
+{{/*
+Usage: {{ include "base.deployment.default" (dict "ctx" $ctx) }}
+*/}}
+{{ define "base.deployment.default" -}}
 {{ $ctx := .ctx -}}
 {{ $val := .val -}}
 metadata:
@@ -27,8 +40,4 @@ metadata:
 spec:
   selector:
     matchLabels: {{ include "base.selectorLabels" (dict "ctx" $ctx) | nindent 6 }}
-  {{ $pod := include "base.pod" (dict "val" $val "ctx" $ctx) | fromYaml -}}
-  {{ if $pod -}}
-  template: {{ $pod | toYaml | nindent 4 }}
-  {{- end }}
 {{- end }}
