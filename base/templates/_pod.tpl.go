@@ -34,7 +34,7 @@ Usage: {{ include "base.pod.container" (dict "val" $val "ctx" $ctx) }}
 {{ $ctx := .ctx -}}
 {{ $val := .val -}}
 name: {{ include "base.name" (dict "ctx" $ctx) }}
-image: "{{ $val.image.repository }}:{{ $val.image.tag }}"
+{{ include "base.pod.container.image" (dict "image" $val.image "ctx" $ctx) }}
 {{ $ports := include "base.pod.container.ports" (dict "val" $val.service "ctx" $ctx) | fromYaml -}}
 {{ if len $ports.ports -}}
 {{ $ports | toYaml }}
@@ -47,6 +47,33 @@ image: "{{ $val.image.repository }}:{{ $val.image.tag }}"
 {{ if len $volumeMounts.volumeMounts -}}
 {{ $volumeMounts | toYaml }}
 {{- end }}
+{{- end }}
+
+{{/*
+Usage: {{ include "base.pod.container.image" (dict "image" $image "ctx" $ctx) }}
+*/}}
+{{ define "base.pod.container.image" -}}
+{{ $ctx := .ctx -}}
+{{ $image := .image -}}
+{{ $default := include "base.pod.container.image.default" (dict "ctx" $ctx) | fromYaml -}}
+{{ $image = mustMergeOverwrite $default $image -}}
+{{ $value := "" -}}
+{{ if $image.registry -}}
+{{ $value = printf "%s/%s:%s" $image.registry $image.repository $image.tag -}}
+{{ else -}}
+{{ $value = printf "%s:%s" $image.repository $image.tag -}}
+{{- end }}
+{{ dict "image" $value | toYaml }}
+{{- end }}
+
+{{/*
+Usage: {{ include "base.pod.container.image.default" (dict "ctx" $ctx) }}
+*/}}
+{{ define "base.pod.container.image.default" -}}
+{{ $ctx := .ctx -}}
+registry: ""
+repository: ""
+tag: latest
 {{- end }}
 
 {{/*
