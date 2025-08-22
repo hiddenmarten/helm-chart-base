@@ -39,7 +39,7 @@ image: "{{ $val.image.repository }}:{{ $val.image.tag }}"
 {{ if len $ports.ports -}}
 {{ $ports | toYaml }}
 {{- end }}
-{{ $envFrom := include "base.pod.container.envFrom" (dict "val" $val "ctx" $ctx) | fromYaml -}}
+{{ $envFrom := include "base.pod.container.envFrom" (dict "configMaps" $val.configMaps "secrets" $val.secrets "ctx" $ctx) | fromYaml -}}
 {{ if len $envFrom.envFrom -}}
 {{ $envFrom | toYaml }}
 {{- end }}
@@ -50,7 +50,7 @@ image: "{{ $val.image.repository }}:{{ $val.image.tag }}"
 {{- end }}
 
 {{/*
-Usage: {{ include "base.pod.container.envFrom" (dict "service" $service "ctx" $ctx) }}
+Usage: {{ include "base.pod.container.ports" (dict "service" $service "ctx" $ctx) }}
 */}}
 {{ define "base.pod.container.ports" -}}
 {{ $ctx := .ctx -}}
@@ -66,13 +66,14 @@ Usage: {{ include "base.pod.container.envFrom" (dict "service" $service "ctx" $c
 {{- end }}
 
 {{/*
-Usage: {{ include "base.pod.container.envFrom" (dict "val" $val "ctx" $ctx) }}
+Usage: {{ include "base.pod.container.envFrom" (dict "configMaps" $configMaps "secrets" $secrets "ctx" $ctx) }}
 */}}
 {{ define "base.pod.container.envFrom" -}}
 {{ $ctx := .ctx -}}
-{{ $val := .val -}}
-{{ $configMapRefs := include "base.configMaps.envFrom" (dict "envVars" $val.configMaps.envVars "ctx" $ctx) | fromYaml -}}
-{{ $secretRefs := include "base.secrets.envFrom" (dict "envVars" $val.secrets.envVars "ctx" $ctx) | fromYaml -}}
+{{ $configMaps := .configMaps -}}
+{{ $secrets := .secrets -}}
+{{ $configMapRefs := include "base.configMaps.envFrom" (dict "envVars" $configMaps.envVars "ctx" $ctx) | fromYaml -}}
+{{ $secretRefs := include "base.secrets.envFrom" (dict "envVars" $secrets.envVars "ctx" $ctx) | fromYaml -}}
 {{ $items := concat $configMapRefs.envFrom $secretRefs.envFrom | default list -}}
 {{ dict "envFrom" $items | toYaml }}
 {{- end }}
