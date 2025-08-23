@@ -1,1 +1,1 @@
-{{ include "base.ingress" (dict "ingress" .Values.ingress "ctx" $) }}
+{{ include "base.ingress" (dict "ingress" .Values.ingress "service" .Values.service "ctx" $) }}
