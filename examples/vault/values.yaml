@@ -41,7 +41,8 @@ ingress:
               backend:
                 service:
                   port:
-                    name: http
+                    #name: http
+                    number: 8200
 
 persistentVolumeClaims:
   file:

@@ -136,8 +136,7 @@ pathType: Prefix
 backend:
   service:
     name: {{ include "base.fullname" (dict "ctx" $ctx) }}
-    port:
-      name: "" # Have to be defined by developer of chart
+    port: {}
 {{- end }}
 
 {{/*
