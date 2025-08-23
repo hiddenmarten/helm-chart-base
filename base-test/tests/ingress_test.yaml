@@ -426,7 +426,10 @@ tests:
               http:
                 paths:
                   "/":
-                    pathType: Prefix
+                    backend:
+                      service:
+                        port:
+                          name: http
     asserts:
       - isKind:
           of: Ingress
@@ -645,64 +648,3 @@ tests:
       - contains:
           path: spec.tls[0].hosts
           content: app.example.com
-
-
-  - it: renders an Ingress with custom resource backend
-    set:
-      ingress:
-        spec:
-          rules:
-            "vault.example.local":
-              tls:
-                secretName: vault-tls-secret
-              http:
-                paths:
-                  "/":
-                    backend:
-                      service: null
-                      resource:
-                        apiGroup: k8s.example.com
-                        kind: StorageBucket
-                        name: icon-assets
-    asserts:
-      - isKind:
-          of: Ingress
-      - equal:
-          path: spec.rules[0].host
-          value: vault.example.local
-      - equal:
-          path: spec.rules[0].http.paths[0].path
-          value: /
-      - notExists:
-          path: spec.rules[0].http.paths[0].backend.service
-      - equal:
-          path: spec.rules[0].http.paths[0].backend.resource.apiGroup
-          value: k8s.example.com
-      - equal:
-          path: spec.rules[0].http.paths[0].backend.resource.kind
-          value: StorageBucket
-      - equal:
-          path: spec.rules[0].http.paths[0].backend.resource.name
-          value: icon-assets
-      - equal:
-          path: spec.tls[0].secretName
-          value: vault-tls-secret
-      - contains:
-          path: spec.tls[0].hosts
-          content: vault.example.local
-
-
-  - it: should not render Ingress when all paths lack a valid backend
-    set:
-      ingress:
-        spec:
-          rules:
-            "vault.example.local":
-              http:
-                paths:
-                  "/":
-                    backend:
-                      service: null
-    asserts:
-      - hasDocuments:
-          count: 0

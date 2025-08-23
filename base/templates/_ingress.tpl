@@ -1,12 +1,11 @@
 {{/*
 Ingress template for baserary chart
-Usage: {{ include "base.ingress" (dict "ingress" $ingress "service" $service "ctx" $ctx) }}
+Usage: {{ include "base.ingress" (dict "ingress" $ingress "ctx" $ctx) }}
 */}}
 {{ define "base.ingress" -}}
 {{ $ingress := .ingress -}}
-{{ $service := .service -}}
 {{ $ctx := .ctx -}}
-{{ $content := include "base.ingress.content" (dict "ingress" $ingress "service" $service "ctx" $ctx) | fromYaml -}}
+{{ $content := include "base.ingress.content" (dict "ingress" $ingress "ctx" $ctx) | fromYaml -}}
 {{ if and $content.enabled $content.spec.rules -}}
 apiVersion: networking.k8s.io/v1
 kind: Ingress
@@ -17,14 +16,13 @@ kind: Ingress
 {{- end }}
 
 {{/*
-Usage: {{ include "base.ingress.content" (dict "ingress" $ingress "service" $service "ctx" $ctx) }}
+Usage: {{ include "base.ingress.content" (dict "ingress" $ingress "ctx" $ctx) }}
 */}}
 {{ define "base.ingress.content" -}}
 {{ $ingress := .ingress -}}
-{{ $service := .service -}}
 {{ $ctx := .ctx -}}
 {{ $default := include "base.ingress.default" (dict "ctx" $ctx) | fromYaml -}}
-{{ $override := include "base.ingress.override" (dict "ingress" $ingress "service" $service "ctx" $ctx) | fromYaml -}}
+{{ $override := include "base.ingress.override" (dict "ingress" $ingress "ctx" $ctx) | fromYaml -}}
 {{ $content := mustMergeOverwrite $default $ingress $override -}}
 {{ if not $content.metadata.annotations -}}
 {{ $_ := unset $content.metadata "annotations" -}}
@@ -33,25 +31,23 @@ Usage: {{ include "base.ingress.content" (dict "ingress" $ingress "service" $ser
 {{- end }}
 
 {{/*
-Usage: {{ include "base.ingress.override" (dict ingress" $ingress "service" $service "ctx" $ctx) }}
+Usage: {{ include "base.ingress.override" (dict ingress" $ingress "ctx" $ctx) }}
 */}}
 {{ define "base.ingress.override" -}}
 {{ $ingress := .ingress -}}
-{{ $service := .service -}}
 {{ $ctx := .ctx -}}
-{{ $spec := include "base.ingress.spec" (dict "spec" $ingress.spec "service" $service "ctx" $ctx) | fromYaml -}}
+{{ $spec := include "base.ingress.spec" (dict "spec" $ingress.spec "ctx" $ctx) | fromYaml -}}
 {{ dict "spec" $spec | toYaml }}
 {{- end }}
 
 {{/*
-Usage: {{ include "base.ingress.spec" (dict "spec" $spec "service" $service "ctx" $ctx) }}
+Usage: {{ include "base.ingress.spec" (dict "spec" $spec "ctx" $ctx) }}
 */}}
 {{ define "base.ingress.spec" -}}
 {{ $spec := .spec -}}
-{{ $service := .service -}}
 {{ $ctx := .ctx -}}
 {{ $spec = mustMergeOverwrite $spec (include "base.ingress.tls" (dict "rules" $spec.rules "ctx" $ctx) | fromYaml) }}
-{{ $spec = mustMergeOverwrite $spec (include "base.ingress.rules" (dict "rules" $spec.rules "service" $service "ctx" $ctx) | fromYaml) }}
+{{ $spec = mustMergeOverwrite $spec (include "base.ingress.rules" (dict "rules" $spec.rules "ctx" $ctx) | fromYaml) }}
 {{ $spec | toYaml }}
 {{- end }}
 
@@ -82,11 +78,10 @@ Usage: {{ include "base.ingress.tls" (dict "rules" .Values.ingress.spec.rules "c
 
 {{/*
 Rules sections template for ingress
-Usage: {{ include "base.ingress.rules" (dict "rules" .Values.ingress.spec.rules "service" $service "ctx" $ctx) }}
+Usage: {{ include "base.ingress.rules" (dict "rules" .Values.ingress.spec.rules "ctx" $ctx) }}
 */}}
 {{ define "base.ingress.rules" -}}
   {{ $rules := .rules -}}
-  {{ $service := .service -}}
   {{ $ctx := .ctx -}}
   {{ $rulesList := list -}}
   {{ range $k, $v := $rules -}}
@@ -116,7 +111,6 @@ Usage: {{ include "base.ingress.rules" (dict "rules" .Values.ingress.spec.rules 
 {{- end }}
 
 {{/*
-Path section sctracture
 Usage: {{ include "base.ingress.path" (dict "path" $path "content" $content "ctx" $ctx) }}
 */}}
 {{ define "base.ingress.path" -}}
@@ -126,10 +120,8 @@ Usage: {{ include "base.ingress.path" (dict "path" $path "content" $content "ctx
 {{ $default := include "base.ingress.path.default" (dict "ctx" $ctx) | fromYaml -}}
 {{ $content = mustMergeOverwrite $default $content -}}
 {{ $_ := set $content "path" $path -}}
-{{ if not $content.backend.service -}}
-{{ $backend := $content.backend -}}
-{{ $_ := unset $backend "service" -}}
-{{ $_ = set $content "backend" $backend -}}
+{{ if and (not $content.backend.service.port.name) (not $content.backend.service.port.number) -}}
+{{ fail "backend service port name or port number is required" }}
 {{ end -}}
 {{ $content | toYaml }}
 {{- end }}
@@ -144,6 +136,8 @@ pathType: Prefix
 backend:
   service:
     name: {{ include "base.fullname" (dict "ctx" $ctx) }}
+    port:
+      name: "" # Have to be defined by developer of chart
 {{- end }}
 
 {{/*
