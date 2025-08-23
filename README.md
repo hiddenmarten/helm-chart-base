@@ -1,7 +1,6 @@
 # helm-chart-base
 
 TODO list:
-- Refactor deployment (Implement reusable podSpec section)
 - Implement statefulset support
 - Write chart examples:
   - single postgres
