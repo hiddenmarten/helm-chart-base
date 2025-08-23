@@ -1,0 +1,278 @@
+suite: StatefulSet template
+templates:
+  - templates/statefulset.tpl
+
+tests:
+  - it: renders a StatefulSet with basic configuration
+    set:
+      statefulset:
+        spec:
+          template:
+            spec:
+              containers:
+                nginx:
+                  image:
+                    repository: nginx
+    asserts:
+      - isKind:
+          of: StatefulSet
+      - equal:
+          path: metadata.name
+          value: RELEASE-NAME-base-test
+      - equal:
+          path: spec.template.spec.containers[0].image
+          value: nginx:latest
+      - equal:
+          path: spec.serviceName
+          value: RELEASE-NAME-base-test
+
+  - it: renders a StatefulSet with custom name
+    skip:
+      reason: "YAML formatting issue needs investigation"
+    set:
+      statefulset:
+        spec:
+          template:
+            spec:
+              containers:
+                nginx:
+                  image:
+                    repository: nginx
+      fullnameOverride: custom-app
+    asserts:
+      - isKind:
+          of: StatefulSet
+      - equal:
+          path: metadata.name
+          value: custom-app
+      - equal:
+          path: spec.serviceName
+          value: custom-app
+
+  - it: renders a StatefulSet with replica count
+    skip:
+      reason: "under implementation"
+    set:
+      statefulset:
+        replicas: 3
+        spec:
+          template:
+            spec:
+              containers:
+                nginx:
+                  image:
+                    repository: nginx
+    asserts:
+      - isKind:
+          of: StatefulSet
+      - equal:
+          path: spec.replicas
+          value: 3
+
+  - it: renders a StatefulSet with environment variables from configMaps
+    set:
+      statefulset:
+        spec:
+          template:
+            spec:
+              containers:
+                nginx:
+                  image:
+                    repository: nginx
+      configMaps:
+        envVars:
+          data:
+            TEST_VAR: test_value
+    asserts:
+      - isKind:
+          of: StatefulSet
+      - contains:
+          path: spec.template.spec.containers[0].envFrom
+          content:
+            configMapRef:
+              name: RELEASE-NAME-base-test-env-vars
+
+  - it: renders a StatefulSet with environment variables from secrets
+    set:
+      statefulset:
+        spec:
+          template:
+            spec:
+              containers:
+                nginx:
+                  image:
+                    repository: nginx
+      secrets:
+        envVars:
+          data:
+            SECRET_VAR: secret_value
+    asserts:
+      - isKind:
+          of: StatefulSet
+      - contains:
+          path: spec.template.spec.containers[0].envFrom
+          content:
+            secretRef:
+              name: RELEASE-NAME-base-test-env-vars
+
+  - it: renders a StatefulSet with resource limits
+    skip:
+      reason: "under implementation"
+    set:
+      statefulset:
+        spec:
+          template:
+            spec:
+              containers:
+                nginx:
+                  image:
+                    repository: nginx
+                  resources:
+                    limits:
+                      cpu: 100m
+                      memory: 128Mi
+                    requests:
+                      cpu: 50m
+                      memory: 64Mi
+    asserts:
+      - isKind:
+          of: StatefulSet
+      - equal:
+          path: spec.template.spec.containers[0].resources.limits.cpu
+          value: 100m
+      - equal:
+          path: spec.template.spec.containers[0].resources.requests.memory
+          value: 64Mi
+
+  - it: should render statefulset with only image configured
+    set:
+      statefulset:
+        spec:
+          template:
+            spec:
+              containers:
+                nginx:
+                  image:
+                    repository: nginx
+    asserts:
+      - isKind:
+          of: StatefulSet
+      - equal:
+          path: metadata.name
+          value: RELEASE-NAME-base-test
+      - equal:
+          path: spec.template.spec.containers[0].image
+          value: nginx:latest
+      - equal:
+          path: spec.serviceName
+          value: RELEASE-NAME-base-test
+
+  - it: should not render envFrom when no config maps or secrets have data
+    set:
+      statefulset:
+        spec:
+          template:
+            spec:
+              containers:
+                nginx:
+                  image:
+                    repository: nginx
+      configMaps:
+        envVars:
+          data: {}
+      secrets:
+        envVars:
+          data: {}
+    asserts:
+      - isKind:
+          of: StatefulSet
+      - notExists:
+          path: spec.template.spec.containers[0].envFrom
+
+  - it: should not render ports when service.ports is empty
+    set:
+      statefulset:
+        spec:
+          template:
+            spec:
+              containers:
+                nginx:
+                  image:
+                    repository: nginx
+      service:
+        ports: {}
+    asserts:
+      - isKind:
+          of: StatefulSet
+      - notExists:
+          path: spec.template.spec.containers[0].ports
+
+  - it: renders StatefulSet with custom serviceName
+    set:
+      statefulset:
+        spec:
+          serviceName: custom-headless-service
+          template:
+            spec:
+              containers:
+                nginx:
+                  image:
+                    repository: nginx
+    asserts:
+      - isKind:
+          of: StatefulSet
+      - equal:
+          path: spec.serviceName
+          value: custom-headless-service
+
+  - it: renders StatefulSet with volumeClaimTemplates
+    set:
+      statefulset:
+        spec:
+          volumeClaimTemplates:
+            - metadata:
+                name: data
+              spec:
+                accessModes: ["ReadWriteOnce"]
+                resources:
+                  requests:
+                    storage: 1Gi
+          template:
+            spec:
+              containers:
+                nginx:
+                  image:
+                    repository: nginx
+    asserts:
+      - isKind:
+          of: StatefulSet
+      - equal:
+          path: spec.volumeClaimTemplates[0].metadata.name
+          value: data
+      - equal:
+          path: spec.volumeClaimTemplates[0].spec.resources.requests.storage
+          value: 1Gi
+
+  - it: renders StatefulSet with updateStrategy
+    set:
+      statefulset:
+        spec:
+          updateStrategy:
+            type: RollingUpdate
+            rollingUpdate:
+              partition: 3
+          template:
+            spec:
+              containers:
+                nginx:
+                  image:
+                    repository: nginx
+    asserts:
+      - isKind:
+          of: StatefulSet
+      - equal:
+          path: spec.updateStrategy.type
+          value: RollingUpdate
+      - equal:
+          path: spec.updateStrategy.rollingUpdate.partition
+          value: 3

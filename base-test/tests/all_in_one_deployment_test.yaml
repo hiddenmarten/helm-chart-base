@@ -1,6 +1,6 @@
-suite: All-in-one template tests
+suite: All-in-one deployment template tests
 templates:
-  - templates/all_in_one.tpl
+  - templates/all_in_one_deployment.tpl
 
 tests:
   - it: renders all-in-one with basic configuration and default release name

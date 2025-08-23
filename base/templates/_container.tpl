@@ -72,7 +72,7 @@ Usage: {{ include "base.container.ports" (dict "service" $service "ctx" $ctx) }}
 {{ $ctx := .ctx -}}
 {{ $service := .service -}}
 {{ $items := list -}}
-{{ $defaultService := include "base.service.default.content" (dict "ctx" $ctx) | fromYaml -}}
+{{ $defaultService := include "base.service.default" (dict "ctx" $ctx) | fromYaml -}}
 {{ $service = mustMergeOverwrite $defaultService $service -}}
 {{- range $k, $v := $service.spec.ports }}
 {{ $item := dict "name" $k "containerPort" $v.port -}}

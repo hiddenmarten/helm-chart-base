@@ -21,9 +21,9 @@ Usage: {{ include "base.service.content" (dict "content" $content "ctx" $ctx) }}
 {{ define "base.service.content" -}}
 {{ $content := .content -}}
 {{ $ctx := .ctx -}}
-{{ $defaultContent := include "base.service.default.content" (dict "ctx" $ctx) | fromYaml -}}
+{{ $default := include "base.service.default" (dict "ctx" $ctx) | fromYaml -}}
 {{ $payload := include "base.service.payload" (dict "content" $content "ctx" $ctx) | fromYaml -}}
-{{ $content = mustMergeOverwrite $defaultContent $content $payload -}}
+{{ $content = mustMergeOverwrite $default $content $payload -}}
 {{ if not $content.metadata.annotations -}}
 {{ $_ := unset $content.metadata "annotations" -}}
 {{- end }}
@@ -61,9 +61,9 @@ Usage: {{ include "base.service.ports" (dict "ports" $ports "ctx" $ctx) }}
 {{- end }}
 
 {{/*
-Usage: {{ include "base.service.default.content" (dict "ctx" $ctx) }}
+Usage: {{ include "base.service.default" (dict "ctx" $ctx) }}
 */}}
-{{ define "base.service.default.content" -}}
+{{ define "base.service.default" -}}
 {{ $ctx := .ctx -}}
 enabled: true
 metadata:
