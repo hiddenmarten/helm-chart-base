@@ -80,10 +80,17 @@ helm-unittest: helm $(HELM_PLUGINS)
 	fi
 
 ##@ Development
-.PHONY: dependency-update
-dependency-update: helm ## Run helm lint over chart
+
+.PHONY: dependencies
+dependencies: helm ## Update dependencies everywhere
 	cd base-test && $(HELM) dependency update
 	cd examples/vault && $(HELM) dependency update
+	cd examples/postgres && $(HELM) dependency update
+
+.PHONY: manifests
+manifests: dependencies ## Update dependencies everywhere
+	$(HELM) template vault ./examples/vault -n vault --debug > ./examples/vault/manifest.yaml
+	$(HELM) template postgres ./examples/postgres -n postgres --debug > ./examples/postgres/manifest.yaml
 
 .PHONY: lint
 lint: helm ## Run helm lint over chart

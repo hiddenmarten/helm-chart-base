@@ -24,12 +24,6 @@ TODO list:
 
 # Commands:
 
-Render template
-```shell
-make dependency-update
-helm template vault ./examples/vault -n vault --debug > ./examples/vault/manifest.yaml
-```
-
 Install to vault namespace
 ```shell
 make dependency-update

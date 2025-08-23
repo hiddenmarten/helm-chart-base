@@ -5,9 +5,14 @@ templates:
 tests:
   - it: renders all-in-one with basic configuration and default release name
     set:
-      image:
-        repository: nginx
-        tag: latest
+      deployment:
+        spec:
+          template:
+            spec:
+              containers:
+                nginx:
+                  image:
+                    repository: nginx
     asserts:
       - hasDocuments:
           count: 2
@@ -24,9 +29,14 @@ tests:
     release:
       name: custom-release
     set:
-      image:
-        repository: nginx
-        tag: latest
+      deployment:
+        spec:
+          template:
+            spec:
+              containers:
+                nginx:
+                  image:
+                    repository: nginx
     asserts:
       - hasDocuments:
           count: 2
@@ -43,9 +53,14 @@ tests:
     release:
       namespace: custom-namespace
     set:
-      image:
-        repository: nginx
-        tag: latest
+      deployment:
+        spec:
+          template:
+            spec:
+              containers:
+                nginx:
+                  image:
+                    repository: nginx
     asserts:
       - hasDocuments:
           count: 2
@@ -63,9 +78,14 @@ tests:
       name: my-custom-app
       namespace: production
     set:
-      image:
-        repository: nginx
-        tag: latest
+      deployment:
+        spec:
+          template:
+            spec:
+              containers:
+                nginx:
+                  image:
+                    repository: nginx
     asserts:
       - hasDocuments:
           count: 2
@@ -82,9 +102,14 @@ tests:
     release:
       name: custom-release
     set:
-      image:
-        repository: nginx
-        tag: latest
+      deployment:
+        spec:
+          template:
+            spec:
+              containers:
+                nginx:
+                  image:
+                    repository: nginx
       fullnameOverride: overridden-name
     asserts:
       - hasDocuments:
@@ -102,9 +127,14 @@ tests:
     release:
       name: custom-release
     set:
-      image:
-        repository: nginx
-        tag: latest
+      deployment:
+        spec:
+          template:
+            spec:
+              containers:
+                nginx:
+                  image:
+                    repository: nginx
       nameOverride: custom-base
     asserts:
       - hasDocuments:

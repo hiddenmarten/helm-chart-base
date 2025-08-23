@@ -10,9 +10,9 @@ repos:
     - id: check-added-large-files
 - repo: local
   hooks:
-    - id: make-dependency-update
-      name: make-dependency-update
-      entry: sh -c 'make dependency-update'
+    - id: make-dependencies
+      name: make-dependencies
+      entry: sh -c 'make dependencies'
       language: system
       require_serial: true
     - id: make-schema
@@ -28,6 +28,11 @@ repos:
     - id: make-docs
       name: make-docs
       entry: sh -c 'make docs'
+      language: system
+      require_serial: true
+    - id: make-manifests
+      name: make-manifests
+      entry: sh -c 'make manifests'
       language: system
       require_serial: true
     - id: make-unittest

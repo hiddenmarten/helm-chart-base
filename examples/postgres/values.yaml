@@ -1,0 +1,9 @@
+statefulset:
+  spec:
+    template:
+      spec:
+        containers:
+          postgres:
+            image:
+              repository: postgres
+              tag: "17.6"

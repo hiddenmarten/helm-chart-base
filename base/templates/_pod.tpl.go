@@ -38,6 +38,9 @@ Usage: {{ include "base.pod.override" (dict "pod" $pod "configMaps" $configMaps 
 {{ $container = mustMergeOverwrite (dict "name" $k) $container -}}
 {{ $containerList = append $containerList $container -}}
 {{ end -}}
+{{ if not (len $containerList) }}
+{{ fail "at least one container is required" }}
+{{ end -}}
 {{ $containers := dict "containers" $containerList -}}
 {{ $serviceAccountName := dict "serviceAccountName" (include "base.serviceAccount.name" (dict "serviceAccount" $serviceAccount "ctx" $ctx)) -}}
 {{ $spec = mustMergeOverwrite $spec $containers $serviceAccountName -}}
