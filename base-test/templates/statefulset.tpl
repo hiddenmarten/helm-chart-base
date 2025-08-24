@@ -1,1 +1,1 @@
-{{ include "base.statefulset" (dict "statefulset" .Values.statefulset "configMaps" .Values.configMaps "secrets" .Values.secrets "persistentVolumeClaims" .Values.persistentVolumeClaims "service" .Values.service "serviceAccount" .Values.serviceAccount "ctx" $) }}
+{{ include "base.statefulset" (dict "statefulset" .Values.statefulset "configMaps" .Values.configMaps "secrets" .Values.secrets "persistentVolumeClaims" .Values.persistentVolumeClaims "service" .Values.service "serviceAccount" .Values.serviceAccount "ctx" (dict "val" .Values "abs" $)) }}

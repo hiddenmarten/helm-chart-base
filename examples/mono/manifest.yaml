@@ -1,0 +1,273 @@
+---
+# Source: mono/templates/postgres.tpl
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  labels:
+    app.kubernetes.io/instance: mono
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: postgres
+    helm.sh/chart: mono-0.0.1
+  name: mono-postgres
+---
+# Source: mono/templates/vault.tpl
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  labels:
+    app.kubernetes.io/instance: mono
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: vault
+    helm.sh/chart: mono-0.0.1
+  name: mono-vault
+---
+# Source: mono/templates/postgres.tpl
+apiVersion: v1
+kind: Secret
+data:
+  POSTGRES_PASSWORD: cG9zdGdyZXM=
+metadata:
+  labels:
+    app.kubernetes.io/instance: mono
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: postgres
+    helm.sh/chart: mono-0.0.1
+  name: mono-postgres-env-vars
+---
+# Source: mono/templates/vault.tpl
+apiVersion: v1
+kind: Secret
+data:
+  VAULT_DEV_ROOT_TOKEN_ID: cm9vdA==
+metadata:
+  labels:
+    app.kubernetes.io/instance: mono
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: vault
+    helm.sh/chart: mono-0.0.1
+  name: mono-vault-env-vars
+---
+# Source: mono/templates/postgres.tpl
+apiVersion: v1
+kind: ConfigMap
+data:
+  ___docker-entrypoint-initdb.d___001-vault-schema.sql: |
+    CREATE DATABASE vault;
+    \c vault;
+
+    CREATE TABLE vault_kv_store (
+      parent_path TEXT COLLATE "C" NOT NULL,
+      path        TEXT COLLATE "C",
+      key         TEXT COLLATE "C",
+      value       BYTEA,
+      CONSTRAINT pkey PRIMARY KEY (path, key)
+    );
+
+    CREATE INDEX parent_path_idx ON vault_kv_store (parent_path);
+metadata:
+  labels:
+    app.kubernetes.io/instance: mono
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: postgres
+    helm.sh/chart: mono-0.0.1
+  name: mono-postgres-files
+---
+# Source: mono/templates/vault.tpl
+apiVersion: v1
+kind: ConfigMap
+data:
+  ___vault___config___config.json: |
+    {"disable_mlock":true,"storage":{"postgresql":{"connection_url":"postgres://postgres:postgres@mono-postgres:5432/vault?sslmode=disable"}},"ui":true}
+metadata:
+  labels:
+    app.kubernetes.io/instance: mono
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: vault
+    helm.sh/chart: mono-0.0.1
+  name: mono-vault-files
+---
+# Source: mono/templates/postgres.tpl
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app.kubernetes.io/instance: mono
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: postgres
+    helm.sh/chart: mono-0.0.1
+  name: mono-postgres
+spec:
+  clusterIP: None
+  ports:
+  - name: tcp
+    port: 5432
+  selector:
+    app.kubernetes.io/instance: mono
+    app.kubernetes.io/name: postgres
+---
+# Source: mono/templates/vault.tpl
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app.kubernetes.io/instance: mono
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: vault
+    helm.sh/chart: mono-0.0.1
+  name: mono-vault
+spec:
+  ports:
+  - name: http
+    port: 8200
+  selector:
+    app.kubernetes.io/instance: mono
+    app.kubernetes.io/name: vault
+---
+# Source: mono/templates/vault.tpl
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app.kubernetes.io/instance: mono
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: vault
+    helm.sh/chart: mono-0.0.1
+  name: mono-vault
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/instance: mono
+      app.kubernetes.io/name: vault
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/instance: mono
+        app.kubernetes.io/managed-by: Helm
+        app.kubernetes.io/name: vault
+        helm.sh/chart: mono-0.0.1
+    spec:
+      containers:
+      - envFrom:
+        - secretRef:
+            name: mono-vault-env-vars
+        image: hashicorp/vault:1.20.2
+        name: vault
+        ports:
+        - containerPort: 8200
+          name: http
+        volumeMounts:
+        - mountPath: /vault/config/config.json
+          name: config-map-files
+          readOnly: true
+          subPath: ___vault___config___config.json
+      serviceAccountName: mono-vault
+      volumes:
+      - configMap:
+          name: mono-vault-files
+        name: config-map-files
+---
+# Source: mono/templates/postgres.tpl
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  labels:
+    app.kubernetes.io/instance: mono
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: postgres
+    helm.sh/chart: mono-0.0.1
+  name: mono-postgres
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/instance: mono
+      app.kubernetes.io/name: postgres
+  serviceName: mono-postgres
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/instance: mono
+        app.kubernetes.io/managed-by: Helm
+        app.kubernetes.io/name: postgres
+        helm.sh/chart: mono-0.0.1
+    spec:
+      containers:
+      - envFrom:
+        - secretRef:
+            name: mono-postgres-env-vars
+        image: postgres:17.6
+        name: postgres
+        ports:
+        - containerPort: 5432
+          name: tcp
+        volumeMounts:
+        - mountPath: /docker-entrypoint-initdb.d/001-vault-schema.sql
+          name: config-map-files
+          readOnly: true
+          subPath: ___docker-entrypoint-initdb.d___001-vault-schema.sql
+        - mountPath: /var/lib/postgresql/data
+          name: data
+      serviceAccountName: mono-postgres
+      volumes:
+      - configMap:
+          name: mono-postgres-files
+        name: config-map-files
+  volumeClaimTemplates:
+  - metadata:
+      labels:
+        app.kubernetes.io/instance: mono
+        app.kubernetes.io/managed-by: Helm
+        app.kubernetes.io/name: postgres
+        helm.sh/chart: mono-0.0.1
+      name: data
+    spec:
+      accessModes:
+      - ReadWriteOnce
+      resources:
+        requests:
+          storage: 20Gi
+---
+# Source: mono/templates/vault.tpl
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  labels:
+    app.kubernetes.io/instance: mono
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: vault
+    helm.sh/chart: mono-0.0.1
+  name: mono-vault
+spec:
+  rules:
+  - host: vault.example.local
+    http:
+      paths:
+      - backend:
+          service:
+            name: mono-vault
+            port:
+              name: http
+        path: /
+        pathType: Prefix
+  tls:
+  - hosts:
+    - vault.example.local
+    secretName: vault-tls-secret
+---
+# Source: mono/templates/vault.tpl
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  labels:
+    app.kubernetes.io/instance: mono
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: vault
+    helm.sh/chart: mono-0.0.1
+  name: mono-vault
+spec:
+  endpoints:
+  - path: /sys/metrics
+    port: http
+  selector:
+    matchLabels:
+      app.kubernetes.io/instance: mono
+      app.kubernetes.io/name: vault

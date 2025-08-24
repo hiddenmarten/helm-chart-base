@@ -27,7 +27,7 @@ Usage: {{ include "base.service.content" (dict "content" $content "ctx" $ctx) }}
 {{ if not $content.metadata.annotations -}}
 {{ $_ := unset $content.metadata "annotations" -}}
 {{- end }}
-{{ tpl ($content | toYaml) $ctx }}
+{{ tpl ($content | toYaml) $ctx.abs }}
 {{- end }}
 
 {{/*

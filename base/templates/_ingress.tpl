@@ -31,7 +31,7 @@ Usage: {{ include "base.ingress.content" (dict "ingress" $ingress "ctx" $ctx) }}
 {{ if not $content.metadata.annotations -}}
 {{ $_ := unset $content.metadata "annotations" -}}
 {{- end }}
-{{ tpl ($content | toYaml) $ctx }}
+{{ tpl ($content | toYaml) $ctx.abs }}
 {{- end }}
 
 {{/*
@@ -78,7 +78,7 @@ Usage: {{ include "base.ingress.tls" (dict "rules" .Values.ingress.spec.rules "c
       {{ $tlsEntry := dict "secretName" $secretName "hosts" $hostsList -}}
       {{ $tlsList = append $tlsList $tlsEntry -}}
       {{- end }}
-  tls: {{ tpl (toYaml $tlsList) $ctx | nindent 4 }}
+  tls: {{ tpl (toYaml $tlsList) $ctx.abs | nindent 4 }}
   {{- end }}
 {{- end }}
 
@@ -114,7 +114,7 @@ Usage: {{ include "base.ingress.rules" (dict "rules" $rules "service" $service "
     {{ $rulesList = append $rulesList $rule -}}
     {{ end -}}
   {{ end -}}
-  rules: {{ tpl ($rulesList | toYaml) $ctx | nindent 4 }}
+  rules: {{ tpl ($rulesList | toYaml) $ctx.abs | nindent 4 }}
 {{- end }}
 
 {{/*

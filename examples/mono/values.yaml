@@ -1,0 +1,92 @@
+postgres:
+  nameOverride: "postgres"
+  statefulset:
+    spec:
+      template:
+        spec:
+          containers:
+            postgres:
+              image:
+                repository: postgres
+                tag: "17.6"
+      volumeClaimTemplates:
+        data:
+          mount:
+            mountPath: "/var/lib/postgresql/data"
+          spec:
+            resources:
+              requests:
+                storage: 20Gi
+  service:
+    spec:
+      ports:
+        tcp:
+          port: 5432
+  configMaps:
+    files:
+      data:
+        "/docker-entrypoint-initdb.d/001-vault-schema.sql": |
+          CREATE DATABASE vault;
+          \c vault;
+
+          CREATE TABLE vault_kv_store (
+            parent_path TEXT COLLATE "C" NOT NULL,
+            path        TEXT COLLATE "C",
+            key         TEXT COLLATE "C",
+            value       BYTEA,
+            CONSTRAINT pkey PRIMARY KEY (path, key)
+          );
+
+          CREATE INDEX parent_path_idx ON vault_kv_store (parent_path);
+  secrets:
+    envVars:
+      data:
+        POSTGRES_PASSWORD: postgres
+
+vault:
+  nameOverride: "vault"
+  deployment:
+    spec:
+      template:
+        spec:
+          containers:
+            vault:
+              image:
+                repository: hashicorp/vault
+                tag: 1.20.2
+  service:
+    spec:
+      ports:
+        http:
+          port: 8200
+  configMaps:
+    files:
+      data:
+        "/vault/config/config.json":
+          ui: true
+          disable_mlock: true
+          storage:
+            postgresql:
+              connection_url: "postgres://postgres:postgres@mono-postgres:5432/vault?sslmode=disable"
+  secrets:
+    envVars:
+      data:
+        VAULT_DEV_ROOT_TOKEN_ID: root
+  ingress:
+    spec:
+      rules:
+        "vault.example.local":
+          tls:
+            secretName: vault-tls-secret
+          http:
+            paths:
+              "/":
+                backend:
+                  service:
+                    port:
+                      name: http
+  serviceMonitor:
+    spec:
+      endpoints:
+        http:
+          path: /sys/metrics

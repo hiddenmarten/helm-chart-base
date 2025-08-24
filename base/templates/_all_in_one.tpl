@@ -1,9 +1,9 @@
 {{/*
-Usage: {{ include "base.allInOne.deployment" (dict "val" $val "ctx" $ctx) }}
+Usage: {{ include "base.allInOne.deployment" (dict "val" .Values "abs" $) }}
 */}}
 {{ define "base.allInOne.deployment" -}}
-{{ $val := .val -}}
-{{ $ctx := .ctx -}}
+{{ $ctx := dict "val" .val "abs" .abs -}}
+{{ $val := $ctx.val -}}
 {{ include "base.configMaps" (dict "configMaps" $val.configMaps "ctx" $ctx) }}
 {{ include "base.deployment" (dict "deployment" $val.deployment "configMaps" $val.configMaps "secrets" $val.secrets "persistentVolumeClaims" $val.persistentVolumeClaims "service" $val.service "serviceAccount" $val.serviceAccount "ctx" $ctx) }}
 {{ include "base.ingress" (dict "ingress" $val.ingress "service" $val.service "ctx" $ctx) }}
@@ -16,11 +16,11 @@ Usage: {{ include "base.allInOne.deployment" (dict "val" $val "ctx" $ctx) }}
 
 
 {{/*
-Usage: {{ include "base.allInOne.statefulset" (dict "val" $val "ctx" $ctx) }}
+Usage: {{ include "base.allInOne.statefulset" (dict "val" .Values "abs" $) }}
 */}}
 {{ define "base.allInOne.statefulset" -}}
-{{ $val := .val -}}
-{{ $ctx := .ctx -}}
+{{ $ctx := dict "val" .val "abs" .abs -}}
+{{ $val := $ctx.val -}}
 {{ $default := include "base.allInOne.statefulset.default" (dict "ctx" $ctx) | fromYaml -}}
 {{ $val = mustMergeOverwrite $default $val -}}
 {{ include "base.configMaps" (dict "configMaps" $val.configMaps "ctx" $ctx) }}

@@ -49,7 +49,7 @@ Usage: {{ include "base.secrets.content" (dict "postfix" $postfix "content" $con
 {{ if not $content.metadata.annotations -}}
 {{ $_ := unset $content.metadata "annotations" -}}
 {{- end }}
-{{ tpl ($content | toYaml) $ctx }}
+{{ tpl ($content | toYaml) $ctx.abs }}
 {{- end }}
 
 {{/*
@@ -61,7 +61,7 @@ Usage: {{ include "base.secrets.envVars.payload" (dict "content" $content "ctx" 
 {{ if $content.data -}}
 {{ print "data: " }}
 {{ range $k, $v := $content.data -}}
-{{ printf "%s: %s" (tpl $k $ctx) ((tpl $v $ctx) | b64enc) | nindent 2 }}
+{{ printf "%s: %s" (tpl $k $ctx.abs) ((tpl $v $ctx.abs) | b64enc) | nindent 2 }}
 {{- end }}
 {{- end }}
 {{- if $content.stringData }}
@@ -78,16 +78,16 @@ Usage: {{ include "base.secrets.files.payload" (dict "content" $content "ctx" $c
 {{ if $content.data -}}
 {{ print "data:" }}
 {{ range $k, $v := $content.data -}}
-{{ $filepath := tpl $k $ctx -}}
+{{ $filepath := tpl $k $ctx.abs -}}
 {{ printf "%s: |" (include "base.util.dnsCompatible" (dict "filepath" $filepath)) | indent 2 }}
 {{ if mustRegexMatch "(.+)(\\.yaml|\\.yml)$" (base $filepath) -}}
-{{ (tpl ($v | toYaml) $ctx | b64enc) | indent 4 }}
+{{ (tpl ($v | toYaml) $ctx.abs | b64enc) | indent 4 }}
 {{ else if mustRegexMatch "(.+)(\\.json)$" (base $filepath) -}}
-{{ (tpl ($v | toJson) $ctx | b64enc) | indent 4 }}
+{{ (tpl ($v | toJson) $ctx.abs | b64enc) | indent 4 }}
 {{ else if mustRegexMatch "(.+)(\\.toml)$" (base $filepath) -}}
-{{ (tpl ($v | toToml) $ctx | b64enc) | indent 4 }}
+{{ (tpl ($v | toToml) $ctx.abs | b64enc) | indent 4 }}
 {{ else -}}
-{{ (tpl ($v | toString) $ctx | b64enc) | indent 4 }}
+{{ (tpl ($v | toString) $ctx.abs | b64enc) | indent 4 }}
 {{ end -}}
 {{- end }}
 {{- end }}
@@ -171,10 +171,10 @@ Usage: {{ include "base.secrets.others.payload" (dict "content" $content "ctx" $
 {{ $content := .content -}}
 {{ $ctx := .ctx -}}
 {{- with $content.data }}
-data: {{ tpl (. | toYaml) $ctx | nindent 2 }}
+data: {{ tpl (. | toYaml) $ctx.abs | nindent 2 }}
 {{- end }}
 {{- with $content.stringData }}
-stringData: {{ tpl (. | toYaml) $ctx | nindent 2 }}
+stringData: {{ tpl (. | toYaml) $ctx.abs | nindent 2 }}
 {{- end }}
 {{- end }}
 

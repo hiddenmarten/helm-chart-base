@@ -1,9 +1,7 @@
 # helm-chart-base
 
 TODO list:
-- Write chart examples:
-    - mono chart with vault uses postgres as a backend
-    - umbrella chart with vault uses postgres as a backend
+- Doublecheck tpl rendering in all resources
 - Provide entities at the top of root functions for resources merged with default values in one line.
 - Update all the resources to follow: `default`, `{resource}`, `override` -> `content` structure
 - Make more atomic decomposition of handlers, refine naming
@@ -11,3 +9,4 @@ TODO list:
 
 # Agreements:
  - no lists of dictionaries are allowed in helm chart, helm lists flow breaks the merge flow in chart inheritance
+ - content of resources should go through tpl

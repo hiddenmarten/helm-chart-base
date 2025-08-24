@@ -87,12 +87,14 @@ dependencies: helm ## Update dependencies everywhere
 	cd examples/vault && $(HELM) dependency update
 	cd examples/postgres && $(HELM) dependency update
 	cd examples/umbrella && $(HELM) dependency update
+	cd examples/mono && $(HELM) dependency update
 
 .PHONY: manifests
 manifests: dependencies ## Render manifests
 	$(HELM) template vault ./examples/vault -n vault --debug > ./examples/vault/manifest.yaml
 	$(HELM) template postgres ./examples/postgres -n postgres --debug > ./examples/postgres/manifest.yaml
 	$(HELM) template umbrella ./examples/umbrella -n umbrella --debug > ./examples/umbrella/manifest.yaml
+	$(HELM) template mono ./examples/mono -n mono --debug > ./examples/mono/manifest.yaml
 
 .PHONY: lint
 lint: helm ## Run helm lint over chart
@@ -123,3 +125,4 @@ upgrade: dependencies ## Update dependencies everywhere
 	$(HELM) upgrade vault ./examples/vault -i -n vault --create-namespace --debug
 	$(HELM) upgrade postgres ./examples/postgres -i -n postgres --create-namespace --debug
 	$(HELM) upgrade umbrella ./examples/umbrella -i -n umbrella --create-namespace --debug
+	$(HELM) upgrade mono ./examples/mono -i -n mono --create-namespace --debug

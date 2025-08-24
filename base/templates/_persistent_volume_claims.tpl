@@ -30,7 +30,7 @@ Usage: {{ include "base.persistentVolumeClaims.content" (dict "postfix" $postfix
 {{ if not $content.metadata.annotations -}}
 {{ $_ := unset $content.metadata "annotations" -}}
 {{- end }}
-{{ tpl ($content | toYaml) $ctx }}
+{{ tpl ($content | toYaml) $ctx.abs }}
 {{- end }}
 
 {{/*

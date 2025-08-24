@@ -1,1 +1,1 @@
-{{ include "base.allInOne.deployment" (dict "val" .Values "ctx" $) }}
+{{ include "base.allInOne.deployment" (dict "val" .Values "abs" $) }}

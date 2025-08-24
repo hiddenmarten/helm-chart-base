@@ -1,0 +1,9 @@
+apiVersion: v2
+name: mono
+description: A mono chart for vault-postgres stack
+type: application
+version: 0.0.1
+dependencies:
+  - name: base
+    version: 0.0.1
+    repository: file://../../base
