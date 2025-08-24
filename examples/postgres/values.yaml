@@ -9,6 +9,8 @@ statefulset:
               tag: "17.6"
     volumeClaimTemplates:
       data:
+        mount:
+          mountPath: "/var/lib/postgresql/data"
         spec:
           resources:
             requests:

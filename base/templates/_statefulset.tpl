@@ -36,10 +36,30 @@ Usage: {{ include "base.statefulset.content" (dict "statefulset" $statefulset "c
 {{ $serviceAccount := .serviceAccount -}}
 {{ $default := include "base.statefulset.default" (dict "ctx" $ctx) | fromYaml -}}
 {{ $volumeClaimTemplates := include "base.statefulset.volumeClaimTemplates" (dict "volumeClaimTemplates" $statefulset.spec.volumeClaimTemplates "ctx" $ctx) | fromYaml -}}
+{{ $volumeMounts := include "base.persistentVolumeClaims.volumeMounts" (dict "persistentVolumeClaims" $statefulset.spec.volumeClaimTemplates "ctx" $ctx) | fromYaml }}
 {{ $statefulset = mustMergeOverwrite $default $statefulset -}}
 {{ $pod := include "base.pod" (dict "pod" (index $statefulset.spec "template") "configMaps" $configMaps "secrets" $secrets "persistentVolumeClaims" $persistentVolumeClaims "service" $service "serviceAccount" $serviceAccount "ctx" $ctx) | fromYaml -}}
+{{ $containers := include "base.statefulset.containers.override" (dict "containers" $pod.spec.containers "volumeMounts" $volumeMounts "ctx" $ctx) | fromYaml -}}
+{{ $podSpec := mustMergeOverwrite $pod.spec $containers -}}
+{{ $_ := set $pod "spec" $podSpec -}}
 {{ $spec := dict "spec" (dict "template" $pod "volumeClaimTemplates" $volumeClaimTemplates.volumeClaimTemplates) -}}
 {{ mustMergeOverwrite $default $spec | toYaml }}
+{{- end }}
+
+{{/*
+Usage: {{ include "base.statefulset.containers.override" (dict "containers" $containers "volumeMounts" $volumeMounts "ctx" $ctx) }}
+*/}}
+{{ define "base.statefulset.containers.override" -}}
+{{ $ctx := .ctx -}}
+{{ $containers := .containers -}}
+{{ $volumeMounts := .volumeMounts -}}
+{{ $list := list -}}
+{{ range $containers -}}
+{{ $item := mustMergeOverwrite (dict "volumeMounts" list) . -}}
+{{ $_ := set $item "volumeMounts" (concat $item.volumeMounts $volumeMounts.volumeMounts) -}}
+{{ $list = append $list $item -}}
+{{- end }}
+{{ dict "containers" $list | toYaml }}
 {{- end }}
 
 {{/*

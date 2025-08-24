@@ -18,5 +18,6 @@ An example of Postgres using base library
 | service.spec.ports.tcp.port | int | `5432` |  |
 | statefulset.spec.template.spec.containers.postgres.image.repository | string | `"postgres"` |  |
 | statefulset.spec.template.spec.containers.postgres.image.tag | string | `"17.6"` |  |
+| statefulset.spec.volumeClaimTemplates.data.mount.mountPath | string | `"/var/lib/postgresql/data"` |  |
 | statefulset.spec.volumeClaimTemplates.data.spec.resources.requests.storage | string | `"20Gi"` |  |
 

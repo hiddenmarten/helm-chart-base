@@ -96,7 +96,7 @@ Usage: {{ include "base.persistentVolumeClaims.volumes" (dict "persistentVolumeC
 {{ $volumes = append $volumes (include "base.persistentVolumeClaims.volume" (dict "postfix" $postfix "ctx" $ctx) | fromYaml) -}}
 {{- end }}
 {{- end }}
-volumes: {{ $volumes | toYaml | nindent 2 }}
+{{ dict "volumes" $volumes | toYaml }}
 {{- end }}
 
 {{/*
@@ -105,18 +105,18 @@ Usage: {{ include "base.persistentVolumeClaims.volumeMounts" (dict "persistentVo
 {{ define "base.persistentVolumeClaims.volumeMounts" -}}
 {{ $ctx := .ctx -}}
 {{ $persistentVolumeClaims := .persistentVolumeClaims }}
-{{ $mounts := list -}}
+{{ $list := list -}}
 {{ range $postfix, $content := $persistentVolumeClaims -}}
 {{ $default := include "base.persistentVolumeClaims.default" (dict "postfix" $postfix "ctx" $ctx) | fromYaml -}}
 {{ $content = mustMergeOverwrite $default $content -}}
 {{ if and $content.enabled $content.spec -}}
 {{ $name := include "base.persistentVolumeClaims.volume.name" (dict "postfix" $postfix "ctx" $ctx) -}}
-{{ $defaultMount := include "base.persistentVolumeClaims.volumeMount.default" (dict "name" $name "ctx" $ctx) | fromYaml -}}
-{{ $mount := mustMergeOverwrite $defaultMount $content.mount -}}
-{{ $mounts = append $mounts $mount -}}
+{{ $default := include "base.persistentVolumeClaims.volumeMount.default" (dict "name" $name "ctx" $ctx) | fromYaml -}}
+{{ $item := mustMergeOverwrite $default $content.mount -}}
+{{ $list = append $list $item -}}
 {{- end }}
 {{- end }}
-volumeMounts: {{ $mounts | toYaml | nindent 2 }}
+{{ dict "volumeMounts" $list | toYaml }}
 {{- end }}
 
 {{/*
@@ -125,5 +125,5 @@ Usage: {{ include "base.persistentVolumeClaims.volumeMount.default" (dict "name"
 {{ define "base.persistentVolumeClaims.volumeMount.default" -}}
 {{ $name := .name -}}
 {{ $ctx := .ctx -}}
-name: {{ $name }}
+{{ dict "name" $name | toYaml }}
 {{- end }}
