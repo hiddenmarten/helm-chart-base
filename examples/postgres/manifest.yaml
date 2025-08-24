@@ -77,7 +77,7 @@ spec:
           name: tcp
         volumeMounts:
         - mountPath: /var/lib/postgresql/data
-          name: persistent-volume-claim-data
+          name: data
       serviceAccountName: postgres
   volumeClaimTemplates:
   - metadata:
@@ -86,7 +86,7 @@ spec:
         app.kubernetes.io/managed-by: Helm
         app.kubernetes.io/name: postgres
         helm.sh/chart: postgres-0.1.0
-      name: postgres-data
+      name: data
     spec:
       accessModes:
       - ReadWriteOnce

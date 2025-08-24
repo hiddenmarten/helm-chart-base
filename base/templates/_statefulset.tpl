@@ -35,8 +35,9 @@ Usage: {{ include "base.statefulset.content" (dict "statefulset" $statefulset "c
 {{ $service := .service -}}
 {{ $serviceAccount := .serviceAccount -}}
 {{ $default := include "base.statefulset.default" (dict "ctx" $ctx) | fromYaml -}}
-{{ $volumeClaimTemplates := include "base.statefulset.volumeClaimTemplates" (dict "volumeClaimTemplates" $statefulset.spec.volumeClaimTemplates "ctx" $ctx) | fromYaml -}}
-{{ $volumeMounts := include "base.persistentVolumeClaims.volumeMounts" (dict "persistentVolumeClaims" $statefulset.spec.volumeClaimTemplates "ctx" $ctx) | fromYaml }}
+{{ $sourceVolumeClaimTemplates := include "base.statefulset.volumeClaimTemplates.default.merge" (dict "volumeClaimTemplates" $statefulset.spec.volumeClaimTemplates "ctx" $ctx) | fromYaml -}}
+{{ $volumeClaimTemplates := include "base.statefulset.volumeClaimTemplates" (dict "volumeClaimTemplates" $sourceVolumeClaimTemplates "ctx" $ctx) | fromYaml -}}
+{{ $volumeMounts := include "base.persistentVolumeClaims.volumeMounts" (dict "persistentVolumeClaims" $sourceVolumeClaimTemplates "ctx" $ctx) | fromYaml }}
 {{ $statefulset = mustMergeOverwrite $default $statefulset -}}
 {{ $pod := include "base.pod" (dict "pod" (index $statefulset.spec "template") "configMaps" $configMaps "secrets" $secrets "persistentVolumeClaims" $persistentVolumeClaims "service" $service "serviceAccount" $serviceAccount "ctx" $ctx) | fromYaml -}}
 {{ $containers := include "base.statefulset.containers.override" (dict "containers" $pod.spec.containers "volumeMounts" $volumeMounts "ctx" $ctx) | fromYaml -}}
@@ -60,6 +61,21 @@ Usage: {{ include "base.statefulset.containers.override" (dict "containers" $con
 {{ $list = append $list $item -}}
 {{- end }}
 {{ dict "containers" $list | toYaml }}
+{{- end }}
+
+{{/*
+Usage: {{ include "base.statefulset.volumeClaimTemplates.default.merge" (dict "volumeClaimTemplates" $volumeClaimTemplates "ctx" $ctx) }}
+*/}}
+{{ define "base.statefulset.volumeClaimTemplates.default.merge" -}}
+{{ $ctx := .ctx -}}
+{{ $volumeClaimTemplates := .volumeClaimTemplates -}}
+{{ $dict := dict -}}
+{{ range $k, $v := $volumeClaimTemplates -}}
+{{ $default := dict "metadata" (dict "name" $k) "mount" (dict "name" $k) -}}
+{{ $content := mustMergeOverwrite $default $v -}}
+{{ $_ := set $dict $k $content -}}
+{{ end -}}
+{{ $dict | toYaml }}
 {{- end }}
 
 {{/*
