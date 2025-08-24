@@ -9,6 +9,8 @@ Usage: {{ include "base.statefulset" (dict "statefulset" $statefulset "configMap
 {{ $persistentVolumeClaims := .persistentVolumeClaims -}}
 {{ $service := .service -}}
 {{ $serviceAccount := .serviceAccount -}}
+{{ $defaultService := include "base.service.default" (dict "ctx" $ctx) | fromYaml -}}
+{{ $service = mustMergeOverwrite $defaultService $service -}}
 {{ $defaultConfigMaps := include "base.configMaps.default" (dict "ctx" $ctx) | fromYaml -}}
 {{ $configMaps = mustMergeOverwrite $configMaps $defaultConfigMaps -}}
 {{ $defaultSecrets := include "base.secrets.default" (dict "ctx" $ctx) | fromYaml -}}
@@ -43,7 +45,7 @@ Usage: {{ include "base.statefulset.content" (dict "statefulset" $statefulset "c
 {{ $containers := include "base.statefulset.containers.override" (dict "containers" $pod.spec.containers "volumeMounts" $volumeMounts "ctx" $ctx) | fromYaml -}}
 {{ $podSpec := mustMergeOverwrite $pod.spec $containers -}}
 {{ $_ := set $pod "spec" $podSpec -}}
-{{ $spec := dict "spec" (dict "template" $pod "volumeClaimTemplates" $volumeClaimTemplates.volumeClaimTemplates) -}}
+{{ $spec := dict "spec" (dict "template" $pod "volumeClaimTemplates" $volumeClaimTemplates.volumeClaimTemplates "serviceName" $service.metadata.name) -}}
 {{ mustMergeOverwrite $default $spec | toYaml }}
 {{- end }}
 
@@ -112,7 +114,5 @@ spec:
   template: {}
   selector:
     matchLabels: {{ include "base.selectorLabels" (dict "ctx" $ctx) | nindent 6 }}
-{{/*  Service should take name from $service variable merged with default */}}
-  serviceName: {{ include "base.fullname" (dict "ctx" $ctx) }}
   volumeClaimTemplates: {}
 {{- end }}

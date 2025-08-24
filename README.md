@@ -1,8 +1,6 @@
 # helm-chart-base
 
 TODO list:
-- Review agreement with service, keep the port definable by developer, but service name should be inherited from $val
-    - The same for statefulset
 - Write chart examples:
     - mono chart with vault uses postgres as a backend
     - umbrella chart with vault uses postgres as a backend
@@ -13,6 +11,3 @@ TODO list:
 
 # Agreements:
  - no lists of dictionaries are allowed in helm chart, helm lists flow breaks the merge flow in chart inheritance
- - loose coupling, dependencies between resources made only via default names
-   - e.g., if a developer wants to rename Service, they have to update the service reference name in Ingress and ServiceMonitor
-

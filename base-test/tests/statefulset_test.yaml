@@ -203,9 +203,11 @@ tests:
 
   - it: renders StatefulSet with custom serviceName
     set:
+      service:
+        metadata:
+          name: custom-headless-service # TODO: check also set serviceName directly in statefulset
       statefulset:
         spec:
-          serviceName: custom-headless-service
           template:
             spec:
               containers:
