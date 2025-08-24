@@ -7,3 +7,20 @@ statefulset:
             image:
               repository: postgres
               tag: "17.6"
+    volumeClaimTemplates:
+      data:
+        spec:
+          resources:
+            requests:
+              storage: 20Gi
+
+service:
+  spec:
+    ports:
+      tcp:
+        port: 5432
+
+secrets:
+  envVars:
+    data:
+      POSTGRES_PASSWORD: postgres

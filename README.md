@@ -21,11 +21,3 @@ TODO list:
  - loose coupling, dependencies between resources made only via default names
    - e.g., if a developer wants to rename Service, they have to update the service reference name in Ingress and ServiceMonitor
 
-
-# Commands:
-
-Install to vault namespace
-```shell
-make dependency-update
-helm upgrade vault ./examples/vault -i -n vault --create-namespace --debug
-```

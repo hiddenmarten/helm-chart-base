@@ -14,6 +14,9 @@ An example of Postgres using base library
 
 | Key | Type | Default | Description |
 |-----|------|---------|-------------|
+| secrets.envVars.data.POSTGRES_PASSWORD | string | `"postgres"` |  |
+| service.spec.ports.tcp.port | int | `5432` |  |
 | statefulset.spec.template.spec.containers.postgres.image.repository | string | `"postgres"` |  |
 | statefulset.spec.template.spec.containers.postgres.image.tag | string | `"17.6"` |  |
+| statefulset.spec.volumeClaimTemplates.data.spec.resources.requests.storage | string | `"20Gi"` |  |
 

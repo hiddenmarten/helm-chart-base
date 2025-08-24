@@ -88,9 +88,10 @@ dependencies: helm ## Update dependencies everywhere
 	cd examples/postgres && $(HELM) dependency update
 
 .PHONY: manifests
-manifests: dependencies ## Update dependencies everywhere
+manifests: dependencies ## Render manifests
 	$(HELM) template vault ./examples/vault -n vault --debug > ./examples/vault/manifest.yaml
 	$(HELM) template postgres ./examples/postgres -n postgres --debug > ./examples/postgres/manifest.yaml
+
 
 .PHONY: lint
 lint: helm ## Run helm lint over chart
@@ -107,3 +108,16 @@ docs: helm-docs ## Run helm schema over chart
 .PHONY: unittest
 unittest: helm-unittest ## Run helm unittests over chart
 	$(HELM) unittest base-test
+
+
+##@ Deploy
+
+.PHONY: kind
+kind: ## Update dependencies everywhere
+	kind create cluster
+	$(HELM) install prometheus-operator-crds prometheus-operator-crds --repo https://prometheus-community.github.io/helm-charts
+
+.PHONY: upgrade
+upgrade: dependencies ## Update dependencies everywhere
+	$(HELM) upgrade vault ./examples/vault -i -n vault --create-namespace --debug
+	$(HELM) upgrade postgres ./examples/postgres -i -n postgres --create-namespace --debug

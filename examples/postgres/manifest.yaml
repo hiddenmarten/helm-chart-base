@@ -11,6 +11,38 @@ metadata:
   name: postgres
 ---
 # Source: postgres/templates/base.tpl
+apiVersion: v1
+kind: Secret
+data:
+  POSTGRES_PASSWORD: cG9zdGdyZXM=
+metadata:
+  labels:
+    app.kubernetes.io/instance: postgres
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: postgres
+    helm.sh/chart: postgres-0.1.0
+  name: postgres-env-vars
+---
+# Source: postgres/templates/base.tpl
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app.kubernetes.io/instance: postgres
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: postgres
+    helm.sh/chart: postgres-0.1.0
+  name: postgres
+spec:
+  clusterIP: None
+  ports:
+  - name: tcp
+    port: 5432
+  selector:
+    app.kubernetes.io/instance: postgres
+    app.kubernetes.io/name: postgres
+---
+# Source: postgres/templates/base.tpl
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
@@ -35,6 +67,26 @@ spec:
         helm.sh/chart: postgres-0.1.0
     spec:
       containers:
-      - image: postgres:17.6
+      - envFrom:
+        - secretRef:
+            name: postgres-env-vars
+        image: postgres:17.6
         name: postgres
+        ports:
+        - containerPort: 5432
+          name: tcp
       serviceAccountName: postgres
+  volumeClaimTemplates:
+  - metadata:
+      labels:
+        app.kubernetes.io/instance: postgres
+        app.kubernetes.io/managed-by: Helm
+        app.kubernetes.io/name: postgres
+        helm.sh/chart: postgres-0.1.0
+      name: data
+    spec:
+      accessModes:
+      - ReadWriteOnce
+      resources:
+        requests:
+          storage: 20Gi

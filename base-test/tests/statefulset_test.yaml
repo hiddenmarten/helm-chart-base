@@ -230,8 +230,7 @@ tests:
       statefulset:
         spec:
           volumeClaimTemplates:
-            - metadata:
-                name: data
+            data:
               spec:
                 accessModes: ["ReadWriteOnce"]
                 resources:
