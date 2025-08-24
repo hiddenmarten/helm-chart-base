@@ -52,8 +52,10 @@ Usage: {{ include "base.statefulset.volumeClaimTemplates" (dict "volumeClaimTemp
 {{ $default := include "base.statefulset.volumeClaimTemplates.default" (dict "ctx" $ctx) | fromYaml -}}
 {{ range $name, $content := $volumeClaimTemplates -}}
 {{ $item := mustMergeOverwrite $default $content (dict "metadata" (dict "name" $name)) -}}
+{{ $_ := unset $item "enabled" -}}
+{{ $_ = unset $item "mount" -}}
 {{ if not $item.metadata.annotations -}}
-{{ $_ := unset $item.metadata "annotations" -}}
+{{ $_ = unset $item.metadata "annotations" -}}
 {{- end }}
 {{ $list = append $list $item -}}
 {{- end }}
@@ -65,6 +67,7 @@ Usage: {{ include "base.statefulset.default" (dict "ctx" $ctx) }}
 */}}
 {{ define "base.statefulset.volumeClaimTemplates.default" -}}
 {{ $ctx := .ctx -}}
+enabled: true
 metadata:
   labels: {{ include "base.labels" (dict "ctx" $ctx) | nindent 4 }}
   annotations: {}
@@ -74,6 +77,7 @@ spec:
   resources:
     requests:
       storage: ""
+mount: {}
 {{- end }}
 
 {{/*
