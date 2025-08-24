@@ -86,12 +86,13 @@ dependencies: helm ## Update dependencies everywhere
 	cd base-test && $(HELM) dependency update
 	cd examples/vault && $(HELM) dependency update
 	cd examples/postgres && $(HELM) dependency update
+	cd examples/umbrella && $(HELM) dependency update
 
 .PHONY: manifests
 manifests: dependencies ## Render manifests
 	$(HELM) template vault ./examples/vault -n vault --debug > ./examples/vault/manifest.yaml
 	$(HELM) template postgres ./examples/postgres -n postgres --debug > ./examples/postgres/manifest.yaml
-
+	$(HELM) template umbrella ./examples/umbrella -n umbrella --debug > ./examples/umbrella/manifest.yaml
 
 .PHONY: lint
 lint: helm ## Run helm lint over chart
@@ -121,3 +122,4 @@ kind: ## Update dependencies everywhere
 upgrade: dependencies ## Update dependencies everywhere
 	$(HELM) upgrade vault ./examples/vault -i -n vault --create-namespace --debug
 	$(HELM) upgrade postgres ./examples/postgres -i -n postgres --create-namespace --debug
+	$(HELM) upgrade umbrella ./examples/umbrella -i -n umbrella --create-namespace --debug

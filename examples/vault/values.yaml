@@ -17,12 +17,9 @@ service:
 configMaps:
   files:
     data:
-      "/vault/config.d/config.json":
+      "/vault/config/config.json":
         ui: true
         disable_mlock: true
-        storage:
-          file:
-            path: /vault/file
 
 secrets:
   envVars:
@@ -43,17 +40,7 @@ ingress:
                   port:
                     name: http
 
-persistentVolumeClaims:
-  file:
-    spec:
-      resources:
-        requests:
-          storage: 1Gi
-    mount:
-      mountPath: /vault/file
-
 serviceMonitor:
-  #enabled: false
   spec:
     endpoints:
       http:

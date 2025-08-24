@@ -1,0 +1,14 @@
+apiVersion: v2
+name: umbrella
+description: An umbrella chart for vault-postgres stack
+type: application
+version: 0.0.1
+dependencies:
+  - name: vault
+    condition: vault.enabled
+    version: 0.0.1
+    repository: file://../vault
+  - name: postgres
+    condition: postgres.enabled
+    version: 0.0.1
+    repository: file://../postgres

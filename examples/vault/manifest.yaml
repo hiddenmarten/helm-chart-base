@@ -7,7 +7,7 @@ metadata:
     app.kubernetes.io/instance: vault
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/name: vault
-    helm.sh/chart: vault-0.1.0
+    helm.sh/chart: vault-0.0.1
   name: vault
 ---
 # Source: vault/templates/base.tpl
@@ -20,39 +20,22 @@ metadata:
     app.kubernetes.io/instance: vault
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/name: vault
-    helm.sh/chart: vault-0.1.0
+    helm.sh/chart: vault-0.0.1
   name: vault-env-vars
 ---
 # Source: vault/templates/base.tpl
 apiVersion: v1
 kind: ConfigMap
 data:
-  ___vault___config.d___config.json: |
-    {"disable_mlock":true,"storage":{"file":{"path":"/vault/file"}},"ui":true}
+  ___vault___config___config.json: |
+    {"disable_mlock":true,"ui":true}
 metadata:
   labels:
     app.kubernetes.io/instance: vault
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/name: vault
-    helm.sh/chart: vault-0.1.0
+    helm.sh/chart: vault-0.0.1
   name: vault-files
----
-# Source: vault/templates/base.tpl
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  labels:
-    app.kubernetes.io/instance: vault
-    app.kubernetes.io/managed-by: Helm
-    app.kubernetes.io/name: vault
-    helm.sh/chart: vault-0.1.0
-  name: vault-file
-spec:
-  accessModes:
-  - ReadWriteOnce
-  resources:
-    requests:
-      storage: 1Gi
 ---
 # Source: vault/templates/base.tpl
 apiVersion: v1
@@ -62,7 +45,7 @@ metadata:
     app.kubernetes.io/instance: vault
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/name: vault
-    helm.sh/chart: vault-0.1.0
+    helm.sh/chart: vault-0.0.1
   name: vault
 spec:
   ports:
@@ -80,7 +63,7 @@ metadata:
     app.kubernetes.io/instance: vault
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/name: vault
-    helm.sh/chart: vault-0.1.0
+    helm.sh/chart: vault-0.0.1
   name: vault
 spec:
   selector:
@@ -93,7 +76,7 @@ spec:
         app.kubernetes.io/instance: vault
         app.kubernetes.io/managed-by: Helm
         app.kubernetes.io/name: vault
-        helm.sh/chart: vault-0.1.0
+        helm.sh/chart: vault-0.0.1
     spec:
       containers:
       - envFrom:
@@ -105,20 +88,15 @@ spec:
         - containerPort: 8200
           name: http
         volumeMounts:
-        - mountPath: /vault/config.d/config.json
+        - mountPath: /vault/config/config.json
           name: config-map-files
           readOnly: true
-          subPath: ___vault___config.d___config.json
-        - mountPath: /vault/file
-          name: persistent-volume-claim-file
+          subPath: ___vault___config___config.json
       serviceAccountName: vault
       volumes:
       - configMap:
           name: vault-files
         name: config-map-files
-      - name: persistent-volume-claim-file
-        persistentVolumeClaim:
-          claimName: vault-file
 ---
 # Source: vault/templates/base.tpl
 apiVersion: networking.k8s.io/v1
@@ -128,7 +106,7 @@ metadata:
     app.kubernetes.io/instance: vault
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/name: vault
-    helm.sh/chart: vault-0.1.0
+    helm.sh/chart: vault-0.0.1
   name: vault
 spec:
   rules:
@@ -155,7 +133,7 @@ metadata:
     app.kubernetes.io/instance: vault
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/name: vault
-    helm.sh/chart: vault-0.1.0
+    helm.sh/chart: vault-0.0.1
   name: vault
 spec:
   endpoints:
