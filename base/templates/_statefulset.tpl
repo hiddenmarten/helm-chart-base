@@ -58,6 +58,9 @@ Usage: {{ include "base.statefulset.containers.override" (dict "containers" $con
 {{ range $containers -}}
 {{ $item := mustMergeOverwrite (dict "volumeMounts" list) . -}}
 {{ $_ := set $item "volumeMounts" (concat $item.volumeMounts $volumeMounts.volumeMounts) -}}
+{{ if not (len $item.volumeMounts) }}
+{{ $_ := unset $item "volumeMounts" -}}
+{{- end }}
 {{ $list = append $list $item -}}
 {{- end }}
 {{ dict "containers" $list | toYaml }}

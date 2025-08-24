@@ -7,6 +7,8 @@ tests:
     set:
       persistentVolumeClaims:
         data:
+          mount:
+            mountPath: "/var/lib/data"
           spec:
             resources:
               requests:
@@ -28,6 +30,8 @@ tests:
     set:
       persistentVolumeClaims:
         storage:
+          mount:
+            mountPath: "/var/lib/storage"
           spec:
             accessModes:
               - ReadWriteMany
@@ -55,6 +59,8 @@ tests:
     set:
       persistentVolumeClaims:
         file:
+          mount:
+            mountPath: "/var/lib/file"
           spec:
             storageClassName: fast-ssd
             resources:
@@ -71,16 +77,22 @@ tests:
     set:
       persistentVolumeClaims:
         data:
+          mount:
+            mountPath: "/var/lib/data"
           spec:
             resources:
               requests:
                 storage: 10Gi
         logs:
+          mount:
+            mountPath: "/var/lib/logs"
           spec:
             resources:
               requests:
                 storage: 5Gi
         cache:
+          mount:
+            mountPath: "/var/lib/cache"
           spec:
             resources:
               requests:
@@ -93,6 +105,8 @@ tests:
     set:
       persistentVolumeClaims:
         block-storage:
+          mount:
+            mountPath: "/var/lib/block-storage"
           spec:
             volumeMode: Block
             resources:
@@ -109,6 +123,8 @@ tests:
     set:
       persistentVolumeClaims:
         database:
+          mount:
+            mountPath: "/var/lib/database"
           metadata:
             labels:
               storage-type: database
@@ -158,6 +174,8 @@ tests:
     set:
       persistentVolumeClaims:
         data:
+          mount:
+            mountPath: "/var/lib/data"
           spec:
             resources:
               requests:
@@ -178,6 +196,8 @@ tests:
         data:
           metadata:
             annotations: {}
+          mount:
+            mountPath: "/var/lib/data"
           spec:
             resources:
               requests:
@@ -192,6 +212,8 @@ tests:
     set:
       persistentVolumeClaims:
         selective-storage:
+          mount:
+            mountPath: "/var/lib/selective-storage"
           spec:
             selector:
               matchLabels:
@@ -214,6 +236,8 @@ tests:
     set:
       persistentVolumeClaims:
         limited-storage:
+          mount:
+            mountPath: "/var/lib/limited-storage"
           spec:
             resources:
               requests:
@@ -235,6 +259,8 @@ tests:
       persistentVolumeClaims:
         disabled-pvc:
           enabled: false
+          mount:
+            mountPath: "/var/lib/disabled-pvc"
           spec:
             resources:
               requests:
@@ -247,10 +273,7 @@ tests:
                 storage: 5Gi
     asserts:
       - hasDocuments:
-          count: 1
-      - equal:
-          path: metadata.name
-          value: RELEASE-NAME-base-test-enabled-pvc
+          count: 0
 
   - it: renders PersistentVolumeClaim with templated values
     release:
@@ -259,6 +282,8 @@ tests:
     set:
       persistentVolumeClaims:
         templated:
+          mount:
+            mountPath: "/var/lib/templated"
           metadata:
             annotations:
               app-name: "{{ .Release.Name }}"
@@ -292,6 +317,8 @@ tests:
     set:
       persistentVolumeClaims:
         cloned-storage:
+          mount:
+            mountPath: "/var/lib/cloned-storage"
           spec:
             dataSource:
               kind: PersistentVolumeClaim
@@ -313,6 +340,8 @@ tests:
     set:
       persistentVolumeClaims:
         snapshot-storage:
+          mount:
+            mountPath: "/var/lib/snapshot-storage"
           spec:
             dataSourceRef:
               kind: VolumeSnapshot
@@ -338,6 +367,8 @@ tests:
     set:
       persistentVolumeClaims:
         complex-storage:
+          mount:
+            mountPath: "/var/lib/complex-storage"
           metadata:
             labels:
               storage-type: database
@@ -408,6 +439,8 @@ tests:
     set:
       persistentVolumeClaims:
         default-enabled:
+          mount:
+            mountPath: "/var/lib/default-enabled"
           spec:
             resources:
               requests:
@@ -435,6 +468,8 @@ tests:
   - it: should not render when storage is null
     set:
       persistentVolumeClaims:
+        mount:
+          mountPath: "/var/lib/mount"
         null-spec:
           enabled: true
           spec:

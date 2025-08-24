@@ -27,8 +27,6 @@ tests:
           value: RELEASE-NAME-base-test
 
   - it: renders a StatefulSet with custom name
-    skip:
-      reason: "YAML formatting issue needs investigation"
     set:
       statefulset:
         spec:
@@ -50,12 +48,10 @@ tests:
           value: custom-app
 
   - it: renders a StatefulSet with replica count
-    skip:
-      reason: "under implementation"
     set:
       statefulset:
-        replicas: 3
         spec:
+          replicas: 3
           template:
             spec:
               containers:
@@ -116,8 +112,6 @@ tests:
               name: RELEASE-NAME-base-test-env-vars
 
   - it: renders a StatefulSet with resource limits
-    skip:
-      reason: "under implementation"
     set:
       statefulset:
         spec:
@@ -275,3 +269,123 @@ tests:
       - equal:
           path: spec.updateStrategy.rollingUpdate.partition
           value: 3
+
+  - it: renders StatefulSet with multiple volumeClaimTemplates
+    set:
+      statefulset:
+        spec:
+          volumeClaimTemplates:
+            data:
+              mount:
+                mountPath: "/var/lib/data"
+              spec:
+                accessModes: ["ReadWriteOnce"]
+                resources:
+                  requests:
+                    storage: 1Gi
+            logs:
+              mount:
+                mountPath: "/var/lib/logs"
+              spec:
+                accessModes: ["ReadWriteOnce"]
+                resources:
+                  requests:
+                    storage: 500Mi
+          template:
+            spec:
+              containers:
+                nginx:
+                  image:
+                    repository: nginx
+    asserts:
+      - isKind:
+          of: StatefulSet
+      - hasDocuments:
+          count: 1
+      - equal:
+          path: spec.volumeClaimTemplates[0].metadata.name
+          value: data
+      - equal:
+          path: spec.volumeClaimTemplates[1].metadata.name
+          value: logs
+      - equal:
+          path: spec.volumeClaimTemplates[0].spec.resources.requests.storage
+          value: 1Gi
+      - equal:
+          path: spec.volumeClaimTemplates[1].spec.resources.requests.storage
+          value: 500Mi
+
+  - it: renders StatefulSet with podManagementPolicy
+    set:
+      statefulset:
+        spec:
+          podManagementPolicy: Parallel
+          template:
+            spec:
+              containers:
+                nginx:
+                  image:
+                    repository: nginx
+    asserts:
+      - isKind:
+          of: StatefulSet
+      - equal:
+          path: spec.podManagementPolicy
+          value: Parallel
+
+  - it: renders StatefulSet with revisionHistoryLimit
+    set:
+      statefulset:
+        spec:
+          revisionHistoryLimit: 5
+          template:
+            spec:
+              containers:
+                nginx:
+                  image:
+                    repository: nginx
+    asserts:
+      - isKind:
+          of: StatefulSet
+      - equal:
+          path: spec.revisionHistoryLimit
+          value: 5
+
+  - it: renders StatefulSet with multiple containers
+    set:
+      statefulset:
+        spec:
+          template:
+            spec:
+              containers:
+                nginx:
+                  image:
+                    repository: nginx
+                sidecar:
+                  image:
+                    repository: busybox
+                    tag: "1.35"
+    asserts:
+      - isKind:
+          of: StatefulSet
+      - equal:
+          path: spec.template.spec.containers[0].image
+          value: nginx:latest
+      - equal:
+          path: spec.template.spec.containers[1].image
+          value: busybox:1.35
+
+  - it: should not render StatefulSet when disabled
+    set:
+      statefulset:
+        enabled: false
+        spec:
+          template:
+            spec:
+              containers:
+                nginx:
+                  image:
+                    repository: nginx
+    asserts:
+      - hasDocuments:
+          count: 0
