@@ -13,6 +13,8 @@ jobs:
       id-token: write
 
     steps:
-      - uses: hiddenmarten/action-helm-chart-releaser@v1.0.0
+      - uses: hiddenmarten/action-helm-chart-releaser@v1.0.1
         with:
           chart_path: base
+          password: ${{ secrets.GITHUB_TOKEN }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
