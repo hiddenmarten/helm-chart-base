@@ -1,10 +1,9 @@
 {{/*
-Usage: {{ include "base.configMaps" (dict "val" $val "ctx" $ctx) }}
+Usage: {{ include "base.configMaps" (dict "ctx" $ctx) }}
 */}}
 {{ define "base.configMaps" -}}
-{{ $val := .val -}}
 {{ $ctx := .ctx -}}
-{{ $configMaps := include "base.configMaps.default.merge" (dict "val" $val "ctx" $ctx) | fromYaml -}}
+{{ $configMaps := include "base.configMaps.default.merged" (dict "ctx" $ctx) | fromYaml -}}
 {{- range $postfix, $content := $configMaps }}
 {{ $content = include "base.configMaps.content" (dict "postfix" $postfix "content" $content "ctx" $ctx) | fromYaml -}}
 {{ if and $content.enabled (or $content.data $content.binaryData) -}}
@@ -212,15 +211,11 @@ files: {}
 {{- end }}
 
 {{/*
-Usage: {{ $configMaps := include "base.configMaps.default.merge" (dict "val" $val "ctx" $ctx) | fromYaml -}}
+Usage: {{ $configMaps := include "base.configMaps.default.merge" (dict "ctx" $ctx) | fromYaml -}}
 */}}
-{{ define "base.configMaps.default.merge" -}}
+{{ define "base.configMaps.default.merged" -}}
 {{ $ctx := .ctx -}}
-{{ $val := .val -}}
 {{ $default := include "base.configMaps.default" (dict "ctx" $ctx) | fromYaml -}}
-{{ if $val.configMaps -}}
-{{ mustMergeOverwrite $default $val.configMaps | toYaml }}
-{{- else }}
-{{ $default | toYaml }}
-{{- end }}
+{{ $configMaps := $ctx.val.configMaps | default dict }}
+{{ mustMergeOverwrite $default $configMaps | toYaml }}
 {{- end }}
