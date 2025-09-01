@@ -32,7 +32,7 @@ Usage: {{ include "base.allInOne.statefulset" (dict "val" .Values "abs" $) }}
 {{/*
 Usage: {{ include "base.allInOne.statefulset.default" (dict) }}
 */}}
-{{ define "base.allInOne.statefulset.default" -}}
+{{ define "base.allInOne.statefulset.val.default" -}}
 service:
   spec:
     clusterIP: None
@@ -43,6 +43,6 @@ Usage: {{ $val = include "base.allInOne.statefulset.val.merged" (dict "val" $val
 */}}
 {{ define "base.allInOne.statefulset.val.merged" -}}
 {{ $val := .val -}}
-{{ $default := include "base.allInOne.statefulset.default" (dict) | fromYaml -}}
+{{ $default := include "base.allInOne.statefulset.val.default" (dict) | fromYaml -}}
 {{ mustMergeOverwrite $default $val | toYaml }}
 {{- end }}
