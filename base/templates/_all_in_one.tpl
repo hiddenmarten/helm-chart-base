@@ -3,15 +3,14 @@ Usage: {{ include "base.allInOne.deployment" (dict "val" .Values "abs" $) }}
 */}}
 {{ define "base.allInOne.deployment" -}}
 {{ $ctx := dict "val" .val "abs" .abs -}}
-{{ $val := $ctx.val -}}
-{{ include "base.configMaps" (dict "val" $val "ctx" $ctx) }}
-{{ include "base.deployment" (dict "deployment" $val.deployment "configMaps" $val.configMaps "secrets" $val.secrets "persistentVolumeClaims" $val.persistentVolumeClaims "service" $val.service "serviceAccount" $val.serviceAccount "ctx" $ctx) }}
-{{ include "base.ingress" (dict "ingress" $val.ingress "service" $val.service "ctx" $ctx) }}
-{{ include "base.persistentVolumeClaims" (dict "persistentVolumeClaims" $val.persistentVolumeClaims "ctx" $ctx) }}
-{{ include "base.secrets" (dict "val" $val "ctx" $ctx) }}
-{{ include "base.service" (dict "service" $val.service "ctx" $ctx) }}
-{{ include "base.serviceAccount" (dict "serviceAccount" $val.serviceAccount "ctx" $ctx) }}
-{{ include "base.serviceMonitor" (dict "serviceMonitor" $val.serviceMonitor "ctx" $ctx) }}
+{{ include "base.configMaps" (dict "val" $ctx.val "ctx" $ctx) }}
+{{ include "base.deployment" (dict "deployment" $ctx.val.deployment "configMaps" $ctx.val.configMaps "secrets" $ctx.val.secrets "persistentVolumeClaims" $ctx.val.persistentVolumeClaims "service" $ctx.val.service "serviceAccount" $ctx.val.serviceAccount "ctx" $ctx) }}
+{{ include "base.ingress" (dict "ingress" $ctx.val.ingress "service" $ctx.val.service "ctx" $ctx) }}
+{{ include "base.persistentVolumeClaims" (dict "persistentVolumeClaims" $ctx.val.persistentVolumeClaims "ctx" $ctx) }}
+{{ include "base.secrets" (dict "val" $ctx.val "ctx" $ctx) }}
+{{ include "base.service" (dict "service" $ctx.val.service "ctx" $ctx) }}
+{{ include "base.serviceAccount" (dict "serviceAccount" $ctx.val.serviceAccount "ctx" $ctx) }}
+{{ include "base.serviceMonitor" (dict "serviceMonitor" $ctx.val.serviceMonitor "ctx" $ctx) }}
 {{- end }}
 
 
@@ -19,26 +18,31 @@ Usage: {{ include "base.allInOne.deployment" (dict "val" .Values "abs" $) }}
 Usage: {{ include "base.allInOne.statefulset" (dict "val" .Values "abs" $) }}
 */}}
 {{ define "base.allInOne.statefulset" -}}
-{{ $ctx := dict "val" .val "abs" .abs -}}
-{{ $val := $ctx.val -}}
-{{ $default := include "base.allInOne.statefulset.default" (dict "ctx" $ctx) | fromYaml -}}
-{{ $val = mustMergeOverwrite $default $val -}}
-{{ include "base.configMaps" (dict "val" $val "ctx" $ctx) }}
-{{ include "base.statefulset" (dict "statefulset" $val.statefulset "configMaps" $val.configMaps "secrets" $val.secrets "persistentVolumeClaims" $val.persistentVolumeClaims "service" $val.service "serviceAccount" $val.serviceAccount "ctx" $ctx) }}
-{{ include "base.ingress" (dict "ingress" $val.ingress "service" $val.service "ctx" $ctx) }}
-{{ include "base.persistentVolumeClaims" (dict "persistentVolumeClaims" $val.persistentVolumeClaims "ctx" $ctx) }}
-{{ include "base.secrets" (dict "val" $val "ctx" $ctx) }}
-{{ include "base.service" (dict "service" $val.service "ctx" $ctx) }}
-{{ include "base.serviceAccount" (dict "serviceAccount" $val.serviceAccount "ctx" $ctx) }}
-{{ include "base.serviceMonitor" (dict "serviceMonitor" $val.serviceMonitor "ctx" $ctx) }}
+{{ $ctx := dict "val" (include "base.allInOne.statefulset.val.merged" (dict "val" .val) | fromYaml) "abs" .abs -}}
+{{ include "base.configMaps" (dict "val" $ctx.val "ctx" $ctx) }}
+{{ include "base.statefulset" (dict "statefulset" $ctx.val.statefulset "configMaps" $ctx.val.configMaps "secrets" $ctx.val.secrets "persistentVolumeClaims" $ctx.val.persistentVolumeClaims "service" $ctx.val.service "serviceAccount" $ctx.val.serviceAccount "ctx" $ctx) }}
+{{ include "base.ingress" (dict "ingress" $ctx.val.ingress "service" $ctx.val.service "ctx" $ctx) }}
+{{ include "base.persistentVolumeClaims" (dict "persistentVolumeClaims" $ctx.val.persistentVolumeClaims "ctx" $ctx) }}
+{{ include "base.secrets" (dict "val" $ctx.val "ctx" $ctx) }}
+{{ include "base.service" (dict "service" $ctx.val.service "ctx" $ctx) }}
+{{ include "base.serviceAccount" (dict "serviceAccount" $ctx.val.serviceAccount "ctx" $ctx) }}
+{{ include "base.serviceMonitor" (dict "serviceMonitor" $ctx.val.serviceMonitor "ctx" $ctx) }}
 {{- end }}
 
 {{/*
-Usage: {{ include "base.allInOne.statefulset.default" (dict "ctx" $ctx) }}
+Usage: {{ include "base.allInOne.statefulset.default" (dict) }}
 */}}
 {{ define "base.allInOne.statefulset.default" -}}
-{{ $ctx := .ctx -}}
 service:
   spec:
     clusterIP: None
+{{- end }}
+
+{{/*
+Usage: {{ $val = include "base.allInOne.statefulset.val.merged" (dict "val" $val) | fromYaml }}
+*/}}
+{{ define "base.allInOne.statefulset.val.merged" -}}
+{{ $val := .val -}}
+{{ $default := include "base.allInOne.statefulset.default" (dict) | fromYaml -}}
+{{ mustMergeOverwrite $default $val | toYaml }}
 {{- end }}
