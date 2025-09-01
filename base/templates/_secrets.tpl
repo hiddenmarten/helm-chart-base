@@ -1,11 +1,10 @@
 {{/*
-Usage: {{ include "base.secrets" (dict "secrets" .Values.secrets "ctx" $ctx) }}
+Usage: {{ include "base.secrets" (dict "val" $val "ctx" $ctx) }}
 */}}
 {{ define "base.secrets" -}}
-{{ $secrets := .secrets -}}
+{{ $val := .val -}}
 {{ $ctx := .ctx -}}
-{{ $default := include "base.secrets.default" (dict "ctx" $ctx) | fromYaml -}}
-{{ $secrets = mustMergeOverwrite $secrets $default -}}
+{{ $secrets := include "base.secrets.default.merge" (dict "val" $val "ctx" $ctx) | fromYaml -}}
 {{- range $postfix, $content := $secrets }}
 {{ $content = include "base.secrets.content" (dict "postfix" $postfix "content" $content "ctx" $ctx) | fromYaml -}}
 {{ if and $content.enabled (or $content.data $content.stringData) -}}
@@ -105,7 +104,7 @@ Usage: {{ include "base.secrets.files.name" (dict "ctx" $ctx) }}
 {{- end }}
 
 {{/*
-Usage: {{ include "base.volumes.configMap.volumes" (dict "ctx" $ctx) }}
+Usage: {{ include "base.volumes.secrets.volumes" (dict "ctx" $ctx) }}
 */}}
 {{ define "base.secrets.files.volumes" -}}
 {{ $ctx := .ctx -}}
@@ -210,4 +209,18 @@ Usage: {{ include "base.secrets.default" (dict "ctx" $ctx) }}
 {{ $ctx := .ctx -}}
 envVars: {}
 files: {}
+{{- end }}
+
+{{/*
+Usage: {{ $secrets := include "base.secrets.default.merge" (dict "val" $val "ctx" $ctx) | fromYaml -}}
+*/}}
+{{ define "base.secrets.default.merge" -}}
+{{ $ctx := .ctx -}}
+{{ $val := .val -}}
+{{ $default := include "base.secrets.default" (dict "ctx" $ctx) | fromYaml -}}
+{{ if $val.secrets -}}
+{{ mustMergeOverwrite $default $val.secrets | toYaml }}
+{{- else }}
+{{ $default | toYaml }}
+{{- end }}
 {{- end }}
