@@ -1,11 +1,11 @@
 {{/*
 ServiceAccount template for baserary chart
-Usage: {{ include "base.serviceAccount" (dict "serviceAccount" $serviceAccount "ctx" $ctx) }}
+Usage: {{ include "base.serviceAccount" (dict "ctx" $ctx) }}
 */}}
 {{ define "base.serviceAccount" -}}
-{{ $serviceAccount := .serviceAccount -}}
 {{ $ctx := .ctx -}}
-{{ $content := include "base.serviceAccount.content" (dict "content" $serviceAccount "ctx" $ctx) | fromYaml -}}
+{{ $serviceAccount := include "base.serviceAccount.default.merged" (dict "ctx" $ctx) | fromYaml -}}
+{{ $content := include "base.serviceAccount.content" (dict "serviceAccount" $serviceAccount "ctx" $ctx) | fromYaml -}}
 {{ if $content.create -}}
 apiVersion: v1
 kind: ServiceAccount
@@ -16,23 +16,31 @@ kind: ServiceAccount
 {{- end }}
 
 {{/*
-Usage: {{ include "base.serviceAccount.content" (dict "content" $content "ctx" $ctx) }}
+Usage: {{ include "base.serviceAccount.content" (dict "serviceAccount" $serviceAccount "ctx" $ctx) }}
 */}}
 {{ define "base.serviceAccount.content" -}}
-{{ $content := .content -}}
+{{ $serviceAccount := .serviceAccount -}}
 {{ $ctx := .ctx -}}
-{{ $defaultContent := include "base.serviceAccount.default.content" (dict "ctx" $ctx) | fromYaml -}}
-{{ $content = mustMergeOverwrite $defaultContent $content -}}
-{{ if not $content.metadata.annotations -}}
-{{ $_ := unset $content.metadata "annotations" -}}
+{{ if not $serviceAccount.metadata.annotations -}}
+{{ $_ := unset $serviceAccount.metadata "annotations" -}}
 {{- end }}
-{{ tpl ($content | toYaml) $ctx.abs }}
+{{ tpl ($serviceAccount | toYaml) $ctx.abs }}
 {{- end }}
 
 {{/*
-Usage: {{ include "base.serviceAccount.default.content" (dict "ctx" $ctx) }}
+Usage: {{ include "base.serviceAccount.name" (dict "ctx" $ctx) }}
 */}}
-{{ define "base.serviceAccount.default.content" -}}
+{{ define "base.serviceAccount.name" -}}
+{{ $ctx := .ctx -}}
+{{ $serviceAccount := include "base.serviceAccount.default.merged" (dict "ctx" $ctx) | fromYaml -}}
+{{ $content := include "base.serviceAccount.content" (dict "serviceAccount" $serviceAccount "ctx" $ctx) | fromYaml -}}
+{{ $content.metadata.name }}
+{{- end }}
+
+{{/*
+Usage: {{ include "base.serviceAccount.default" (dict "ctx" $ctx) }}
+*/}}
+{{ define "base.serviceAccount.default" -}}
 {{ $ctx := .ctx -}}
 create: true
 metadata:
@@ -42,13 +50,11 @@ metadata:
 {{- end }}
 
 {{/*
-Usage: {{ include "base.serviceAccount.name" (dict "serviceAccount" $serviceAccount "ctx" $ctx) }}
+Usage: {{ $serviceAccount := include "base.serviceAccount.default.merged" (dict "ctx" $ctx) | fromYaml -}}
 */}}
-{{ define "base.serviceAccount.name" -}}
+{{ define "base.serviceAccount.default.merged" -}}
 {{ $ctx := .ctx -}}
-{{ $serviceAccount := .serviceAccount -}}
-{{ $content := $serviceAccount -}}
-{{ $defaultContent := include "base.serviceAccount.default.content" (dict "ctx" $ctx) | fromYaml -}}
-{{ $content = mustMergeOverwrite $defaultContent $content -}}
-{{ $content.metadata.name }}
+{{ $default := include "base.serviceAccount.default" (dict "ctx" $ctx) | fromYaml -}}
+{{ $serviceAccount := $ctx.val.serviceAccount | default dict }}
+{{ mustMergeOverwrite $default $serviceAccount | toYaml }}
 {{- end }}
