@@ -1,11 +1,11 @@
 {{/*
 Service template for baserary chart
-Usage: {{ include "base.service" (dict "service" $service "ctx" $ctx) }}
+Usage: {{ include "base.service" (dict "ctx" $ctx) }}
 */}}
 {{ define "base.service" -}}
-{{ $service := .service -}}
 {{ $ctx := .ctx -}}
-{{ $content := include "base.service.content" (dict "content" $service "ctx" $ctx) | fromYaml -}}
+{{ $service := include "base.service.default.merged" (dict "ctx" $ctx) | fromYaml -}}
+{{ $content := include "base.service.content" (dict "service" $service "ctx" $ctx) | fromYaml -}}
 {{ if and $content.enabled $content.spec.ports -}}
 apiVersion: v1
 kind: Service
@@ -16,14 +16,13 @@ kind: Service
 {{- end }}
 
 {{/*
-Usage: {{ include "base.service.content" (dict "content" $content "ctx" $ctx) }}
+Usage: {{ include "base.service.content" (dict "service" $service "ctx" $ctx) }}
 */}}
 {{ define "base.service.content" -}}
-{{ $content := .content -}}
+{{ $service := .service -}}
 {{ $ctx := .ctx -}}
-{{ $default := include "base.service.default" (dict "ctx" $ctx) | fromYaml -}}
-{{ $payload := include "base.service.payload" (dict "content" $content "ctx" $ctx) | fromYaml -}}
-{{ $content = mustMergeOverwrite $default $content $payload -}}
+{{ $override := include "base.service.override" (dict "service" $service "ctx" $ctx) | fromYaml -}}
+{{ $content := mustMergeOverwrite $service $override -}}
 {{ if not $content.metadata.annotations -}}
 {{ $_ := unset $content.metadata "annotations" -}}
 {{- end }}
@@ -33,10 +32,10 @@ Usage: {{ include "base.service.content" (dict "content" $content "ctx" $ctx) }}
 {{/*
 Usage: {{ include "base.service.payload" (dict "content" $content "ctx" $ctx) }}
 */}}
-{{ define "base.service.payload" -}}
-{{ $content := .content -}}
+{{ define "base.service.override" -}}
+{{ $service := .service -}}
 {{ $ctx := .ctx -}}
-{{ $ports := include "base.service.ports" (dict "ports" $content.spec.ports "ctx" $ctx) | fromYaml -}}
+{{ $ports := include "base.service.ports" (dict "ports" $service.spec.ports "ctx" $ctx) | fromYaml -}}
 {{ $payload := dict "spec" $ports -}}
 {{ $payload | toYaml | nindent 2 }}
 {{- end }}
@@ -73,4 +72,14 @@ metadata:
 spec:
   ports: {}
   selector: {{ include "base.selectorLabels" (dict "ctx" $ctx) | nindent 4 }}
+{{- end }}
+
+{{/*
+Usage: {{ $service := include "base.service.default.merged" (dict "ctx" $ctx) | fromYaml -}}
+*/}}
+{{ define "base.service.default.merged" -}}
+{{ $ctx := .ctx -}}
+{{ $default := include "base.service.default" (dict "ctx" $ctx) | fromYaml -}}
+{{ $service := $ctx.val.service | default dict }}
+{{ mustMergeOverwrite $default $service | toYaml }}
 {{- end }}
