@@ -10,7 +10,7 @@ Usage: {{ include "base.allInOne.deployment" (dict "val" .Values "abs" $) }}
 {{ include "base.secrets" (dict "ctx" $ctx) }}
 {{ include "base.service" (dict "service" $ctx.val.service "ctx" $ctx) }}
 {{ include "base.serviceAccount" (dict "serviceAccount" $ctx.val.serviceAccount "ctx" $ctx) }}
-{{ include "base.serviceMonitor" (dict "serviceMonitor" $ctx.val.serviceMonitor "ctx" $ctx) }}
+{{ include "base.serviceMonitor" (dict "ctx" $ctx) }}
 {{- end }}
 
 
@@ -26,7 +26,7 @@ Usage: {{ include "base.allInOne.statefulset" (dict "val" .Values "abs" $) }}
 {{ include "base.secrets" (dict "ctx" $ctx) }}
 {{ include "base.service" (dict "service" $ctx.val.service "ctx" $ctx) }}
 {{ include "base.serviceAccount" (dict "serviceAccount" $ctx.val.serviceAccount "ctx" $ctx) }}
-{{ include "base.serviceMonitor" (dict "serviceMonitor" $ctx.val.serviceMonitor "ctx" $ctx) }}
+{{ include "base.serviceMonitor" (dict "ctx" $ctx) }}
 {{- end }}
 
 {{/*

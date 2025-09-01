@@ -1,11 +1,11 @@
 {{/*
 ServiceMonitor template for baserary chart
-Usage: {{ include "base.serviceMonitor" (dict "serviceMonitor" .Values.serviceMonitor "ctx" $ctx) }}
+Usage: {{ include "base.serviceMonitor" (dict "ctx" $ctx) }}
 */}}
 {{ define "base.serviceMonitor" -}}
-{{ $serviceMonitor := .serviceMonitor -}}
 {{ $ctx := .ctx -}}
-{{ $content := include "base.serviceMonitor.content" (dict "content" $serviceMonitor "ctx" $ctx) | fromYaml -}}
+{{ $serviceMonitor := include "base.serviceMonitor.default.merged" (dict "ctx" $ctx) | fromYaml -}}
+{{ $content := include "base.serviceMonitor.content" (dict "serviceMonitor" $serviceMonitor "ctx" $ctx) | fromYaml -}}
 {{ if and $content.enabled $content.spec.endpoints -}}
 apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
@@ -16,14 +16,13 @@ kind: ServiceMonitor
 {{- end }}
 
 {{/*
-Usage: {{ include "base.serviceMonitor.content" (dict "content" $content "ctx" $ctx) }}
+Usage: {{ include "base.serviceMonitor.content" (dict "serviceMonitor" $serviceMonitor "ctx" $ctx) }}
 */}}
 {{ define "base.serviceMonitor.content" -}}
-{{ $content := .content -}}
+{{ $serviceMonitor := .serviceMonitor -}}
 {{ $ctx := .ctx -}}
-{{ $defaultContent := include "base.serviceMonitor.default.content" (dict "ctx" $ctx) | fromYaml -}}
-{{ $payload := include "base.serviceMonitor.payload" (dict "content" $content "ctx" $ctx) | fromYaml -}}
-{{ $content = mustMergeOverwrite $defaultContent $content $payload -}}
+{{ $override := include "base.serviceMonitor.override" (dict "serviceMonitor" $serviceMonitor "ctx" $ctx) | fromYaml -}}
+{{ $content := mustMergeOverwrite $serviceMonitor $override -}}
 {{ if not $content.metadata.annotations -}}
 {{ $_ := unset $content.metadata "annotations" -}}
 {{- end }}
@@ -33,12 +32,12 @@ Usage: {{ include "base.serviceMonitor.content" (dict "content" $content "ctx" $
 {{/*
 Usage: {{ include "base.serviceMonitor.payload" (dict "content" $content "ctx" $ctx) }}
 */}}
-{{ define "base.serviceMonitor.payload" -}}
-{{ $content := .content -}}
+{{ define "base.serviceMonitor.override" -}}
+{{ $serviceMonitor := .serviceMonitor -}}
 {{ $ctx := .ctx -}}
-{{ $endpoints := include "base.serviceMonitor.endpoints" (dict "endpoints" $content.spec.endpoints "ctx" $ctx) | fromYaml -}}
-{{ $payload := dict "spec" $endpoints -}}
-{{ $payload | toYaml }}
+{{ $endpoints := include "base.serviceMonitor.endpoints" (dict "endpoints" $serviceMonitor.spec.endpoints "ctx" $ctx) | fromYaml -}}
+{{ $override := dict "spec" $endpoints -}}
+{{ $override | toYaml }}
 {{- end }}
 
 {{/*
@@ -63,9 +62,9 @@ endpoints: {{ $endpointsList | toYaml | nindent 2 }}
 {{- end }}
 
 {{/*
-Usage: {{ include "base.serviceMonitor.default.content" (dict "ctx" $ctx) }}
+Usage: {{ include "base.serviceMonitor.default" (dict "ctx" $ctx) }}
 */}}
-{{ define "base.serviceMonitor.default.content" -}}
+{{ define "base.serviceMonitor.default" -}}
 {{ $ctx := .ctx -}}
 enabled: true
 metadata:
@@ -74,4 +73,14 @@ metadata:
   annotations: {}
 spec:
   endpoints: {}
+{{- end }}
+
+{{/*
+Usage: {{ $serviceMonitor := include "base.serviceMonitor.default.merged" (dict "ctx" $ctx) | fromYaml -}}
+*/}}
+{{ define "base.serviceMonitor.default.merged" -}}
+{{ $ctx := .ctx -}}
+{{ $default := include "base.serviceMonitor.default" (dict "ctx" $ctx) | fromYaml -}}
+{{ $serviceMonitor := $ctx.val.serviceMonitor | default dict }}
+{{ mustMergeOverwrite $default $serviceMonitor | toYaml }}
 {{- end }}
