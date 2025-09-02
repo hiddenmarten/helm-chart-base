@@ -6,7 +6,7 @@ Usage: {{ include "base.volumes" (dict "persistentVolumeClaims" $persistentVolum
 {{ $ctx := .ctx -}}
 {{ $configMaps := include "base.configMaps.merged" (dict "ctx" $ctx) | fromYaml -}}
 {{ $secrets := include "base.secrets.merged" (dict "ctx" $ctx) | fromYaml -}}
-{{ $persistentVolumeClaims := .persistentVolumeClaims -}}
+{{ $persistentVolumeClaims := include "base.persistentVolumeClaims.merged" (dict "ctx" $ctx) | fromYaml -}}
 {{ $volumes := list -}}
 {{ $cmVolumes := include "base.configMaps.files.volumes" (dict "content" $configMaps.files "ctx" $ctx) | fromYaml -}}
 {{ range $cmVolumes.volumes -}}

@@ -1,30 +1,28 @@
 {{/*
-Usage: {{ include "base.pod" (dict "pod" $pod $secrets "persistentVolumeClaims" $persistentVolumeClaims "ctx" $ctx) }}
+Usage: {{ include "base.pod" (dict "pod" $pod "ctx" $ctx) }}
 */}}
 {{ define "base.pod" -}}
 {{ $ctx := .ctx -}}
-{{ $persistentVolumeClaims := .persistentVolumeClaims -}}
 {{ $pod := include "base.pod.merged" (dict "pod" .pod "ctx" $ctx) | fromYaml -}}
-{{ $override := include "base.pod.override" (dict "pod" $pod "persistentVolumeClaims" $persistentVolumeClaims "ctx" $ctx) | fromYaml -}}
+{{ $override := include "base.pod.override" (dict "pod" $pod "ctx" $ctx) | fromYaml -}}
 {{ $pod = mustMergeOverwrite $pod $override -}}
 {{ $pod | toYaml }}
 {{- end }}
 
 {{/*
-Usage: {{ include "base.pod.override" (dict "pod" $pod "persistentVolumeClaims" $persistentVolumeClaims "ctx" $ctx) }}
+Usage: {{ include "base.pod.override" (dict "pod" $pod "ctx" $ctx) }}
 */}}
 {{ define "base.pod.override" -}}
 {{ $ctx := .ctx -}}
 {{ $pod := .pod -}}
-{{ $persistentVolumeClaims := .persistentVolumeClaims -}}
 {{ $spec := dict -}}
-{{ $volumes := include "base.volumes" (dict "persistentVolumeClaims" $persistentVolumeClaims "ctx" $ctx) | fromYaml -}}
+{{ $volumes := include "base.volumes" (dict "ctx" $ctx) | fromYaml -}}
 {{ if $volumes -}}
 {{ $spec := mustMergeOverwrite $spec $volumes -}}
 {{- end }}
 {{ $containerList := list -}}
 {{ range $k, $v := $pod.spec.containers -}}
-{{ $container := include "base.container" (dict "container" $v "persistentVolumeClaims" $persistentVolumeClaims "ctx" $ctx) | fromYaml -}}
+{{ $container := include "base.container" (dict "container" $v "ctx" $ctx) | fromYaml -}}
 {{ $container = mustMergeOverwrite (dict "name" $k) $container -}}
 {{ $containerList = append $containerList $container -}}
 {{ end -}}
