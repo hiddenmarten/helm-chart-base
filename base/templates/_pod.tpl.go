@@ -1,26 +1,24 @@
 {{/*
-Usage: {{ include "base.pod" (dict "pod" $pod $secrets "persistentVolumeClaims" $persistentVolumeClaims "service" $service "serviceAccount" $serviceAccount "ctx" $ctx) }}
+Usage: {{ include "base.pod" (dict "pod" $pod $secrets "persistentVolumeClaims" $persistentVolumeClaims "service" $service "ctx" $ctx) }}
 */}}
 {{ define "base.pod" -}}
 {{ $ctx := .ctx -}}
 {{ $persistentVolumeClaims := .persistentVolumeClaims -}}
 {{ $service := .service -}}
-{{ $serviceAccount := .serviceAccount -}}
 {{ $pod := include "base.pod.merged" (dict "pod" .pod "ctx" $ctx) | fromYaml -}}
-{{ $override := include "base.pod.override" (dict "pod" $pod "persistentVolumeClaims" $persistentVolumeClaims "service" $service "serviceAccount" $serviceAccount "ctx" $ctx) | fromYaml -}}
+{{ $override := include "base.pod.override" (dict "pod" $pod "persistentVolumeClaims" $persistentVolumeClaims "service" $service "ctx" $ctx) | fromYaml -}}
 {{ $pod = mustMergeOverwrite $pod $override -}}
 {{ $pod | toYaml }}
 {{- end }}
 
 {{/*
-Usage: {{ include "base.pod.override" (dict "pod" $pod "persistentVolumeClaims" $persistentVolumeClaims "service" $service "serviceAccount" $serviceAccount "ctx" $ctx) }}
+Usage: {{ include "base.pod.override" (dict "pod" $pod "persistentVolumeClaims" $persistentVolumeClaims "service" $service "ctx" $ctx) }}
 */}}
 {{ define "base.pod.override" -}}
 {{ $ctx := .ctx -}}
 {{ $pod := .pod -}}
 {{ $persistentVolumeClaims := .persistentVolumeClaims -}}
 {{ $service := .service -}}
-{{ $serviceAccount := .serviceAccount -}}
 {{ $spec := dict -}}
 {{ $volumes := include "base.volumes" (dict "persistentVolumeClaims" $persistentVolumeClaims "ctx" $ctx) | fromYaml -}}
 {{ if $volumes -}}
@@ -36,7 +34,7 @@ Usage: {{ include "base.pod.override" (dict "pod" $pod "persistentVolumeClaims" 
 {{ fail "at least one container is required" }}
 {{ end -}}
 {{ $containers := dict "containers" $containerList -}}
-{{ $serviceAccountName := dict "serviceAccountName" (include "base.serviceAccount.name" (dict "serviceAccount" $serviceAccount "ctx" $ctx)) -}}
+{{ $serviceAccountName := dict "serviceAccountName" (include "base.serviceAccount.name" (dict "ctx" $ctx)) -}}
 {{ $spec = mustMergeOverwrite $spec $containers $serviceAccountName -}}
 {{ dict "spec" $spec | toYaml }}
 {{- end }}

@@ -6,8 +6,7 @@ Usage: {{ include "base.statefulset" (dict "ctx" $ctx) }}
 {{ $statefulset := include "base.statefulset.merged" (dict "ctx" $ctx) | fromYaml -}}
 {{ $persistentVolumeClaims := include "base.persistentVolumeClaims.merged" (dict "ctx" $ctx) | fromYaml -}}
 {{ $service := include "base.service.merged" (dict "ctx" $ctx) | fromYaml -}}
-{{ $serviceAccount := include "base.serviceAccount.merged" (dict "ctx" $ctx) | fromYaml -}}
-{{ $content := include "base.statefulset.content" (dict "statefulset" $statefulset "persistentVolumeClaims" $persistentVolumeClaims "service" $service "serviceAccount" $serviceAccount "ctx" $ctx) | fromYaml -}}
+{{ $content := include "base.statefulset.content" (dict "statefulset" $statefulset "persistentVolumeClaims" $persistentVolumeClaims "service" $service "ctx" $ctx) | fromYaml -}}
 {{ if $content.enabled -}}
 apiVersion: apps/v1
 kind: StatefulSet
@@ -18,20 +17,19 @@ kind: StatefulSet
 {{- end }}
 
 {{/*
-Usage: {{ include "base.statefulset.content" (dict "statefulset" $statefulset "persistentVolumeClaims" $persistentVolumeClaims "service" $service "serviceAccount" $serviceAccount "ctx" $ctx) }}
+Usage: {{ include "base.statefulset.content" (dict "statefulset" $statefulset "persistentVolumeClaims" $persistentVolumeClaims "service" $service "ctx" $ctx) }}
 */}}
 {{ define "base.statefulset.content" -}}
 {{ $ctx := .ctx -}}
 {{ $statefulset := .statefulset -}}
 {{ $persistentVolumeClaims := .persistentVolumeClaims -}}
 {{ $service := .service -}}
-{{ $serviceAccount := .serviceAccount -}}
 {{ $default := include "base.statefulset.default" (dict "ctx" $ctx) | fromYaml -}}
 {{ $sourceVolumeClaimTemplates := include "base.statefulset.volumeClaimTemplates.default.merge" (dict "volumeClaimTemplates" $statefulset.spec.volumeClaimTemplates "ctx" $ctx) | fromYaml -}}
 {{ $volumeClaimTemplates := include "base.statefulset.volumeClaimTemplates" (dict "volumeClaimTemplates" $sourceVolumeClaimTemplates "ctx" $ctx) | fromYaml -}}
 {{ $volumeMounts := include "base.persistentVolumeClaims.volumeMounts" (dict "persistentVolumeClaims" $sourceVolumeClaimTemplates "ctx" $ctx) | fromYaml }}
 {{ $statefulset = mustMergeOverwrite $default $statefulset -}}
-{{ $pod := include "base.pod" (dict "pod" (index $statefulset.spec "template") "persistentVolumeClaims" $persistentVolumeClaims "service" $service "serviceAccount" $serviceAccount "ctx" $ctx) | fromYaml -}}
+{{ $pod := include "base.pod" (dict "pod" (index $statefulset.spec "template") "persistentVolumeClaims" $persistentVolumeClaims "service" $service "ctx" $ctx) | fromYaml -}}
 {{ $containers := include "base.statefulset.containers.override" (dict "containers" $pod.spec.containers "volumeMounts" $volumeMounts "ctx" $ctx) | fromYaml -}}
 {{ $podSpec := mustMergeOverwrite $pod.spec $containers -}}
 {{ $_ := set $pod "spec" $podSpec -}}

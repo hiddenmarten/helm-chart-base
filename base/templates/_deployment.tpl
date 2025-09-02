@@ -6,8 +6,7 @@ Usage: {{ include "base.deployment" (dict "ctx" $ctx) }}
 {{ $deployment := include "base.deployment.merged" (dict "ctx" $ctx) | fromYaml -}}
 {{ $persistentVolumeClaims := include "base.persistentVolumeClaims.merged" (dict "ctx" $ctx) | fromYaml -}}
 {{ $service := include "base.service.merged" (dict "ctx" $ctx) | fromYaml -}}
-{{ $serviceAccount := include "base.serviceAccount.merged" (dict "ctx" $ctx) | fromYaml -}}
-{{ $content := include "base.deployment.content" (dict "deployment" $deployment "persistentVolumeClaims" $persistentVolumeClaims "service" $service "serviceAccount" $serviceAccount "ctx" $ctx) | fromYaml -}}
+{{ $content := include "base.deployment.content" (dict "deployment" $deployment "persistentVolumeClaims" $persistentVolumeClaims "service" $service "ctx" $ctx) | fromYaml -}}
 {{ if $content.enabled -}}
 apiVersion: apps/v1
 kind: Deployment
@@ -25,10 +24,9 @@ Usage: {{ include "base.deployment.content" (dict "deployment" $deployment  "per
 {{ $deployment := .deployment -}}
 {{ $persistentVolumeClaims := .persistentVolumeClaims -}}
 {{ $service := .service -}}
-{{ $serviceAccount := .serviceAccount -}}
 {{ $default := include "base.deployment.default" (dict "ctx" $ctx) | fromYaml -}}
 {{ $deployment = mustMergeOverwrite $default $deployment -}}
-{{ $pod := include "base.pod" (dict "pod" (index $deployment.spec "template") "persistentVolumeClaims" $persistentVolumeClaims "service" $service "serviceAccount" $serviceAccount "ctx" $ctx) | fromYaml -}}
+{{ $pod := include "base.pod" (dict "pod" (index $deployment.spec "template") "persistentVolumeClaims" $persistentVolumeClaims "service" $service "ctx" $ctx) | fromYaml -}}
 {{ $spec := dict "spec" (dict "template" $pod) -}}
 {{ $content := mustMergeOverwrite $default $spec -}}
 {{ $content | toYaml }}
