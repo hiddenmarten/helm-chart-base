@@ -1,11 +1,11 @@
 {{/*
 Template for volumes
-Usage: {{ include "base.volumes" (dict "configMaps" $configMaps "secrets" $secrets "persistentVolumeClaims" $persistentVolumeClaims "ctx" $ctx) }}
+Usage: {{ include "base.volumes" (dict "persistentVolumeClaims" $persistentVolumeClaims "ctx" $ctx) }}
 */}}
 {{ define "base.volumes" -}}
 {{ $ctx := .ctx -}}
-{{ $configMaps := .configMaps -}}
-{{ $secrets := .secrets -}}
+{{ $configMaps := include "base.configMaps.merged" (dict "ctx" $ctx) | fromYaml -}}
+{{ $secrets := include "base.secrets.merged" (dict "ctx" $ctx) | fromYaml -}}
 {{ $persistentVolumeClaims := .persistentVolumeClaims -}}
 {{ $volumes := list -}}
 {{ $cmVolumes := include "base.configMaps.files.volumes" (dict "content" $configMaps.files "ctx" $ctx) | fromYaml -}}

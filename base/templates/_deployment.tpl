@@ -7,9 +7,7 @@ Usage: {{ include "base.deployment" (dict "ctx" $ctx) }}
 {{ $persistentVolumeClaims := include "base.persistentVolumeClaims.merged" (dict "ctx" $ctx) | fromYaml -}}
 {{ $service := include "base.service.merged" (dict "ctx" $ctx) | fromYaml -}}
 {{ $serviceAccount := include "base.serviceAccount.merged" (dict "ctx" $ctx) | fromYaml -}}
-{{ $configMaps := include "base.configMaps.merged" (dict "ctx" $ctx) | fromYaml -}}
-{{ $secrets := include "base.secrets.merged" (dict "ctx" $ctx) | fromYaml -}}
-{{ $content := include "base.deployment.content" (dict "deployment" $deployment "configMaps" $configMaps "secrets" $secrets "persistentVolumeClaims" $persistentVolumeClaims "service" $service "serviceAccount" $serviceAccount "ctx" $ctx) | fromYaml -}}
+{{ $content := include "base.deployment.content" (dict "deployment" $deployment "persistentVolumeClaims" $persistentVolumeClaims "service" $service "serviceAccount" $serviceAccount "ctx" $ctx) | fromYaml -}}
 {{ if $content.enabled -}}
 apiVersion: apps/v1
 kind: Deployment
@@ -20,19 +18,17 @@ kind: Deployment
 {{- end }}
 
 {{/*
-Usage: {{ include "base.deployment.content" (dict "deployment" $deployment "configMaps" $configMaps "secrets" $secrets "persistentVolumeClaims" $persistentVolumeClaims "service" $service "serviceAccount" $serviceAccount "ctx" $ctx) }}
+Usage: {{ include "base.deployment.content" (dict "deployment" $deployment  "persistentVolumeClaims" $persistentVolumeClaims "service" $service "serviceAccount" $serviceAccount "ctx" $ctx) }}
 */}}
 {{ define "base.deployment.content" -}}
 {{ $ctx := .ctx -}}
 {{ $deployment := .deployment -}}
-{{ $configMaps := .configMaps -}}
-{{ $secrets := .secrets -}}
 {{ $persistentVolumeClaims := .persistentVolumeClaims -}}
 {{ $service := .service -}}
 {{ $serviceAccount := .serviceAccount -}}
 {{ $default := include "base.deployment.default" (dict "ctx" $ctx) | fromYaml -}}
 {{ $deployment = mustMergeOverwrite $default $deployment -}}
-{{ $pod := include "base.pod" (dict "pod" (index $deployment.spec "template") "configMaps" $configMaps "secrets" $secrets "persistentVolumeClaims" $persistentVolumeClaims "service" $service "serviceAccount" $serviceAccount "ctx" $ctx) | fromYaml -}}
+{{ $pod := include "base.pod" (dict "pod" (index $deployment.spec "template") "persistentVolumeClaims" $persistentVolumeClaims "service" $service "serviceAccount" $serviceAccount "ctx" $ctx) | fromYaml -}}
 {{ $spec := dict "spec" (dict "template" $pod) -}}
 {{ $content := mustMergeOverwrite $default $spec -}}
 {{ $content | toYaml }}

@@ -1,40 +1,36 @@
 {{/*
-Usage: {{ include "base.pod" (dict "pod" $pod "configMaps" $configMaps "secrets" $secrets "persistentVolumeClaims" $persistentVolumeClaims "service" $service "serviceAccount" $serviceAccount "ctx" $ctx) }}
+Usage: {{ include "base.pod" (dict "pod" $pod $secrets "persistentVolumeClaims" $persistentVolumeClaims "service" $service "serviceAccount" $serviceAccount "ctx" $ctx) }}
 */}}
 {{ define "base.pod" -}}
 {{ $ctx := .ctx -}}
 {{ $pod := .pod -}}
-{{ $configMaps := .configMaps -}}
-{{ $secrets := .secrets -}}
 {{ $persistentVolumeClaims := .persistentVolumeClaims -}}
 {{ $service := .service -}}
 {{ $serviceAccount := .serviceAccount -}}
 {{ $default := include "base.pod.default" (dict "ctx" $ctx) | fromYaml -}}
 {{ $pod = mustMergeOverwrite $default $pod -}}
-{{ $override := include "base.pod.override" (dict "pod" $pod "configMaps" $configMaps "secrets" $secrets "persistentVolumeClaims" $persistentVolumeClaims "service" $service "serviceAccount" $serviceAccount "ctx" $ctx) | fromYaml -}}
+{{ $override := include "base.pod.override" (dict "pod" $pod "persistentVolumeClaims" $persistentVolumeClaims "service" $service "serviceAccount" $serviceAccount "ctx" $ctx) | fromYaml -}}
 {{ $pod = mustMergeOverwrite $pod $override -}}
 {{ $pod | toYaml }}
 {{- end }}
 
 {{/*
-Usage: {{ include "base.pod.override" (dict "pod" $pod "configMaps" $configMaps "secrets" $secrets "persistentVolumeClaims" $persistentVolumeClaims "service" $service "serviceAccount" $serviceAccount "ctx" $ctx) }}
+Usage: {{ include "base.pod.override" (dict "pod" $pod "persistentVolumeClaims" $persistentVolumeClaims "service" $service "serviceAccount" $serviceAccount "ctx" $ctx) }}
 */}}
 {{ define "base.pod.override" -}}
 {{ $ctx := .ctx -}}
 {{ $pod := .pod -}}
-{{ $configMaps := .configMaps -}}
-{{ $secrets := .secrets -}}
 {{ $persistentVolumeClaims := .persistentVolumeClaims -}}
 {{ $service := .service -}}
 {{ $serviceAccount := .serviceAccount -}}
 {{ $spec := dict -}}
-{{ $volumes := include "base.volumes" (dict "configMaps" $configMaps "secrets" $secrets "persistentVolumeClaims" $persistentVolumeClaims "ctx" $ctx) | fromYaml -}}
+{{ $volumes := include "base.volumes" (dict "persistentVolumeClaims" $persistentVolumeClaims "ctx" $ctx) | fromYaml -}}
 {{ if $volumes -}}
 {{ $spec := mustMergeOverwrite $spec $volumes -}}
 {{- end }}
 {{ $containerList := list -}}
 {{ range $k, $v := $pod.spec.containers -}}
-{{ $container := include "base.container" (dict "container" $v "service" $service "configMaps" $configMaps "secrets" $secrets "persistentVolumeClaims" $persistentVolumeClaims "ctx" $ctx) | fromYaml -}}
+{{ $container := include "base.container" (dict "container" $v "service" $service "persistentVolumeClaims" $persistentVolumeClaims "ctx" $ctx) | fromYaml -}}
 {{ $container = mustMergeOverwrite (dict "name" $k) $container -}}
 {{ $containerList = append $containerList $container -}}
 {{ end -}}

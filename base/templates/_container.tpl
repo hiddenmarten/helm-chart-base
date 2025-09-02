@@ -1,38 +1,34 @@
 {{/*
-Usage: {{ include "base.container" (dict "container" $container "service" $service "configMaps" $configMaps "secrets" $secrets "persistentVolumeClaims" $persistentVolumeClaims "ctx" $ctx) }}
+Usage: {{ include "base.container" (dict "container" $container "service" $service "persistentVolumeClaims" $persistentVolumeClaims "ctx" $ctx) }}
 */}}
 {{ define "base.container" -}}
 {{ $ctx := .ctx -}}
 {{ $container := .container -}}
 {{ $service := .service -}}
-{{ $configMaps := .configMaps -}}
-{{ $secrets := .secrets -}}
 {{ $persistentVolumeClaims := .persistentVolumeClaims -}}
-{{ $containerOverride := include "base.container.override" (dict "container" $container "service" $service "configMaps" $configMaps "secrets" $secrets "persistentVolumeClaims" $persistentVolumeClaims "ctx" $ctx) | fromYaml -}}
+{{ $containerOverride := include "base.container.override" (dict "container" $container "service" $service "persistentVolumeClaims" $persistentVolumeClaims "ctx" $ctx) | fromYaml -}}
 {{ $container = mustMergeOverwrite $container $containerOverride -}}
 {{ $container | toYaml }}
 {{- end }}
 
 {{/*
-Usage: {{ include "base.container.override" (dict "container" $container "service" $service "configMaps" $configMaps "secrets" $secrets "persistentVolumeClaims" $persistentVolumeClaims "ctx" $ctx) }}
+Usage: {{ include "base.container.override" (dict "container" $container "service" $service "persistentVolumeClaims" $persistentVolumeClaims "ctx" $ctx) }}
 */}}
 {{ define "base.container.override" -}}
 {{ $ctx := .ctx -}}
 {{ $container := .container -}}
 {{ $service := .service -}}
-{{ $configMaps := .configMaps -}}
-{{ $secrets := .secrets -}}
 {{ $persistentVolumeClaims := .persistentVolumeClaims -}}
 {{ include "base.container.image" (dict "image" $container.image "ctx" $ctx) }}
 {{ $ports := include "base.container.ports" (dict "service" $service "ctx" $ctx) | fromYaml -}}
 {{ if len $ports.ports -}}
 {{ $ports | toYaml }}
 {{- end }}
-{{ $envFrom := include "base.container.envFrom" (dict "configMaps" $configMaps "secrets" $secrets "ctx" $ctx) | fromYaml -}}
+{{ $envFrom := include "base.container.envFrom" (dict "ctx" $ctx) | fromYaml -}}
 {{ if len $envFrom.envFrom -}}
 {{ $envFrom | toYaml }}
 {{- end }}
-{{ $volumeMounts := include "base.container.volumeMounts" (dict "configMaps" $configMaps "secrets" $secrets "persistentVolumeClaims" $persistentVolumeClaims "ctx" $ctx) | fromYaml -}}
+{{ $volumeMounts := include "base.container.volumeMounts" (dict "persistentVolumeClaims" $persistentVolumeClaims "ctx" $ctx) | fromYaml -}}
 {{ if len $volumeMounts.volumeMounts -}}
 {{ $volumeMounts | toYaml }}
 {{- end }}
@@ -82,12 +78,12 @@ Usage: {{ include "base.container.ports" (dict "service" $service "ctx" $ctx) }}
 {{- end }}
 
 {{/*
-Usage: {{ include "base.container.envFrom" (dict "configMaps" $configMaps "secrets" $secrets "ctx" $ctx) }}
+Usage: {{ include "base.container.envFrom" (dict "ctx" $ctx) }}
 */}}
 {{ define "base.container.envFrom" -}}
 {{ $ctx := .ctx -}}
-{{ $configMaps := .configMaps -}}
-{{ $secrets := .secrets -}}
+{{ $configMaps := include "base.configMaps.merged" (dict "ctx" $ctx) | fromYaml -}}
+{{ $secrets := include "base.secrets.merged" (dict "ctx" $ctx) | fromYaml -}}
 {{ $configMapRefs := include "base.configMaps.envFrom" (dict "envVars" $configMaps.envVars "ctx" $ctx) | fromYaml -}}
 {{ $secretRefs := include "base.secrets.envFrom" (dict "envVars" $secrets.envVars "ctx" $ctx) | fromYaml -}}
 {{ $items := concat $configMapRefs.envFrom $secretRefs.envFrom | default list -}}
@@ -95,12 +91,12 @@ Usage: {{ include "base.container.envFrom" (dict "configMaps" $configMaps "secre
 {{- end }}
 
 {{/*
-Usage: {{ include "base.container.volumeMounts" (dict "configMaps" $configMaps "secrets" $secrets "persistentVolumeClaims" $persistentVolumeClaims "ctx" $ctx) }}
+Usage: {{ include "base.container.volumeMounts" (dict "persistentVolumeClaims" $persistentVolumeClaims "ctx" $ctx) }}
 */}}
 {{ define "base.container.volumeMounts" -}}
 {{ $ctx := .ctx -}}
-{{ $configMaps := .configMaps -}}
-{{ $secrets := .secrets -}}
+{{ $configMaps := include "base.configMaps.merged" (dict "ctx" $ctx) | fromYaml -}}
+{{ $secrets := include "base.secrets.merged" (dict "ctx" $ctx) | fromYaml -}}
 {{ $persistentVolumeClaims := .persistentVolumeClaims -}}
 {{ $cmVolumeMounts := include "base.configMaps.files.volumeMounts" (dict "content" $configMaps.files "ctx" $ctx) | fromYaml -}}
 {{ $secretVolumeMounts := include "base.secrets.files.volumeMounts" (dict "content" $secrets.files "ctx" $ctx) | fromYaml -}}
