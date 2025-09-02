@@ -1,7 +1,6 @@
 # helm-chart-base
 
 TODO list:
-- Rework $ctx flow following agreement
 - Add optional hashes from `secrets` and `configMaps`, both of them have to go through tpl before calculating hash itself
 - Make init and ephemeral containers as a maps
 - Resolve case with empty dir usage in 2 containers within a pod (volumes as a map and concatenate it?)
@@ -14,4 +13,6 @@ TODO list:
 # Agreements:
  - no lists of dictionaries are allowed in helm chart, helm lists flow breaks the merge flow in chart inheritance
  - content of resources should go through tpl
- - `$ctx` variable should be provided as-is, updated values should be provided separately
+ - `$ctx` variable should be provided as-is,
+   - it provides an easy way to get any path for .Values
+   - updated values should be provided separately
