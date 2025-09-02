@@ -3,18 +3,12 @@ Usage: {{ include "base.statefulset" (dict "statefulset" $statefulset "configMap
 */}}
 {{ define "base.statefulset" -}}
 {{ $ctx := .ctx -}}
-{{ $statefulset := .statefulset -}}
-{{ $configMaps := .configMaps -}}
-{{ $secrets := .secrets -}}
-{{ $persistentVolumeClaims := .persistentVolumeClaims -}}
-{{ $service := .service -}}
-{{ $serviceAccount := .serviceAccount -}}
-{{ $defaultService := include "base.service.default" (dict "ctx" $ctx) | fromYaml -}}
-{{ $service = mustMergeOverwrite $defaultService $service -}}
-{{ $defaultConfigMaps := include "base.configMaps.default" (dict "ctx" $ctx) | fromYaml -}}
-{{ $configMaps = mustMergeOverwrite $configMaps $defaultConfigMaps -}}
-{{ $defaultSecrets := include "base.secrets.default" (dict "ctx" $ctx) | fromYaml -}}
-{{ $secrets = mustMergeOverwrite $secrets $defaultSecrets -}}
+{{ $statefulset := include "base.statefulset.merged" (dict "ctx" $ctx) | fromYaml -}}
+{{ $persistentVolumeClaims := include "base.persistentVolumeClaims.merged" (dict "ctx" $ctx) | fromYaml -}}
+{{ $service := include "base.service.merged" (dict "ctx" $ctx) | fromYaml -}}
+{{ $serviceAccount := include "base.serviceAccount.merged" (dict "ctx" $ctx) | fromYaml -}}
+{{ $configMaps := include "base.configMaps.merged" (dict "ctx" $ctx) | fromYaml -}}
+{{ $secrets := include "base.secrets.merged" (dict "ctx" $ctx) | fromYaml -}}
 {{ $content := include "base.statefulset.content" (dict "statefulset" $statefulset "configMaps" $configMaps "secrets" $secrets "persistentVolumeClaims" $persistentVolumeClaims "service" $service "serviceAccount" $serviceAccount "ctx" $ctx) | fromYaml -}}
 {{ if $content.enabled -}}
 apiVersion: apps/v1

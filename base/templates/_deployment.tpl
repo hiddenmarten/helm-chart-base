@@ -3,16 +3,12 @@ Usage: {{ include "base.deployment" (dict "ctx" $ctx) }}
 */}}
 {{ define "base.deployment" -}}
 {{ $ctx := .ctx -}}
-{{ $deployment := .deployment -}}
-{{ $configMaps := .configMaps -}}
-{{ $secrets := .secrets -}}
-{{ $persistentVolumeClaims := .persistentVolumeClaims -}}
-{{ $service := .service -}}
-{{ $serviceAccount := .serviceAccount -}}
-{{ $defaultConfigMaps := include "base.configMaps.default" (dict "ctx" $ctx) | fromYaml -}}
-{{ $configMaps = mustMergeOverwrite $configMaps $defaultConfigMaps -}}
-{{ $defaultSecrets := include "base.secrets.default" (dict "ctx" $ctx) | fromYaml -}}
-{{ $secrets = mustMergeOverwrite $secrets $defaultSecrets -}}
+{{ $deployment := include "base.deployment.merged" (dict "ctx" $ctx) | fromYaml -}}
+{{ $persistentVolumeClaims := include "base.persistentVolumeClaims.merged" (dict "ctx" $ctx) | fromYaml -}}
+{{ $service := include "base.service.merged" (dict "ctx" $ctx) | fromYaml -}}
+{{ $serviceAccount := include "base.serviceAccount.merged" (dict "ctx" $ctx) | fromYaml -}}
+{{ $configMaps := include "base.configMaps.merged" (dict "ctx" $ctx) | fromYaml -}}
+{{ $secrets := include "base.secrets.merged" (dict "ctx" $ctx) | fromYaml -}}
 {{ $content := include "base.deployment.content" (dict "deployment" $deployment "configMaps" $configMaps "secrets" $secrets "persistentVolumeClaims" $persistentVolumeClaims "service" $service "serviceAccount" $serviceAccount "ctx" $ctx) | fromYaml -}}
 {{ if $content.enabled -}}
 apiVersion: apps/v1

@@ -1,1 +1,1 @@
-{{ include "base.persistentVolumeClaims" (dict "persistentVolumeClaims" .Values.persistentVolumeClaims "ctx" (dict "val" .Values "abs" $)) }}
+{{ include "base.persistentVolumeClaims" (dict "ctx" (dict "val" .Values "abs" $)) }}
