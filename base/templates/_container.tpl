@@ -1,26 +1,24 @@
 {{/*
-Usage: {{ include "base.container" (dict "container" $container "service" $service "persistentVolumeClaims" $persistentVolumeClaims "ctx" $ctx) }}
+Usage: {{ include "base.container" (dict "container" $container "persistentVolumeClaims" $persistentVolumeClaims "ctx" $ctx) }}
 */}}
 {{ define "base.container" -}}
 {{ $ctx := .ctx -}}
 {{ $container := .container -}}
-{{ $service := .service -}}
 {{ $persistentVolumeClaims := .persistentVolumeClaims -}}
-{{ $containerOverride := include "base.container.override" (dict "container" $container "service" $service "persistentVolumeClaims" $persistentVolumeClaims "ctx" $ctx) | fromYaml -}}
+{{ $containerOverride := include "base.container.override" (dict "container" $container "persistentVolumeClaims" $persistentVolumeClaims "ctx" $ctx) | fromYaml -}}
 {{ $container = mustMergeOverwrite $container $containerOverride -}}
 {{ $container | toYaml }}
 {{- end }}
 
 {{/*
-Usage: {{ include "base.container.override" (dict "container" $container "service" $service "persistentVolumeClaims" $persistentVolumeClaims "ctx" $ctx) }}
+Usage: {{ include "base.container.override" (dict "container" $container "persistentVolumeClaims" $persistentVolumeClaims "ctx" $ctx) }}
 */}}
 {{ define "base.container.override" -}}
 {{ $ctx := .ctx -}}
 {{ $container := .container -}}
-{{ $service := .service -}}
 {{ $persistentVolumeClaims := .persistentVolumeClaims -}}
 {{ include "base.container.image" (dict "image" $container.image "ctx" $ctx) }}
-{{ $ports := include "base.container.ports" (dict "service" $service "ctx" $ctx) | fromYaml -}}
+{{ $ports := include "base.container.ports" (dict "ctx" $ctx) | fromYaml -}}
 {{ if len $ports.ports -}}
 {{ $ports | toYaml }}
 {{- end }}
@@ -66,7 +64,7 @@ Usage: {{ include "base.container.ports" (dict "service" $service "ctx" $ctx) }}
 */}}
 {{ define "base.container.ports" -}}
 {{ $ctx := .ctx -}}
-{{ $service := .service -}}
+{{ $service := include "base.service.merged" (dict "ctx" $ctx) | fromYaml -}}
 {{ $items := list -}}
 {{ $defaultService := include "base.service.default" (dict "ctx" $ctx) | fromYaml -}}
 {{ $service = mustMergeOverwrite $defaultService $service -}}

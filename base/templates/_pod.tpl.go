@@ -1,24 +1,22 @@
 {{/*
-Usage: {{ include "base.pod" (dict "pod" $pod $secrets "persistentVolumeClaims" $persistentVolumeClaims "service" $service "ctx" $ctx) }}
+Usage: {{ include "base.pod" (dict "pod" $pod $secrets "persistentVolumeClaims" $persistentVolumeClaims "ctx" $ctx) }}
 */}}
 {{ define "base.pod" -}}
 {{ $ctx := .ctx -}}
 {{ $persistentVolumeClaims := .persistentVolumeClaims -}}
-{{ $service := .service -}}
 {{ $pod := include "base.pod.merged" (dict "pod" .pod "ctx" $ctx) | fromYaml -}}
-{{ $override := include "base.pod.override" (dict "pod" $pod "persistentVolumeClaims" $persistentVolumeClaims "service" $service "ctx" $ctx) | fromYaml -}}
+{{ $override := include "base.pod.override" (dict "pod" $pod "persistentVolumeClaims" $persistentVolumeClaims "ctx" $ctx) | fromYaml -}}
 {{ $pod = mustMergeOverwrite $pod $override -}}
 {{ $pod | toYaml }}
 {{- end }}
 
 {{/*
-Usage: {{ include "base.pod.override" (dict "pod" $pod "persistentVolumeClaims" $persistentVolumeClaims "service" $service "ctx" $ctx) }}
+Usage: {{ include "base.pod.override" (dict "pod" $pod "persistentVolumeClaims" $persistentVolumeClaims "ctx" $ctx) }}
 */}}
 {{ define "base.pod.override" -}}
 {{ $ctx := .ctx -}}
 {{ $pod := .pod -}}
 {{ $persistentVolumeClaims := .persistentVolumeClaims -}}
-{{ $service := .service -}}
 {{ $spec := dict -}}
 {{ $volumes := include "base.volumes" (dict "persistentVolumeClaims" $persistentVolumeClaims "ctx" $ctx) | fromYaml -}}
 {{ if $volumes -}}
@@ -26,7 +24,7 @@ Usage: {{ include "base.pod.override" (dict "pod" $pod "persistentVolumeClaims" 
 {{- end }}
 {{ $containerList := list -}}
 {{ range $k, $v := $pod.spec.containers -}}
-{{ $container := include "base.container" (dict "container" $v "service" $service "persistentVolumeClaims" $persistentVolumeClaims "ctx" $ctx) | fromYaml -}}
+{{ $container := include "base.container" (dict "container" $v "persistentVolumeClaims" $persistentVolumeClaims "ctx" $ctx) | fromYaml -}}
 {{ $container = mustMergeOverwrite (dict "name" $k) $container -}}
 {{ $containerList = append $containerList $container -}}
 {{ end -}}
