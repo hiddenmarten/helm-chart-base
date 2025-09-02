@@ -90,8 +90,8 @@ Usage: {{ include "base.statefulset.volumeClaimTemplates" (dict "volumeClaimTemp
 {{ $ctx := .ctx -}}
 {{ $volumeClaimTemplates := .volumeClaimTemplates -}}
 {{ $list := list -}}
-{{- range $postfix, $content := $volumeClaimTemplates }}
-{{ $content = include "base.persistentVolumeClaims.content" (dict "postfix" $postfix "content" $content "ctx" $ctx) | fromYaml -}}
+{{- range $postfix, $persistentVolumeClaim := $volumeClaimTemplates }}
+{{ $content := include "base.persistentVolumeClaims.content" (dict "postfix" $postfix "persistentVolumeClaim" $persistentVolumeClaim "ctx" $ctx) | fromYaml -}}
 {{ if and $content.enabled $content.spec.resources.requests.storage -}}
 {{ $_ := unset $content "enabled" -}}
 {{ $_ = unset $content "mount" -}}
