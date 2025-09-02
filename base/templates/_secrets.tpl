@@ -3,7 +3,7 @@ Usage: {{ include "base.secrets" (dict "ctx" $ctx) }}
 */}}
 {{ define "base.secrets" -}}
 {{ $ctx := .ctx -}}
-{{ $secrets := include "base.secrets.default.merge" (dict "ctx" $ctx) | fromYaml -}}
+{{ $secrets := include "base.secrets.merged" (dict "ctx" $ctx) | fromYaml -}}
 {{- range $postfix, $content := $secrets }}
 {{ $content = include "base.secrets.content" (dict "postfix" $postfix "content" $content "ctx" $ctx) | fromYaml -}}
 {{ if and $content.enabled (or $content.data $content.stringData) -}}
@@ -211,9 +211,9 @@ files: {}
 {{- end }}
 
 {{/*
-Usage: {{ $secrets := include "base.secrets.default.merge" (dict "ctx" $ctx) | fromYaml -}}
+Usage: {{ $secrets := include "base.secrets.merged" (dict "ctx" $ctx) | fromYaml -}}
 */}}
-{{ define "base.secrets.default.merge" -}}
+{{ define "base.secrets.merged" -}}
 {{ $ctx := .ctx -}}
 {{ $default := include "base.secrets.default" (dict "ctx" $ctx) | fromYaml -}}
 {{ $secrets := $ctx.val.secrets | default dict }}

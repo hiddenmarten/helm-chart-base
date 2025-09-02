@@ -3,7 +3,7 @@ Usage: {{ include "base.configMaps" (dict "ctx" $ctx) }}
 */}}
 {{ define "base.configMaps" -}}
 {{ $ctx := .ctx -}}
-{{ $configMaps := include "base.configMaps.default.merged" (dict "ctx" $ctx) | fromYaml -}}
+{{ $configMaps := include "base.configMaps.merged" (dict "ctx" $ctx) | fromYaml -}}
 {{- range $postfix, $content := $configMaps }}
 {{ $content = include "base.configMaps.content" (dict "postfix" $postfix "content" $content "ctx" $ctx) | fromYaml -}}
 {{ if and $content.enabled (or $content.data $content.binaryData) -}}
@@ -211,9 +211,9 @@ files: {}
 {{- end }}
 
 {{/*
-Usage: {{ $configMaps := include "base.configMaps.default.merge" (dict "ctx" $ctx) | fromYaml -}}
+Usage: {{ $configMaps := include "base.configMaps.merged" (dict "ctx" $ctx) | fromYaml -}}
 */}}
-{{ define "base.configMaps.default.merged" -}}
+{{ define "base.configMaps.merged" -}}
 {{ $ctx := .ctx -}}
 {{ $default := include "base.configMaps.default" (dict "ctx" $ctx) | fromYaml -}}
 {{ $configMaps := $ctx.val.configMaps | default dict }}

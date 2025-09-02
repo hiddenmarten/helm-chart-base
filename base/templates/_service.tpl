@@ -4,7 +4,7 @@ Usage: {{ include "base.service" (dict "ctx" $ctx) }}
 */}}
 {{ define "base.service" -}}
 {{ $ctx := .ctx -}}
-{{ $service := include "base.service.default.merged" (dict "ctx" $ctx) | fromYaml -}}
+{{ $service := include "base.service.merged" (dict "ctx" $ctx) | fromYaml -}}
 {{ $content := include "base.service.content" (dict "service" $service "ctx" $ctx) | fromYaml -}}
 {{ if and $content.enabled $content.spec.ports -}}
 apiVersion: v1
@@ -75,9 +75,9 @@ spec:
 {{- end }}
 
 {{/*
-Usage: {{ $service := include "base.service.default.merged" (dict "ctx" $ctx) | fromYaml -}}
+Usage: {{ $service := include "base.service.merged" (dict "ctx" $ctx) | fromYaml -}}
 */}}
-{{ define "base.service.default.merged" -}}
+{{ define "base.service.merged" -}}
 {{ $ctx := .ctx -}}
 {{ $default := include "base.service.default" (dict "ctx" $ctx) | fromYaml -}}
 {{ $service := $ctx.val.service | default dict }}

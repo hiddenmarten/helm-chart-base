@@ -4,7 +4,7 @@ Usage: {{ include "base.serviceAccount" (dict "ctx" $ctx) }}
 */}}
 {{ define "base.serviceAccount" -}}
 {{ $ctx := .ctx -}}
-{{ $serviceAccount := include "base.serviceAccount.default.merged" (dict "ctx" $ctx) | fromYaml -}}
+{{ $serviceAccount := include "base.serviceAccount.merged" (dict "ctx" $ctx) | fromYaml -}}
 {{ $content := include "base.serviceAccount.content" (dict "serviceAccount" $serviceAccount "ctx" $ctx) | fromYaml -}}
 {{ if $content.create -}}
 apiVersion: v1
@@ -32,7 +32,7 @@ Usage: {{ include "base.serviceAccount.name" (dict "ctx" $ctx) }}
 */}}
 {{ define "base.serviceAccount.name" -}}
 {{ $ctx := .ctx -}}
-{{ $serviceAccount := include "base.serviceAccount.default.merged" (dict "ctx" $ctx) | fromYaml -}}
+{{ $serviceAccount := include "base.serviceAccount.merged" (dict "ctx" $ctx) | fromYaml -}}
 {{ $content := include "base.serviceAccount.content" (dict "serviceAccount" $serviceAccount "ctx" $ctx) | fromYaml -}}
 {{ $content.metadata.name }}
 {{- end }}
@@ -50,9 +50,9 @@ metadata:
 {{- end }}
 
 {{/*
-Usage: {{ $serviceAccount := include "base.serviceAccount.default.merged" (dict "ctx" $ctx) | fromYaml -}}
+Usage: {{ $serviceAccount := include "base.serviceAccount.merged" (dict "ctx" $ctx) | fromYaml -}}
 */}}
-{{ define "base.serviceAccount.default.merged" -}}
+{{ define "base.serviceAccount.merged" -}}
 {{ $ctx := .ctx -}}
 {{ $default := include "base.serviceAccount.default" (dict "ctx" $ctx) | fromYaml -}}
 {{ $serviceAccount := $ctx.val.serviceAccount | default dict }}

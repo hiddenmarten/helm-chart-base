@@ -4,7 +4,7 @@ Usage: {{ include "base.serviceMonitor" (dict "ctx" $ctx) }}
 */}}
 {{ define "base.serviceMonitor" -}}
 {{ $ctx := .ctx -}}
-{{ $serviceMonitor := include "base.serviceMonitor.default.merged" (dict "ctx" $ctx) | fromYaml -}}
+{{ $serviceMonitor := include "base.serviceMonitor.merged" (dict "ctx" $ctx) | fromYaml -}}
 {{ $content := include "base.serviceMonitor.content" (dict "serviceMonitor" $serviceMonitor "ctx" $ctx) | fromYaml -}}
 {{ if and $content.enabled $content.spec.endpoints -}}
 apiVersion: monitoring.coreos.com/v1
@@ -76,9 +76,9 @@ spec:
 {{- end }}
 
 {{/*
-Usage: {{ $serviceMonitor := include "base.serviceMonitor.default.merged" (dict "ctx" $ctx) | fromYaml -}}
+Usage: {{ $serviceMonitor := include "base.serviceMonitor.merged" (dict "ctx" $ctx) | fromYaml -}}
 */}}
-{{ define "base.serviceMonitor.default.merged" -}}
+{{ define "base.serviceMonitor.merged" -}}
 {{ $ctx := .ctx -}}
 {{ $default := include "base.serviceMonitor.default" (dict "ctx" $ctx) | fromYaml -}}
 {{ $serviceMonitor := $ctx.val.serviceMonitor | default dict }}
