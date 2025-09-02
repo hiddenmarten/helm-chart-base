@@ -3,12 +3,10 @@ Usage: {{ include "base.pod" (dict "pod" $pod $secrets "persistentVolumeClaims" 
 */}}
 {{ define "base.pod" -}}
 {{ $ctx := .ctx -}}
-{{ $pod := .pod -}}
 {{ $persistentVolumeClaims := .persistentVolumeClaims -}}
 {{ $service := .service -}}
 {{ $serviceAccount := .serviceAccount -}}
-{{ $default := include "base.pod.default" (dict "ctx" $ctx) | fromYaml -}}
-{{ $pod = mustMergeOverwrite $default $pod -}}
+{{ $pod := include "base.pod.merged" (dict "pod" .pod "ctx" $ctx) | fromYaml -}}
 {{ $override := include "base.pod.override" (dict "pod" $pod "persistentVolumeClaims" $persistentVolumeClaims "service" $service "serviceAccount" $serviceAccount "ctx" $ctx) | fromYaml -}}
 {{ $pod = mustMergeOverwrite $pod $override -}}
 {{ $pod | toYaml }}
