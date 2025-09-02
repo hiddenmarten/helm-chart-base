@@ -57,3 +57,13 @@ metadata:
 spec:
   containers: {}
 {{- end }}
+
+{{/*
+Usage: {{ $pod := include "base.pod.merged" (dict "pod" $pod "ctx" $ctx) | fromYaml -}}
+*/}}
+{{ define "base.pod.merged" -}}
+{{ $pod := .pod -}}
+{{ $ctx := .ctx -}}
+{{ $default := include "base.pod.default" (dict "ctx" $ctx) | fromYaml -}}
+{{ mustMergeOverwrite $default $pod | toYaml }}
+{{- end }}

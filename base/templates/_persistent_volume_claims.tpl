@@ -4,7 +4,7 @@ Usage: {{ include "base.persistentVolumeClaims" (dict "ctx" $ctx) }}
 */}}
 {{ define "base.persistentVolumeClaims" -}}
 {{ $ctx := .ctx -}}
-{{ $persistentVolumeClaims := $ctx.val.persistentVolumeClaims | default dict -}}
+{{ $persistentVolumeClaims := include "base.persistentVolumeClaims.merged" (dict "ctx" $ctx) | fromYaml -}}
 {{- range $postfix, $persistentVolumeClaim := $persistentVolumeClaims }}
 {{ $content := include "base.persistentVolumeClaims.content" (dict "postfix" $postfix "persistentVolumeClaim" $persistentVolumeClaim "ctx" $ctx) | fromYaml -}}
 {{ if and $content.enabled $content.spec.resources.requests.storage $content.mount.mountPath -}}
@@ -25,7 +25,7 @@ Usage: {{ include "base.persistentVolumeClaims.content" (dict "postfix" $postfix
 {{ $postfix := .postfix -}}
 {{ $persistentVolumeClaim := .persistentVolumeClaim -}}
 {{ $ctx := .ctx -}}
-{{ $content := include "base.persistentVolumeClaims.merged" (dict "postfix" $postfix "persistentVolumeClaim" $persistentVolumeClaim "ctx" $ctx) | fromYaml -}}
+{{ $content := include "base.persistentVolumeClaims.content.merged" (dict "postfix" $postfix "persistentVolumeClaim" $persistentVolumeClaim "ctx" $ctx) | fromYaml -}}
 {{ if not $content.metadata.annotations -}}
 {{ $_ := unset $content.metadata "annotations" -}}
 {{- end }}
@@ -42,9 +42,9 @@ Usage: {{ include "base.persistentVolumeClaims.name" (dict "postfix" $postfix "c
 {{- end }}
 
 {{/*
-Usage: {{ include "base.persistentVolumeClaims.default" (dict "postfix" $postfix "ctx" $ctx) }}
+Usage: {{ include "base.persistentVolumeClaims.content.default" (dict "postfix" $postfix "ctx" $ctx) }}
 */}}
-{{ define "base.persistentVolumeClaims.default" -}}
+{{ define "base.persistentVolumeClaims.content.default" -}}
 {{ $ctx := .ctx -}}
 {{ $postfix := .postfix -}}
 enabled: true
@@ -62,13 +62,13 @@ mount: {}
 {{- end }}
 
 {{/*
-Usage: {{ $persistentVolumeClaims := include "base.persistentVolumeClaims.merged" (dict "postfix" $postfix "persistentVolumeClaim" $persistentVolumeClaim "ctx" $ctx) | fromYaml -}}
+Usage: {{ $persistentVolumeClaims := include "base.persistentVolumeClaims.content.merged" (dict "postfix" $postfix "persistentVolumeClaim" $persistentVolumeClaim "ctx" $ctx) | fromYaml -}}
 */}}
-{{ define "base.persistentVolumeClaims.merged" -}}
+{{ define "base.persistentVolumeClaims.content.merged" -}}
 {{ $ctx := .ctx -}}
 {{ $postfix := .postfix -}}
 {{ $persistentVolumeClaim := .persistentVolumeClaim -}}
-{{ $default := include "base.persistentVolumeClaims.default" (dict "postfix" $postfix "persistentVolumeClaim" $persistentVolumeClaim "ctx" $ctx) | fromYaml -}}
+{{ $default := include "base.persistentVolumeClaims.content.default" (dict "postfix" $postfix "persistentVolumeClaim" $persistentVolumeClaim "ctx" $ctx) | fromYaml -}}
 {{ mustMergeOverwrite $default $persistentVolumeClaim | toYaml }}
 {{- end }}
 
@@ -100,7 +100,7 @@ Usage: {{ include "base.persistentVolumeClaims.volumes" (dict "persistentVolumeC
 {{ $persistentVolumeClaims := .persistentVolumeClaims }}
 {{ $volumes := list -}}
 {{ range $postfix, $content := $persistentVolumeClaims -}}
-{{ $default := include "base.persistentVolumeClaims.default" (dict "postfix" $postfix "ctx" $ctx) | fromYaml -}}
+{{ $default := include "base.persistentVolumeClaims.content.default" (dict "postfix" $postfix "ctx" $ctx) | fromYaml -}}
 {{ $content = mustMergeOverwrite $default $content -}}
 {{ if and $content.enabled $content.spec.resources.requests.storage $content.mount.mountPath -}}
 {{ $volumes = append $volumes (include "base.persistentVolumeClaims.volume" (dict "postfix" $postfix "ctx" $ctx) | fromYaml) -}}
@@ -117,7 +117,7 @@ Usage: {{ include "base.persistentVolumeClaims.volumeMounts" (dict "persistentVo
 {{ $persistentVolumeClaims := .persistentVolumeClaims }}
 {{ $list := list -}}
 {{ range $postfix, $content := $persistentVolumeClaims -}}
-{{ $default := include "base.persistentVolumeClaims.default" (dict "postfix" $postfix "ctx" $ctx) | fromYaml -}}
+{{ $default := include "base.persistentVolumeClaims.content.default" (dict "postfix" $postfix "ctx" $ctx) | fromYaml -}}
 {{ $content = mustMergeOverwrite $default $content -}}
 {{ if and $content.enabled $content.spec.resources.requests.storage $content.mount.mountPath -}}
 {{ $name := include "base.persistentVolumeClaims.volume.name" (dict "postfix" $postfix "ctx" $ctx) -}}
@@ -136,4 +136,14 @@ Usage: {{ include "base.persistentVolumeClaims.volumeMount.default" (dict "name"
 {{ $name := .name -}}
 {{ $ctx := .ctx -}}
 {{ dict "name" $name | toYaml }}
+{{- end }}
+
+
+{{/*
+Usage: {{ $persistentVolumeClaims := include "base.persistentVolumeClaims.merged" (dict "ctx" $ctx) | fromYaml -}}
+*/}}
+{{ define "base.persistentVolumeClaims.merged" -}}
+{{ $ctx := .ctx -}}
+{{ $persistentVolumeClaims := $ctx.val.persistentVolumeClaims | default dict -}}
+{{ $persistentVolumeClaims | toYaml }}
 {{- end }}

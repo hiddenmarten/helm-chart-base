@@ -116,3 +116,13 @@ spec:
     matchLabels: {{ include "base.selectorLabels" (dict "ctx" $ctx) | nindent 6 }}
   volumeClaimTemplates: {}
 {{- end }}
+
+{{/*
+Usage: {{ $statefulset := include "base.statefulset.merged" (dict "ctx" $ctx) | fromYaml -}}
+*/}}
+{{ define "base.statefulset.merged" -}}
+{{ $ctx := .ctx -}}
+{{ $default := include "base.statefulset.default" (dict "ctx" $ctx) | fromYaml -}}
+{{ $statefulset := $ctx.val.statefulset | default dict }}
+{{ mustMergeOverwrite $default $statefulset | toYaml }}
+{{- end }}

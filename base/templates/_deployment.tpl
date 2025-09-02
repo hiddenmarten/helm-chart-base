@@ -1,5 +1,5 @@
 {{/*
-Usage: {{ include "base.deployment" (dict "deployment" $deployment "configMaps" $configMaps "secrets" $secrets "persistentVolumeClaims" $persistentVolumeClaims "service" $service "serviceAccount" $serviceAccount "ctx" $ctx) }}
+Usage: {{ include "base.deployment" (dict "ctx" $ctx) }}
 */}}
 {{ define "base.deployment" -}}
 {{ $ctx := .ctx -}}
@@ -55,4 +55,14 @@ spec:
   template: {}
   selector:
     matchLabels: {{ include "base.selectorLabels" (dict "ctx" $ctx) | nindent 6 }}
+{{- end }}
+
+{{/*
+Usage: {{ $deployment := include "base.deployment.merged" (dict "ctx" $ctx) | fromYaml -}}
+*/}}
+{{ define "base.deployment.merged" -}}
+{{ $ctx := .ctx -}}
+{{ $default := include "base.deployment.default" (dict "ctx" $ctx) | fromYaml -}}
+{{ $deployment := $ctx.val.deployment | default dict }}
+{{ mustMergeOverwrite $default $deployment | toYaml }}
 {{- end }}
