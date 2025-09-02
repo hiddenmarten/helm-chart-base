@@ -29,11 +29,11 @@ Usage: {{ include "base.fullname" (dict "ctx" $ctx) }}
 
 {{/*
 Create chart name and version as used by the chart label.
-Usage: {{ include "base.chart" (dict "ctx" $ctx) }}
+Usage: {{ include "base.chart" (dict "abs" $abs) }}
 */}}
 {{ define "base.chart" -}}
-{{ $ctx := .ctx -}}
-{{ printf "%s-%s" $ctx.abs.Chart.Name $ctx.abs.Chart.Version | replace "+" "_" | trunc 63 | trimSuffix "-" }}
+{{ $abs := .abs -}}
+{{ printf "%s-%s" $abs.Chart.Name $abs.Chart.Version | replace "+" "_" | trunc 63 | trimSuffix "-" }}
 {{- end }}
 
 {{/*
@@ -53,6 +53,6 @@ Usage: {{ include "base.labels" (dict "ctx" $ctx) }}
 {{ define "base.labels" -}}
 {{ $ctx := .ctx -}}
 {{ include "base.selectorLabels" (dict "ctx" $ctx) }}
-helm.sh/chart: {{ include "base.chart" (dict "ctx" $ctx) }}
+helm.sh/chart: {{ include "base.chart" (dict "abs" $ctx.abs) }}
 app.kubernetes.io/managed-by: {{ $ctx.abs.Release.Service }}
 {{- end }}

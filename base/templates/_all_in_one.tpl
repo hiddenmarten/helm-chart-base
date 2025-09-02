@@ -18,7 +18,8 @@ Usage: {{ include "base.allInOne.deployment" (dict "val" .Values "abs" $) }}
 Usage: {{ include "base.allInOne.statefulset" (dict "val" .Values "abs" $) }}
 */}}
 {{ define "base.allInOne.statefulset" -}}
-{{ $ctx := dict "val" (include "base.allInOne.statefulset.val.merged" (dict "val" .val) | fromYaml) "abs" .abs -}}
+{{ $val := include "base.allInOne.statefulset.val.merged" (dict "val" .val) | fromYaml -}}
+{{ $ctx := dict "val" $val "abs" .abs -}}
 {{ include "base.configMaps" (dict "ctx" $ctx) }}
 {{ include "base.statefulset" (dict "statefulset" $ctx.val.statefulset "configMaps" $ctx.val.configMaps "secrets" $ctx.val.secrets "persistentVolumeClaims" $ctx.val.persistentVolumeClaims "service" $ctx.val.service "serviceAccount" $ctx.val.serviceAccount "ctx" $ctx) }}
 {{ include "base.ingress" (dict "ingress" $ctx.val.ingress "service" $ctx.val.service "ctx" $ctx) }}
