@@ -1,14 +1,11 @@
 {{/*
 Ingress template for baserary chart
-Usage: {{ include "base.ingress" (dict "ingress" $ingress "service" $service "ctx" $ctx) }}
+Usage: {{ include "base.ingress" (dict "ctx" $ctx) }}
 */}}
 {{ define "base.ingress" -}}
-{{ $ingress := .ingress -}}
-{{ $service := .service -}}
 {{ $ctx := .ctx -}}
-{{ $defaultService := include "base.service.default" (dict "ctx" $ctx) | fromYaml -}}
-{{ $service = mustMergeOverwrite $defaultService $service -}}
-{{ $content := include "base.ingress.content" (dict "ingress" $ingress "service" $service "ctx" $ctx) | fromYaml -}}
+{{ $ingress := include "base.ingress.merged" (dict "ctx" $ctx) | fromYaml -}}
+{{ $content := include "base.ingress.content" (dict "ingress" $ingress "ctx" $ctx) | fromYaml -}}
 {{ if and $content.enabled $content.spec.rules -}}
 apiVersion: networking.k8s.io/v1
 kind: Ingress
@@ -23,10 +20,9 @@ Usage: {{ include "base.ingress.content" (dict "ingress" $ingress "ctx" $ctx) }}
 */}}
 {{ define "base.ingress.content" -}}
 {{ $ingress := .ingress -}}
-{{ $service := .service -}}
 {{ $ctx := .ctx -}}
 {{ $default := include "base.ingress.default" (dict "ctx" $ctx) | fromYaml -}}
-{{ $override := include "base.ingress.override" (dict "ingress" $ingress "service" $service "ctx" $ctx) | fromYaml -}}
+{{ $override := include "base.ingress.override" (dict "ingress" $ingress "ctx" $ctx) | fromYaml -}}
 {{ $content := mustMergeOverwrite $default $ingress $override -}}
 {{ if not $content.metadata.annotations -}}
 {{ $_ := unset $content.metadata "annotations" -}}
@@ -35,25 +31,23 @@ Usage: {{ include "base.ingress.content" (dict "ingress" $ingress "ctx" $ctx) }}
 {{- end }}
 
 {{/*
-Usage: {{ include "base.ingress.override" (dict ingress" $ingress "service" $service "ctx" $ctx) }}
+Usage: {{ include "base.ingress.override" (dict ingress" $ingress "ctx" $ctx) }}
 */}}
 {{ define "base.ingress.override" -}}
 {{ $ingress := .ingress -}}
-{{ $service := .service -}}
 {{ $ctx := .ctx -}}
-{{ $spec := include "base.ingress.spec" (dict "spec" $ingress.spec "service" $service "ctx" $ctx) | fromYaml -}}
+{{ $spec := include "base.ingress.spec" (dict "spec" $ingress.spec "ctx" $ctx) | fromYaml -}}
 {{ dict "spec" $spec | toYaml }}
 {{- end }}
 
 {{/*
-Usage: {{ include "base.ingress.spec" (dict "spec" $spec "service" $service "ctx" $ctx) }}
+Usage: {{ include "base.ingress.spec" (dict "spec" $spec "ctx" $ctx) }}
 */}}
 {{ define "base.ingress.spec" -}}
 {{ $spec := .spec -}}
-{{ $service := .service -}}
 {{ $ctx := .ctx -}}
 {{ $spec = mustMergeOverwrite $spec (include "base.ingress.tls" (dict "rules" $spec.rules "ctx" $ctx) | fromYaml) }}
-{{ $spec = mustMergeOverwrite $spec (include "base.ingress.rules" (dict "rules" $spec.rules "service" $service "ctx" $ctx) | fromYaml) }}
+{{ $spec = mustMergeOverwrite $spec (include "base.ingress.rules" (dict "rules" $spec.rules "ctx" $ctx) | fromYaml) }}
 {{ $spec | toYaml }}
 {{- end }}
 
@@ -84,11 +78,10 @@ Usage: {{ include "base.ingress.tls" (dict "rules" .Values.ingress.spec.rules "c
 
 {{/*
 Rules sections template for ingress
-Usage: {{ include "base.ingress.rules" (dict "rules" $rules "service" $service "ctx" $ctx) }}
+Usage: {{ include "base.ingress.rules" (dict "rules" $rules "ctx" $ctx) }}
 */}}
 {{ define "base.ingress.rules" -}}
   {{ $rules := .rules -}}
-  {{ $service := .service -}}
   {{ $ctx := .ctx -}}
   {{ $rulesList := list -}}
   {{ range $k, $v := $rules -}}
@@ -104,7 +97,7 @@ Usage: {{ include "base.ingress.rules" (dict "rules" $rules "service" $service "
     {{ end -}}
     {{ $pathsList := list -}}
     {{ range $kk, $vv := $rule.http.paths -}}
-      {{ $path := include "base.ingress.path" (dict "path" $kk "content" $vv "service" $service "ctx" $ctx) | fromYaml -}}
+      {{ $path := include "base.ingress.path" (dict "path" $kk "content" $vv "ctx" $ctx) | fromYaml -}}
       {{ if $path.backend -}}
       {{ $pathsList = append $pathsList $path -}}
       {{ end -}}
@@ -124,7 +117,7 @@ Usage: {{ include "base.ingress.path" (dict "path" $path "content" $content "ser
 {{ $ctx := .ctx -}}
 {{ $path := .path -}}
 {{ $content := .content -}}
-{{ $service := .service -}}
+{{ $service := include "base.service.merged" (dict "ctx" $ctx) | fromYaml -}}
 {{ $default := include "base.ingress.path.default" (dict "ctx" $ctx) | fromYaml -}}
 {{ $contentWithServceName := (dict "backend" (dict "service" (dict "name" $service.metadata.name))) -}}
 {{ $content = mustMergeOverwrite $default $contentWithServceName $content -}}
@@ -170,4 +163,14 @@ metadata:
   annotations: {}
 spec:
   rules: {}
+{{- end }}
+
+{{/*
+Usage: {{ $ingress := include "base.service.merged" (dict "ctx" $ctx) | fromYaml -}}
+*/}}
+{{ define "base.ingress.merged" -}}
+{{ $ctx := .ctx -}}
+{{ $default := include "base.ingress.default" (dict "ctx" $ctx) | fromYaml -}}
+{{ $ingress := $ctx.val.ingress | default dict }}
+{{ mustMergeOverwrite $default $ingress | toYaml }}
 {{- end }}

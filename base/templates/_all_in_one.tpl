@@ -5,7 +5,7 @@ Usage: {{ include "base.allInOne.deployment" (dict "val" .Values "abs" $) }}
 {{ $ctx := dict "val" .val "abs" .abs -}}
 {{ include "base.configMaps" (dict "ctx" $ctx) }}
 {{ include "base.deployment" (dict "deployment" $ctx.val.deployment "configMaps" $ctx.val.configMaps "secrets" $ctx.val.secrets "persistentVolumeClaims" $ctx.val.persistentVolumeClaims "service" $ctx.val.service "serviceAccount" $ctx.val.serviceAccount "ctx" $ctx) }}
-{{ include "base.ingress" (dict "ingress" $ctx.val.ingress "service" $ctx.val.service "ctx" $ctx) }}
+{{ include "base.ingress" (dict "ctx" $ctx) }}
 {{ include "base.persistentVolumeClaims" (dict "ctx" $ctx) }}
 {{ include "base.secrets" (dict "ctx" $ctx) }}
 {{ include "base.service" (dict "ctx" $ctx) }}
@@ -22,7 +22,7 @@ Usage: {{ include "base.allInOne.statefulset" (dict "val" .Values "abs" $) }}
 {{ $ctx := dict "val" $val "abs" .abs -}}
 {{ include "base.configMaps" (dict "ctx" $ctx) }}
 {{ include "base.statefulset" (dict "statefulset" $ctx.val.statefulset "configMaps" $ctx.val.configMaps "secrets" $ctx.val.secrets "persistentVolumeClaims" $ctx.val.persistentVolumeClaims "service" $ctx.val.service "serviceAccount" $ctx.val.serviceAccount "ctx" $ctx) }}
-{{ include "base.ingress" (dict "ingress" $ctx.val.ingress "service" $ctx.val.service "ctx" $ctx) }}
+{{ include "base.ingress" (dict "ctx" $ctx) }}
 {{ include "base.persistentVolumeClaims" (dict "ctx" $ctx) }}
 {{ include "base.secrets" (dict "ctx" $ctx) }}
 {{ include "base.service" (dict "ctx" $ctx) }}
