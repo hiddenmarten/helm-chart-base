@@ -1,10 +1,10 @@
 {{/*
 PersistentVolumeClaim template for baserary chart
-Usage: {{ include "base.persistentVolumeClaims" (dict "persistentVolumeClaims" .Values.persistentVolumeClaims "ctx" $ctx) }}
+Usage: {{ include "base.persistentVolumeClaims" (dict "ctx" $ctx) }}
 */}}
 {{ define "base.persistentVolumeClaims" -}}
-{{ $persistentVolumeClaims := .persistentVolumeClaims -}}
 {{ $ctx := .ctx -}}
+{{ $persistentVolumeClaims := $ctx.val.persistentVolumeClaims | default dict -}}
 {{- range $postfix, $content := $persistentVolumeClaims }}
 {{ $content = include "base.persistentVolumeClaims.content" (dict "postfix" $postfix "content" $content "ctx" $ctx) | fromYaml -}}
 {{ if and $content.enabled $content.spec.resources.requests.storage $content.mount.mountPath -}}
@@ -25,8 +25,7 @@ Usage: {{ include "base.persistentVolumeClaims.content" (dict "postfix" $postfix
 {{ $postfix := .postfix -}}
 {{ $content := .content -}}
 {{ $ctx := .ctx -}}
-{{ $default := include "base.persistentVolumeClaims.default" (dict "postfix" $postfix "ctx" $ctx) | fromYaml -}}
-{{ $content = mustMergeOverwrite $default $content -}}
+{{ $content = include "base.persistentVolumeClaims.merged" (dict "postfix" $postfix "persistentVolumeClaim" $content "ctx" $ctx) | fromYaml -}}
 {{ if not $content.metadata.annotations -}}
 {{ $_ := unset $content.metadata "annotations" -}}
 {{- end }}
@@ -60,6 +59,17 @@ spec:
     requests:
       storage: null
 mount: {}
+{{- end }}
+
+{{/*
+Usage: {{ $persistentVolumeClaims := include "base.persistentVolumeClaims.merged" (dict "postfix" $postfix "persistentVolumeClaim" $persistentVolumeClaim "ctx" $ctx) | fromYaml -}}
+*/}}
+{{ define "base.persistentVolumeClaims.merged" -}}
+{{ $ctx := .ctx -}}
+{{ $postfix := .postfix -}}
+{{ $persistentVolumeClaim := .persistentVolumeClaim -}}
+{{ $default := include "base.persistentVolumeClaims.default" (dict "postfix" $postfix "persistentVolumeClaim" $persistentVolumeClaim "ctx" $ctx) | fromYaml -}}
+{{ mustMergeOverwrite $default $persistentVolumeClaim | toYaml }}
 {{- end }}
 
 {{/*
