@@ -10,8 +10,9 @@ TODO list:
 - Improve visibility of conditions and loops better within templates (the issue basically in indents)
 
 # Agreements:
- - no lists of dictionaries are allowed in helm chart, helm lists flow breaks the merge flow in chart inheritance
- - content of resources should go through tpl
- - `$ctx` variable should be provided as-is,
-   - it provides an easy way to get any path for .Values
-   - updated values should be provided separately
+  - no lists of dictionaries are allowed in helm chart, helm lists flow breaks the merge flow in chart inheritance
+  - content of resources should go through tpl
+  - `$ctx` variable should be provided as-is:
+    - it provides an easy way to get any path for .Values by "val" key
+    - it provides an absolute context by "abs" key
+    - updated values should be provided separately
