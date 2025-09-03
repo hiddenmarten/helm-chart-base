@@ -111,7 +111,7 @@ Usage: {{ include "base.ingress.rules" (dict "rules" $rules "ctx" $ctx) }}
 {{- end }}
 
 {{/*
-Usage: {{ include "base.ingress.path" (dict "path" $path "content" $content "service" $service "ctx" $ctx) }}
+Usage: {{ include "base.ingress.path" (dict "path" $path "content" $content "ctx" $ctx) }}
 */}}
 {{ define "base.ingress.path" -}}
 {{ $ctx := .ctx -}}

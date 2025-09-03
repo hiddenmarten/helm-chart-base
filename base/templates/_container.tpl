@@ -88,7 +88,7 @@ Usage: {{ include "base.container.envFrom" (dict "ctx" $ctx) }}
 {{- end }}
 
 {{/*
-Usage: {{ include "base.container.volumeMounts" (dict "persistentVolumeClaims" $persistentVolumeClaims "ctx" $ctx) }}
+Usage: {{ include "base.container.volumeMounts" (dict "ctx" $ctx) }}
 */}}
 {{ define "base.container.volumeMounts" -}}
 {{ $ctx := .ctx -}}

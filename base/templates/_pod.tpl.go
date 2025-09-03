@@ -28,9 +28,17 @@ Usage: {{ include "base.pod.override" (dict "pod" $pod "ctx" $ctx) }}
 {{ if not (len $containerList) }}
 {{ fail "at least one container is required" }}
 {{ end -}}
-{{ $containers := dict "containers" $containerList -}}
+{{ $allContainers := dict "containers" $containerList -}}
+{{ $initContainersList := list -}}
+{{ range $k, $v := $pod.spec.initContainers -}}
+{{ $initContainer := include "base.container" (dict "name" $k "container" $v "ctx" $ctx) | fromYaml -}}
+{{ $initContainersList = append $initContainersList $initContainer -}}
+{{ end -}}
+{{ if len $initContainersList -}}
+{{ $_ := set $allContainers "initContainers" $initContainersList -}}
+{{ end -}}
 {{ $serviceAccountName := dict "serviceAccountName" (include "base.serviceAccount.name" (dict "ctx" $ctx)) -}}
-{{ $spec = mustMergeOverwrite $spec $containers $serviceAccountName -}}
+{{ $spec = mustMergeOverwrite $spec $allContainers $serviceAccountName -}}
 {{ dict "spec" $spec | toYaml }}
 {{- end }}
 

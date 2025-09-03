@@ -115,9 +115,9 @@ unittest: helm-unittest ## Run helm unittests over chart
 
 ##@ Deploy
 
-.PHONY: kind
-kind: ## Update dependencies everywhere
-	kind create cluster
+.PHONY: k3d
+k3d: ## Creates default k3d cluster with prometheus operator CRDs
+	k3d create cluster
 	$(HELM) install prometheus-operator-crds prometheus-operator-crds --repo https://prometheus-community.github.io/helm-charts
 
 .PHONY: upgrade
