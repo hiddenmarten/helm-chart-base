@@ -52,7 +52,7 @@ Usage: {{ include "base.ingress.spec" (dict "spec" $spec "ctx" $ctx) }}
 
 {{/*
 TLS sections template for ingress
-Usage: {{ include "base.ingress.tls" (dict "rules" .Values.ingress.spec.rules "ctx" $ctx) }}
+Usage: {{ include "base.ingress.tls" (dict "rules" $rules "ctx" $ctx) }}
 */}}
 {{ define "base.ingress.tls" -}}
   {{ $rules := .rules -}}

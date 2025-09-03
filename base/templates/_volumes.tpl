@@ -1,6 +1,6 @@
 {{/*
 Template for volumes
-Usage: {{ include "base.volumes" (dict "persistentVolumeClaims" $persistentVolumeClaims "ctx" $ctx) }}
+Usage: {{ include "base.volumes" (dict "ctx" $ctx) }}
 */}}
 {{ define "base.volumes" -}}
 {{ $ctx := .ctx -}}
