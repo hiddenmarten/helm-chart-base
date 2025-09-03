@@ -1,4 +1,4 @@
-{{/*
+{{/*Add optional hashes from `secrets` and `configMaps`, both of them have to go through tpl before calculating hash itself
 ServiceMonitor template for baserary chart
 Usage: {{ include "base.serviceMonitor" (dict "ctx" $ctx) }}
 */}}
