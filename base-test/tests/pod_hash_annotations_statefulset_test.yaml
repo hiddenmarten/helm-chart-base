@@ -69,9 +69,8 @@ tests:
     asserts:
       - isKind:
           of: StatefulSet
-      - equal:
+      - notExists:
           path: spec.template.metadata.annotations["base.chart.hiddenmarten.me/config-maps-hash"]
-          value: ""
 
   - it: renders a StatefulSet with persistent volume and hash annotations
     set:

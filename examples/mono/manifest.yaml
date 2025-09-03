@@ -188,7 +188,7 @@ spec:
   template:
     metadata:
       annotations:
-        base.chart.hiddenmarten.me/config-maps-hash: ""
+        base.chart.hiddenmarten.me/config-maps-hash: 319d13ffdab1265a199e33cfa38a0b631be18776f6878de650ec595f3ba060b1
         base.chart.hiddenmarten.me/secrets-hash: c91d698cb94dab0e4cbde6c98b1779e4f1ee5feb783a564304a404b511cc23ca
       labels:
         app.kubernetes.io/instance: mono

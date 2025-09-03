@@ -202,9 +202,8 @@ tests:
     asserts:
       - isKind:
           of: Deployment
-      - lengthEqual:
+      - notExists:
           path: spec.template.spec.initContainers
-          count: 0
 
   - it: renders a Deployment with init container using envFrom with configMaps
     set:

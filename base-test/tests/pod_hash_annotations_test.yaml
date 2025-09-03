@@ -109,9 +109,8 @@ tests:
     asserts:
       - isKind:
           of: Deployment
-      - equal:
+      - notExists:
           path: spec.template.metadata.annotations["base.chart.hiddenmarten.me/config-maps-hash"]
-          value: ""
 
   - it: skips secrets hash calculation when annotation is empty string
     set:
@@ -133,19 +132,18 @@ tests:
     asserts:
       - isKind:
           of: Deployment
-      - equal:
+      - notExists:
           path: spec.template.metadata.annotations["base.chart.hiddenmarten.me/secrets-hash"]
-          value: ""
 
-  - it: skips both hash calculations when both annotations are empty strings
+  - it: skips both hash calculations when both annotations are null
     set:
       deployment:
         spec:
           template:
             metadata:
               annotations:
-                base.chart.hiddenmarten.me/config-maps-hash: ""
-                base.chart.hiddenmarten.me/secrets-hash: ""
+                base.chart.hiddenmarten.me/config-maps-hash: null
+                base.chart.hiddenmarten.me/secrets-hash: null
             spec:
               containers:
                 nginx:
@@ -162,12 +160,10 @@ tests:
     asserts:
       - isKind:
           of: Deployment
-      - equal:
+      - notExists:
           path: spec.template.metadata.annotations["base.chart.hiddenmarten.me/config-maps-hash"]
-          value: ""
-      - equal:
+      - notExists:
           path: spec.template.metadata.annotations["base.chart.hiddenmarten.me/secrets-hash"]
-          value: ""
 
   - it: renders different hashes for different config maps content
     set:

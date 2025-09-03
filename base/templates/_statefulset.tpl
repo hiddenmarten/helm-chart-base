@@ -20,16 +20,20 @@ Usage: {{ include "base.statefulset.content" (dict "statefulset" $statefulset "s
 {{ define "base.statefulset.content" -}}
 {{ $ctx := .ctx -}}
 {{ $statefulset := .statefulset -}}
-{{ $sourceVolumeClaimTemplates := include "base.statefulset.volumeClaimTemplates.default.merge" (dict "volumeClaimTemplates" $statefulset.spec.volumeClaimTemplates "ctx" $ctx) | fromYaml -}}
+{{ $spec := $statefulset.spec -}}
+{{ $service := include "base.service.merged" (dict "ctx" $ctx) | fromYaml -}}
+{{ $_ := set $spec "serviceName" $service.metadata.name -}}
+{{ $sourceVolumeClaimTemplates := include "base.statefulset.volumeClaimTemplates.default.merge" (dict "volumeClaimTemplates" $spec.volumeClaimTemplates "ctx" $ctx) | fromYaml -}}
 {{ $volumeClaimTemplates := include "base.statefulset.volumeClaimTemplates" (dict "volumeClaimTemplates" $sourceVolumeClaimTemplates "ctx" $ctx) | fromYaml -}}
+{{ $_ = set $spec "volumeClaimTemplates" $volumeClaimTemplates.volumeClaimTemplates -}}
 {{ $volumeMounts := include "base.persistentVolumeClaims.volumeMounts" (dict "persistentVolumeClaims" $sourceVolumeClaimTemplates "ctx" $ctx) | fromYaml }}
-{{ $pod := include "base.pod" (dict "pod" (index $statefulset.spec "template") "ctx" $ctx) | fromYaml -}}
+{{ $pod := include "base.pod" (dict "pod" (index $spec "template") "ctx" $ctx) | fromYaml -}}
 {{ $containers := include "base.statefulset.containers.override" (dict "containers" $pod.spec.containers "volumeMounts" $volumeMounts "ctx" $ctx) | fromYaml -}}
 {{ $podSpec := mustMergeOverwrite $pod.spec $containers -}}
-{{ $_ := set $pod "spec" $podSpec -}}
-{{ $service := include "base.service.merged" (dict "ctx" $ctx) | fromYaml -}}
-{{ $spec := dict "spec" (dict "template" $pod "volumeClaimTemplates" $volumeClaimTemplates.volumeClaimTemplates "serviceName" $service.metadata.name) -}}
-{{ mustMergeOverwrite $statefulset $spec | toYaml }}
+{{ $_ = set $pod "spec" $podSpec -}}
+{{ $_ = set $spec "template" $pod -}}
+{{ $_ = set $statefulset "spec" $spec -}}
+{{ $statefulset | toYaml }}
 {{- end }}
 
 {{/*
