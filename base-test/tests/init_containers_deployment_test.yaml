@@ -1,0 +1,267 @@
+suite: Init containers functionality
+templates:
+  - templates/deployment.tpl
+
+tests:
+  - it: renders a Deployment with single init container
+    set:
+      deployment:
+        spec:
+          template:
+            spec:
+              containers:
+                nginx:
+                  image:
+                    repository: nginx
+              initContainers:
+                init-db:
+                  image:
+                    repository: postgres
+                    tag: "13"
+                  command: ["sh", "-c", "until pg_isready -h db; do sleep 1; done"]
+    asserts:
+      - isKind:
+          of: Deployment
+      - equal:
+          path: spec.template.spec.initContainers[0].name
+          value: init-db
+      - equal:
+          path: spec.template.spec.initContainers[0].image
+          value: postgres:13
+      - equal:
+          path: spec.template.spec.initContainers[0].command
+          value: ["sh", "-c", "until pg_isready -h db; do sleep 1; done"]
+
+  - it: renders a Deployment with multiple init containers
+    set:
+      deployment:
+        spec:
+          template:
+            spec:
+              containers:
+                nginx:
+                  image:
+                    repository: nginx
+              initContainers:
+                init-db:
+                  image:
+                    repository: postgres
+                    tag: "13"
+                  command: ["sh", "-c", "until pg_isready -h db; do sleep 1; done"]
+                init-migration:
+                  image:
+                    repository: migrate/migrate
+                    tag: "v4.15.2"
+                  command: ["migrate", "-database", "postgres://user:pass@db/dbname", "-path", "/migrations", "up"]
+    asserts:
+      - isKind:
+          of: Deployment
+      - lengthEqual:
+          path: spec.template.spec.initContainers
+          count: 2
+      - contains:
+          path: spec.template.spec.initContainers
+          content:
+            name: init-db
+            image: postgres:13
+            command: ["sh", "-c", "until pg_isready -h db; do sleep 1; done"]
+      - contains:
+          path: spec.template.spec.initContainers
+          content:
+            name: init-migration
+            image: migrate/migrate:v4.15.2
+            command: ["migrate", "-database", "postgres://user:pass@db/dbname", "-path", "/migrations", "up"]
+
+  - it: renders a Deployment with init container having environment variables
+    set:
+      deployment:
+        spec:
+          template:
+            spec:
+              containers:
+                nginx:
+                  image:
+                    repository: nginx
+              initContainers:
+                init-setup:
+                  image:
+                    repository: busybox
+                  env:
+                    - name: SETUP_MODE
+                      value: "init"
+                    - name: CONFIG_PATH
+                      value: "/config"
+    asserts:
+      - isKind:
+          of: Deployment
+      - equal:
+          path: spec.template.spec.initContainers[0].name
+          value: init-setup
+      - equal:
+          path: spec.template.spec.initContainers[0].image
+          value: busybox:latest
+      - contains:
+          path: spec.template.spec.initContainers[0].env
+          content:
+            name: SETUP_MODE
+            value: "init"
+
+  - it: renders a Deployment with init container having volume mounts
+    set:
+      deployment:
+        spec:
+          template:
+            spec:
+              containers:
+                nginx:
+                  image:
+                    repository: nginx
+              initContainers:
+                init-data:
+                  image:
+                    repository: busybox
+                  volumeMounts:
+                    - name: data-volume
+                      mountPath: /data
+      volumes:
+        data-volume:
+          emptyDir: {}
+    asserts:
+      - isKind:
+          of: Deployment
+      - equal:
+          path: spec.template.spec.initContainers[0].name
+          value: init-data
+      - contains:
+          path: spec.template.spec.initContainers[0].volumeMounts
+          content:
+            name: data-volume
+            mountPath: /data
+
+  - it: renders a Deployment with init container having resource limits
+    set:
+      deployment:
+        spec:
+          template:
+            spec:
+              containers:
+                nginx:
+                  image:
+                    repository: nginx
+              initContainers:
+                init-heavy:
+                  image:
+                    repository: busybox
+                  resources:
+                    limits:
+                      cpu: 200m
+                      memory: 256Mi
+                    requests:
+                      cpu: 100m
+                      memory: 128Mi
+    asserts:
+      - isKind:
+          of: Deployment
+      - equal:
+          path: spec.template.spec.initContainers[0].name
+          value: init-heavy
+      - equal:
+          path: spec.template.spec.initContainers[0].resources.limits.cpu
+          value: 200m
+      - equal:
+          path: spec.template.spec.initContainers[0].resources.requests.memory
+          value: 128Mi
+
+  - it: renders a Deployment without init containers when not specified
+    set:
+      deployment:
+        spec:
+          template:
+            spec:
+              containers:
+                nginx:
+                  image:
+                    repository: nginx
+    asserts:
+      - isKind:
+          of: Deployment
+      - notExists:
+          path: spec.template.spec.initContainers
+
+  - it: renders a Deployment without init containers when empty
+    set:
+      deployment:
+        spec:
+          template:
+            spec:
+              containers:
+                nginx:
+                  image:
+                    repository: nginx
+              initContainers: {}
+    asserts:
+      - isKind:
+          of: Deployment
+      - lengthEqual:
+          path: spec.template.spec.initContainers
+          count: 0
+
+  - it: renders a Deployment with init container using envFrom with configMaps
+    set:
+      deployment:
+        spec:
+          template:
+            spec:
+              containers:
+                nginx:
+                  image:
+                    repository: nginx
+              initContainers:
+                init-config:
+                  image:
+                    repository: busybox
+      configMaps:
+        envVars:
+          data:
+            INIT_VAR: init_value
+    asserts:
+      - isKind:
+          of: Deployment
+      - equal:
+          path: spec.template.spec.initContainers[0].name
+          value: init-config
+      - contains:
+          path: spec.template.spec.initContainers[0].envFrom
+          content:
+            configMapRef:
+              name: RELEASE-NAME-base-test-env-vars
+
+  - it: renders a Deployment with init container using envFrom with secrets
+    set:
+      deployment:
+        spec:
+          template:
+            spec:
+              containers:
+                nginx:
+                  image:
+                    repository: nginx
+              initContainers:
+                init-secret:
+                  image:
+                    repository: busybox
+      secrets:
+        envVars:
+          data:
+            INIT_SECRET: init_secret_value
+    asserts:
+      - isKind:
+          of: Deployment
+      - equal:
+          path: spec.template.spec.initContainers[0].name
+          value: init-secret
+      - contains:
+          path: spec.template.spec.initContainers[0].envFrom
+          content:
+            secretRef:
+              name: RELEASE-NAME-base-test-env-vars

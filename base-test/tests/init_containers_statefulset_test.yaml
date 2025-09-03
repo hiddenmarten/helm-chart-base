@@ -1,0 +1,126 @@
+suite: Init containers functionality for StatefulSet
+templates:
+  - templates/statefulset.tpl
+
+tests:
+  - it: renders a StatefulSet with single init container
+    set:
+      statefulset:
+        spec:
+          template:
+            spec:
+              containers:
+                nginx:
+                  image:
+                    repository: nginx
+              initContainers:
+                init-db:
+                  image:
+                    repository: postgres
+                    tag: "13"
+                  command: ["sh", "-c", "until pg_isready -h db; do sleep 1; done"]
+    asserts:
+      - isKind:
+          of: StatefulSet
+      - equal:
+          path: spec.template.spec.initContainers[0].name
+          value: init-db
+      - equal:
+          path: spec.template.spec.initContainers[0].image
+          value: postgres:13
+      - equal:
+          path: spec.template.spec.initContainers[0].command
+          value: ["sh", "-c", "until pg_isready -h db; do sleep 1; done"]
+
+  - it: renders a StatefulSet with multiple init containers
+    set:
+      statefulset:
+        spec:
+          template:
+            spec:
+              containers:
+                nginx:
+                  image:
+                    repository: nginx
+              initContainers:
+                init-permissions:
+                  image:
+                    repository: busybox
+                  command: ["sh", "-c", "chown -R 1000:1000 /data"]
+                init-db-wait:
+                  image:
+                    repository: postgres
+                    tag: "13"
+                  command: ["sh", "-c", "until pg_isready -h db; do sleep 1; done"]
+    asserts:
+      - isKind:
+          of: StatefulSet
+      - lengthEqual:
+          path: spec.template.spec.initContainers
+          count: 2
+      - contains:
+          path: spec.template.spec.initContainers
+          content:
+            name: init-permissions
+            image: busybox:latest
+            command: ["sh", "-c", "chown -R 1000:1000 /data"]
+      - contains:
+          path: spec.template.spec.initContainers
+          content:
+            name: init-db-wait
+            image: postgres:13
+            command: ["sh", "-c", "until pg_isready -h db; do sleep 1; done"]
+
+  - it: renders a StatefulSet without init containers when not specified
+    set:
+      statefulset:
+        spec:
+          template:
+            spec:
+              containers:
+                nginx:
+                  image:
+                    repository: nginx
+    asserts:
+      - isKind:
+          of: StatefulSet
+      - notExists:
+          path: spec.template.spec.initContainers
+
+  - it: renders a StatefulSet with init container having persistent volume mounts
+    set:
+      statefulset:
+        spec:
+          template:
+            spec:
+              containers:
+                nginx:
+                  image:
+                    repository: nginx
+              initContainers:
+                init-data-setup:
+                  image:
+                    repository: busybox
+                  command: ["sh", "-c", "mkdir -p /data/logs && chmod 755 /data/logs"]
+                  volumeMounts:
+                    - name: data-pvc
+                      mountPath: /data
+      persistentVolumeClaims:
+        data-pvc:
+          spec:
+            accessModes:
+              - ReadWriteOnce
+            resources:
+              requests:
+                storage: 1Gi
+    asserts:
+      - isKind:
+          of: StatefulSet
+      - equal:
+          path: spec.template.spec.initContainers[0].name
+          value: init-data-setup
+      - contains:
+          path: spec.template.spec.initContainers[0].volumeMounts
+          content:
+            name: data-pvc
+            mountPath: /data
