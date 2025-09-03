@@ -21,9 +21,8 @@ Usage: {{ include "base.ingress.content" (dict "ingress" $ingress "ctx" $ctx) }}
 {{ define "base.ingress.content" -}}
 {{ $ingress := .ingress -}}
 {{ $ctx := .ctx -}}
-{{ $default := include "base.ingress.default" (dict "ctx" $ctx) | fromYaml -}}
 {{ $override := include "base.ingress.override" (dict "ingress" $ingress "ctx" $ctx) | fromYaml -}}
-{{ $content := mustMergeOverwrite $default $ingress $override -}}
+{{ $content := mustMergeOverwrite $ingress $override -}}
 {{ if not $content.metadata.annotations -}}
 {{ $_ := unset $content.metadata "annotations" -}}
 {{- end }}
