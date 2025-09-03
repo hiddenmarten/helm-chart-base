@@ -1,0 +1,282 @@
+suite: Pod hash annotations functionality
+templates:
+  - templates/deployment.tpl
+
+tests:
+  - it: renders a Deployment with config maps hash annotation when configMaps exist
+    set:
+      deployment:
+        spec:
+          template:
+            spec:
+              containers:
+                nginx:
+                  image:
+                    repository: nginx
+      configMaps:
+        envVars:
+          data:
+            TEST_VAR: test_value
+            ANOTHER_VAR: another_value
+    asserts:
+      - isKind:
+          of: Deployment
+      - exists:
+          path: spec.template.metadata.annotations["base.chart.hiddenmarten.me/config-maps-hash"]
+      - notEqual:
+          path: spec.template.metadata.annotations["base.chart.hiddenmarten.me/config-maps-hash"]
+          value: "true"
+      - matchRegex:
+          path: spec.template.metadata.annotations["base.chart.hiddenmarten.me/config-maps-hash"]
+          pattern: '^[a-f0-9]{64}$'
+
+  - it: renders a Deployment with secrets hash annotation when secrets exist
+    set:
+      deployment:
+        spec:
+          template:
+            spec:
+              containers:
+                nginx:
+                  image:
+                    repository: nginx
+      secrets:
+        envVars:
+          data:
+            SECRET_VAR: secret_value
+            DB_PASSWORD: password123
+    asserts:
+      - isKind:
+          of: Deployment
+      - exists:
+          path: spec.template.metadata.annotations["base.chart.hiddenmarten.me/secrets-hash"]
+      - notEqual:
+          path: spec.template.metadata.annotations["base.chart.hiddenmarten.me/secrets-hash"]
+          value: "true"
+      - matchRegex:
+          path: spec.template.metadata.annotations["base.chart.hiddenmarten.me/secrets-hash"]
+          pattern: '^[a-f0-9]{64}$'
+
+  - it: renders a Deployment with both config maps and secrets hash annotations
+    set:
+      deployment:
+        spec:
+          template:
+            spec:
+              containers:
+                nginx:
+                  image:
+                    repository: nginx
+      configMaps:
+        envVars:
+          data:
+            CONFIG_VAR: config_value
+      secrets:
+        envVars:
+          data:
+            SECRET_VAR: secret_value
+    asserts:
+      - isKind:
+          of: Deployment
+      - exists:
+          path: spec.template.metadata.annotations["base.chart.hiddenmarten.me/config-maps-hash"]
+      - exists:
+          path: spec.template.metadata.annotations["base.chart.hiddenmarten.me/secrets-hash"]
+      - matchRegex:
+          path: spec.template.metadata.annotations["base.chart.hiddenmarten.me/config-maps-hash"]
+          pattern: '^[a-f0-9]{64}$'
+      - matchRegex:
+          path: spec.template.metadata.annotations["base.chart.hiddenmarten.me/secrets-hash"]
+          pattern: '^[a-f0-9]{64}$'
+
+  - it: skips config maps hash calculation when annotation is empty string
+    set:
+      deployment:
+        spec:
+          template:
+            metadata:
+              annotations:
+                base.chart.hiddenmarten.me/config-maps-hash: ""
+            spec:
+              containers:
+                nginx:
+                  image:
+                    repository: nginx
+      configMaps:
+        envVars:
+          data:
+            TEST_VAR: test_value
+    asserts:
+      - isKind:
+          of: Deployment
+      - equal:
+          path: spec.template.metadata.annotations["base.chart.hiddenmarten.me/config-maps-hash"]
+          value: ""
+
+  - it: skips secrets hash calculation when annotation is empty string
+    set:
+      deployment:
+        spec:
+          template:
+            metadata:
+              annotations:
+                base.chart.hiddenmarten.me/secrets-hash: ""
+            spec:
+              containers:
+                nginx:
+                  image:
+                    repository: nginx
+      secrets:
+        envVars:
+          data:
+            SECRET_VAR: secret_value
+    asserts:
+      - isKind:
+          of: Deployment
+      - equal:
+          path: spec.template.metadata.annotations["base.chart.hiddenmarten.me/secrets-hash"]
+          value: ""
+
+  - it: skips both hash calculations when both annotations are empty strings
+    set:
+      deployment:
+        spec:
+          template:
+            metadata:
+              annotations:
+                base.chart.hiddenmarten.me/config-maps-hash: ""
+                base.chart.hiddenmarten.me/secrets-hash: ""
+            spec:
+              containers:
+                nginx:
+                  image:
+                    repository: nginx
+      configMaps:
+        envVars:
+          data:
+            CONFIG_VAR: config_value
+      secrets:
+        envVars:
+          data:
+            SECRET_VAR: secret_value
+    asserts:
+      - isKind:
+          of: Deployment
+      - equal:
+          path: spec.template.metadata.annotations["base.chart.hiddenmarten.me/config-maps-hash"]
+          value: ""
+      - equal:
+          path: spec.template.metadata.annotations["base.chart.hiddenmarten.me/secrets-hash"]
+          value: ""
+
+  - it: renders different hashes for different config maps content
+    set:
+      deployment:
+        spec:
+          template:
+            spec:
+              containers:
+                nginx:
+                  image:
+                    repository: nginx
+      configMaps:
+        envVars:
+          data:
+            UNIQUE_VAR: unique_value_1
+    asserts:
+      - isKind:
+          of: Deployment
+      - exists:
+          path: spec.template.metadata.annotations["base.chart.hiddenmarten.me/config-maps-hash"]
+
+  - it: renders different hashes for different secrets content
+    set:
+      deployment:
+        spec:
+          template:
+            spec:
+              containers:
+                nginx:
+                  image:
+                    repository: nginx
+      secrets:
+        envVars:
+          data:
+            UNIQUE_SECRET: unique_secret_1
+    asserts:
+      - isKind:
+          of: Deployment
+      - exists:
+          path: spec.template.metadata.annotations["base.chart.hiddenmarten.me/secrets-hash"]
+
+  - it: renders a Deployment with default hash when no configMaps or secrets exist
+    set:
+      deployment:
+        spec:
+          template:
+            spec:
+              containers:
+                nginx:
+                  image:
+                    repository: nginx
+    asserts:
+      - isKind:
+          of: Deployment
+      - exists:
+          path: spec.template.metadata.annotations["base.chart.hiddenmarten.me/config-maps-hash"]
+      - exists:
+          path: spec.template.metadata.annotations["base.chart.hiddenmarten.me/secrets-hash"]
+      - matchRegex:
+          path: spec.template.metadata.annotations["base.chart.hiddenmarten.me/config-maps-hash"]
+          pattern: '^[a-f0-9]{64}$'
+      - matchRegex:
+          path: spec.template.metadata.annotations["base.chart.hiddenmarten.me/secrets-hash"]
+          pattern: '^[a-f0-9]{64}$'
+
+  - it: renders a Deployment with different hashes when configMaps exist vs don't exist
+    set:
+      deployment:
+        spec:
+          template:
+            spec:
+              containers:
+                nginx:
+                  image:
+                    repository: nginx
+      configMaps:
+        envVars:
+          data:
+            CONFIG_ONLY: value_only
+    asserts:
+      - isKind:
+          of: Deployment
+      - matchRegex:
+          path: spec.template.metadata.annotations["base.chart.hiddenmarten.me/config-maps-hash"]
+          pattern: '^[a-f0-9]{64}$'
+      - matchRegex:
+          path: spec.template.metadata.annotations["base.chart.hiddenmarten.me/secrets-hash"]
+          pattern: '^[a-f0-9]{64}$'
+
+  - it: renders a Deployment with different hashes when secrets exist vs don't exist
+    set:
+      deployment:
+        spec:
+          template:
+            spec:
+              containers:
+                nginx:
+                  image:
+                    repository: nginx
+      secrets:
+        envVars:
+          data:
+            SECRET_ONLY: secret_only
+    asserts:
+      - isKind:
+          of: Deployment
+      - matchRegex:
+          path: spec.template.metadata.annotations["base.chart.hiddenmarten.me/config-maps-hash"]
+          pattern: '^[a-f0-9]{64}$'
+      - matchRegex:
+          path: spec.template.metadata.annotations["base.chart.hiddenmarten.me/secrets-hash"]
+          pattern: '^[a-f0-9]{64}$'

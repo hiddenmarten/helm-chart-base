@@ -60,6 +60,9 @@ spec:
   serviceName: postgres
   template:
     metadata:
+      annotations:
+        base.chart.hiddenmarten.me/config-maps-hash: 3d43cc5ac1f2791e7f2c11cc4c2ee69ada7e2d74fe0cb47e36669b026c21494b
+        base.chart.hiddenmarten.me/secrets-hash: c91d698cb94dab0e4cbde6c98b1779e4f1ee5feb783a564304a404b511cc23ca
       labels:
         app.kubernetes.io/instance: postgres
         app.kubernetes.io/managed-by: Helm

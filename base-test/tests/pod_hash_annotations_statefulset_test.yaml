@@ -1,0 +1,114 @@
+suite: Pod hash annotations functionality for StatefulSet
+templates:
+  - templates/statefulset.tpl
+
+tests:
+  - it: renders a StatefulSet with config maps hash annotation when configMaps exist
+    set:
+      statefulset:
+        spec:
+          template:
+            spec:
+              containers:
+                nginx:
+                  image:
+                    repository: nginx
+      configMaps:
+        envVars:
+          data:
+            TEST_VAR: test_value
+    asserts:
+      - isKind:
+          of: StatefulSet
+      - exists:
+          path: spec.template.metadata.annotations["base.chart.hiddenmarten.me/config-maps-hash"]
+      - matchRegex:
+          path: spec.template.metadata.annotations["base.chart.hiddenmarten.me/config-maps-hash"]
+          pattern: '^[a-f0-9]{64}$'
+
+  - it: renders a StatefulSet with secrets hash annotation when secrets exist
+    set:
+      statefulset:
+        spec:
+          template:
+            spec:
+              containers:
+                nginx:
+                  image:
+                    repository: nginx
+      secrets:
+        envVars:
+          data:
+            SECRET_VAR: secret_value
+    asserts:
+      - isKind:
+          of: StatefulSet
+      - exists:
+          path: spec.template.metadata.annotations["base.chart.hiddenmarten.me/secrets-hash"]
+      - matchRegex:
+          path: spec.template.metadata.annotations["base.chart.hiddenmarten.me/secrets-hash"]
+          pattern: '^[a-f0-9]{64}$'
+
+  - it: skips config maps hash calculation when annotation is empty string in StatefulSet
+    set:
+      statefulset:
+        spec:
+          template:
+            metadata:
+              annotations:
+                base.chart.hiddenmarten.me/config-maps-hash: ""
+            spec:
+              containers:
+                nginx:
+                  image:
+                    repository: nginx
+      configMaps:
+        envVars:
+          data:
+            TEST_VAR: test_value
+    asserts:
+      - isKind:
+          of: StatefulSet
+      - equal:
+          path: spec.template.metadata.annotations["base.chart.hiddenmarten.me/config-maps-hash"]
+          value: ""
+
+  - it: renders a StatefulSet with persistent volume and hash annotations
+    set:
+      statefulset:
+        spec:
+          template:
+            spec:
+              containers:
+                nginx:
+                  image:
+                    repository: nginx
+      configMaps:
+        envVars:
+          data:
+            CONFIG_VAR: config_value
+      secrets:
+        envVars:
+          data:
+            SECRET_VAR: secret_value
+      persistentVolumeClaims:
+        data-pvc:
+          spec:
+            accessModes:
+              - ReadWriteOnce
+            resources:
+              requests:
+                storage: 1Gi
+    asserts:
+      - isKind:
+          of: StatefulSet
+      - exists:
+          path: spec.template.metadata.annotations["base.chart.hiddenmarten.me/config-maps-hash"]
+      - exists:
+          path: spec.template.metadata.annotations["base.chart.hiddenmarten.me/secrets-hash"]
+      - matchRegex:
+          path: spec.template.metadata.annotations["base.chart.hiddenmarten.me/config-maps-hash"]
+          pattern: '^[a-f0-9]{64}$'
+      - matchRegex:
+          path: spec.template.metadata.annotations["base.chart.hiddenmarten.me/secrets-hash"]
+          pattern: '^[a-f0-9]{64}$'

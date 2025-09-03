@@ -18,6 +18,7 @@ A mono chart for vault-postgres stack
 | postgres.nameOverride | string | `"postgres"` |  |
 | postgres.secrets.envVars.data.POSTGRES_PASSWORD | string | `"postgres"` |  |
 | postgres.service.spec.ports.tcp.port | int | `5432` |  |
+| postgres.statefulset.spec.template.metadata.annotations."base.chart.hiddenmarten.me/config-maps-hash" | string | `""` |  |
 | postgres.statefulset.spec.template.spec.containers.postgres.image.repository | string | `"postgres"` |  |
 | postgres.statefulset.spec.template.spec.containers.postgres.image.tag | string | `"17.6"` |  |
 | postgres.statefulset.spec.volumeClaimTemplates.data.mount.mountPath | string | `"/var/lib/postgresql/data"` |  |

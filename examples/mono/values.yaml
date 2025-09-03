@@ -3,6 +3,9 @@ postgres:
   statefulset:
     spec:
       template:
+        metadata:
+          annotations:
+            base.chart.hiddenmarten.me/config-maps-hash: ""
         spec:
           containers:
             postgres:

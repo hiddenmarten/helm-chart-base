@@ -72,6 +72,9 @@ spec:
       app.kubernetes.io/name: vault
   template:
     metadata:
+      annotations:
+        base.chart.hiddenmarten.me/config-maps-hash: 1c34f7bd4dd87c1c62da7d6a6496ac2278c440a35f0e577e70e9bc80087098f4
+        base.chart.hiddenmarten.me/secrets-hash: d6c0f30c1f877d09c7af96dad7aaf502d2a5bfcaf664817783a30169f025c75a
       labels:
         app.kubernetes.io/instance: vault
         app.kubernetes.io/managed-by: Helm

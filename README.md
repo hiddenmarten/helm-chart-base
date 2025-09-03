@@ -1,7 +1,7 @@
 # helm-chart-base
 
 TODO list:
-- Add optional hashes from `secrets` and `configMaps`, both of them have to go through tpl before calculating hash itself
+- Rework from merge approarch to nested replace or unset for clearness
 - Add Job and CronJob implementations
 - Resolve case with empty dir usage in 2 containers within a pod (volumes as a map and concatenate it?)
 - Doublecheck tpl rendering in all resources

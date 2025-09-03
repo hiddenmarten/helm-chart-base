@@ -4,8 +4,7 @@ Usage: {{ include "base.pod" (dict "pod" $pod "ctx" $ctx) }}
 {{ define "base.pod" -}}
 {{ $ctx := .ctx -}}
 {{ $pod := include "base.pod.merged" (dict "pod" .pod "ctx" $ctx) | fromYaml -}}
-{{ $override := include "base.pod.override" (dict "pod" $pod "ctx" $ctx) | fromYaml -}}
-{{ $pod = mustMergeOverwrite $pod $override -}}
+{{ $pod = include "base.pod.override" (dict "pod" $pod "ctx" $ctx) | fromYaml -}}
 {{ $pod | toYaml }}
 {{- end }}
 
@@ -39,7 +38,28 @@ Usage: {{ include "base.pod.override" (dict "pod" $pod "ctx" $ctx) }}
 {{ end -}}
 {{ $serviceAccountName := dict "serviceAccountName" (include "base.serviceAccount.name" (dict "ctx" $ctx)) -}}
 {{ $spec = mustMergeOverwrite $spec $allContainers $serviceAccountName -}}
-{{ dict "spec" $spec | toYaml }}
+{{ $pod = include "base.pod.override.annotations" (dict "pod" $pod "ctx" $ctx) | fromYaml }}
+{{ $_ := set $pod "spec" $spec -}}
+{{ $pod | toYaml }}
+{{- end }}
+
+{{/*
+Usage: {{ $pod = include "base.pod.override.annotations" (dict "pod" $pod "ctx" $ctx) | fromYaml }}
+*/}}
+{{ define "base.pod.override.annotations" -}}
+{{ $ctx := .ctx -}}
+{{ $pod := .pod -}}
+{{ $annotations := $pod.metadata.annotations | default dict -}}
+{{ $configMaps := include "base.configMaps.merged" (dict "ctx" $ctx) | fromYaml -}}
+{{ $configMapsHash := tpl ($configMaps | toYaml) $ctx.abs | sha256sum -}}
+{{ $annotations = include "base.util.replaceOrUnset" (dict "dict" $annotations "key" "base.chart.hiddenmarten.me/config-maps-hash" "value" $configMapsHash) | fromYaml }}
+{{ $secrets := include "base.secrets.merged" (dict "ctx" $ctx) | fromYaml -}}
+{{ $secretsHash := tpl ($secrets | toYaml) $ctx.abs | sha256sum -}}
+{{ $secretsHashKey := "base.chart.hiddenmarten.me/secrets-hash" -}}
+{{ $annotations = include "base.util.replaceOrUnset" (dict "dict" $annotations "key" $secretsHashKey "value" $secretsHash) | fromYaml }}
+{{ $metadata := include "base.util.replaceOrUnset" (dict "dict" $pod.metadata "key" "annotations" "value" $annotations) | fromYaml }}
+{{ $_ := set $pod "metadata" $metadata -}}
+{{ $pod | toYaml }}
 {{- end }}
 
 {{/*
@@ -49,6 +69,10 @@ Usage: {{ include "base.pod.default" (dict "ctx" $ctx) }}
 {{ $ctx := .ctx -}}
 metadata:
   labels: {{ include "base.labels" (dict "ctx" $ctx) | nindent 4 }}
+  annotations:
+    # True as a strings as an expected value for annotation, basically we need non-empty string and that's it
+    base.chart.hiddenmarten.me/config-maps-hash: "true"
+    base.chart.hiddenmarten.me/secrets-hash: "true"
 spec:
   containers: {}
 {{- end }}

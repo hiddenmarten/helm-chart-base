@@ -20,11 +20,9 @@ Usage: {{ include "base.deployment.content" (dict "deployment" $deployment "ctx"
 {{ define "base.deployment.content" -}}
 {{ $ctx := .ctx -}}
 {{ $deployment := .deployment -}}
-{{ $default := include "base.deployment.default" (dict "ctx" $ctx) | fromYaml -}}
-{{ $deployment = mustMergeOverwrite $default $deployment -}}
 {{ $pod := include "base.pod" (dict "pod" (index $deployment.spec "template") "ctx" $ctx) | fromYaml -}}
 {{ $spec := dict "spec" (dict "template" $pod) -}}
-{{ $content := mustMergeOverwrite $default $spec -}}
+{{ $content := mustMergeOverwrite $deployment $spec -}}
 {{ $content | toYaml }}
 {{- end }}
 

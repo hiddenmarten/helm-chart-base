@@ -140,6 +140,9 @@ spec:
       app.kubernetes.io/name: vault
   template:
     metadata:
+      annotations:
+        base.chart.hiddenmarten.me/config-maps-hash: e7de0307c17f615d3ec44517ef8771df43349c58a6c80882d207ceb166349d5f
+        base.chart.hiddenmarten.me/secrets-hash: d6c0f30c1f877d09c7af96dad7aaf502d2a5bfcaf664817783a30169f025c75a
       labels:
         app.kubernetes.io/instance: mono
         app.kubernetes.io/managed-by: Helm
@@ -184,6 +187,9 @@ spec:
   serviceName: mono-postgres
   template:
     metadata:
+      annotations:
+        base.chart.hiddenmarten.me/config-maps-hash: ""
+        base.chart.hiddenmarten.me/secrets-hash: c91d698cb94dab0e4cbde6c98b1779e4f1ee5feb783a564304a404b511cc23ca
       labels:
         app.kubernetes.io/instance: mono
         app.kubernetes.io/managed-by: Helm

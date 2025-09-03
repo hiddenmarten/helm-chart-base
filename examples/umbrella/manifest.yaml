@@ -140,6 +140,9 @@ spec:
       app.kubernetes.io/name: vault
   template:
     metadata:
+      annotations:
+        base.chart.hiddenmarten.me/config-maps-hash: 1fbecbe19f9b3564512a650ddc972f30323c5b3b7ac9404d61f8f1974f9e4ecc
+        base.chart.hiddenmarten.me/secrets-hash: d6c0f30c1f877d09c7af96dad7aaf502d2a5bfcaf664817783a30169f025c75a
       labels:
         app.kubernetes.io/instance: umbrella
         app.kubernetes.io/managed-by: Helm
@@ -184,6 +187,9 @@ spec:
   serviceName: umbrella-postgres
   template:
     metadata:
+      annotations:
+        base.chart.hiddenmarten.me/config-maps-hash: 319d13ffdab1265a199e33cfa38a0b631be18776f6878de650ec595f3ba060b1
+        base.chart.hiddenmarten.me/secrets-hash: c91d698cb94dab0e4cbde6c98b1779e4f1ee5feb783a564304a404b511cc23ca
       labels:
         app.kubernetes.io/instance: umbrella
         app.kubernetes.io/managed-by: Helm

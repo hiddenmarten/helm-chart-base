@@ -20,18 +20,16 @@ Usage: {{ include "base.statefulset.content" (dict "statefulset" $statefulset "s
 {{ define "base.statefulset.content" -}}
 {{ $ctx := .ctx -}}
 {{ $statefulset := .statefulset -}}
-{{ $default := include "base.statefulset.default" (dict "ctx" $ctx) | fromYaml -}}
 {{ $sourceVolumeClaimTemplates := include "base.statefulset.volumeClaimTemplates.default.merge" (dict "volumeClaimTemplates" $statefulset.spec.volumeClaimTemplates "ctx" $ctx) | fromYaml -}}
 {{ $volumeClaimTemplates := include "base.statefulset.volumeClaimTemplates" (dict "volumeClaimTemplates" $sourceVolumeClaimTemplates "ctx" $ctx) | fromYaml -}}
 {{ $volumeMounts := include "base.persistentVolumeClaims.volumeMounts" (dict "persistentVolumeClaims" $sourceVolumeClaimTemplates "ctx" $ctx) | fromYaml }}
-{{ $statefulset = mustMergeOverwrite $default $statefulset -}}
 {{ $pod := include "base.pod" (dict "pod" (index $statefulset.spec "template") "ctx" $ctx) | fromYaml -}}
 {{ $containers := include "base.statefulset.containers.override" (dict "containers" $pod.spec.containers "volumeMounts" $volumeMounts "ctx" $ctx) | fromYaml -}}
 {{ $podSpec := mustMergeOverwrite $pod.spec $containers -}}
 {{ $_ := set $pod "spec" $podSpec -}}
 {{ $service := include "base.service.merged" (dict "ctx" $ctx) | fromYaml -}}
 {{ $spec := dict "spec" (dict "template" $pod "volumeClaimTemplates" $volumeClaimTemplates.volumeClaimTemplates "serviceName" $service.metadata.name) -}}
-{{ mustMergeOverwrite $default $spec | toYaml }}
+{{ mustMergeOverwrite $statefulset $spec | toYaml }}
 {{- end }}
 
 {{/*
