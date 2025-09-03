@@ -22,8 +22,7 @@ Usage: {{ include "base.pod.override" (dict "pod" $pod "ctx" $ctx) }}
 {{- end }}
 {{ $containerList := list -}}
 {{ range $k, $v := $pod.spec.containers -}}
-{{ $container := include "base.container" (dict "container" $v "ctx" $ctx) | fromYaml -}}
-{{ $container = mustMergeOverwrite (dict "name" $k) $container -}}
+{{ $container := include "base.container" (dict "name" $k "container" $v "ctx" $ctx) | fromYaml -}}
 {{ $containerList = append $containerList $container -}}
 {{ end -}}
 {{ if not (len $containerList) }}

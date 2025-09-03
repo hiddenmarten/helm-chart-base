@@ -1,11 +1,12 @@
 {{/*
-Usage: {{ include "base.container" (dict "container" $container "persistentVolumeClaims" $persistentVolumeClaims "ctx" $ctx) }}
+Usage: {{ include "base.container" (dict "container" $container "ctx" $ctx) }}
 */}}
 {{ define "base.container" -}}
 {{ $ctx := .ctx -}}
 {{ $container := .container -}}
+{{ $name := .name -}}
 {{ $containerOverride := include "base.container.override" (dict "container" $container "ctx" $ctx) | fromYaml -}}
-{{ $container = mustMergeOverwrite $container $containerOverride -}}
+{{ $container = mustMergeOverwrite $container $containerOverride (dict "name" $name) -}}
 {{ $container | toYaml }}
 {{- end }}
 
