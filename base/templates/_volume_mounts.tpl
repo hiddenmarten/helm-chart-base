@@ -1,7 +1,7 @@
 
 {{/*
 Template for configmap volume mount
-Usage: {{ include "base.volumeMounts.default" (dict "path" $k "name" $name "ctx" $ctx) }}
+Usage: {{ include "base.volumeMounts.files.default" (dict "path" $k "name" $name "ctx" $ctx) }}
 */}}
 {{ define "base.volumeMounts.files.default" -}}
 {{ $path := .path -}}
