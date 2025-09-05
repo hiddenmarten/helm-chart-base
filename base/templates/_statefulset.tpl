@@ -77,8 +77,8 @@ Usage: {{ include "base.statefulset.volumeClaimTemplates" (dict "volumeClaimTemp
 {{ $ctx := .ctx -}}
 {{ $volumeClaimTemplates := .volumeClaimTemplates -}}
 {{ $list := list -}}
-{{- range $postfix, $persistentVolumeClaim := $volumeClaimTemplates }}
-{{ $unit := include "base.persistentVolumeClaims.unit" (dict "postfix" $postfix "persistentVolumeClaim" $persistentVolumeClaim "ctx" $ctx) | fromYaml -}}
+{{- range $postfix, $unit := $volumeClaimTemplates }}
+{{ $unit := include "base.persistentVolumeClaims.unit" (dict "postfix" $postfix "unit" $unit "ctx" $ctx) | fromYaml -}}
 {{ if and $unit.enabled $unit.spec.resources.requests.storage -}}
 {{ $_ := unset $unit "enabled" -}}
 {{ $_ = unset $unit "mount" -}}
