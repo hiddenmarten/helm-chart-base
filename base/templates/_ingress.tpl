@@ -5,38 +5,38 @@ Usage: {{ include "base.ingress" (dict "ctx" $ctx) }}
 {{ define "base.ingress" -}}
 {{ $ctx := .ctx -}}
 {{ $ingress := include "base.ingress.merged" (dict "ctx" $ctx) | fromYaml -}}
-{{ $unit := include "base.ingress.unit" (dict "ingress" $ingress "ctx" $ctx) | fromYaml -}}
-{{ if and $unit.enabled $unit.spec.rules -}}
+{{ $ingress = include "base.ingress.override" (dict "ingress" $ingress "ctx" $ctx) | fromYaml -}}
+{{ if and $ingress.enabled $ingress.spec.rules -}}
 apiVersion: networking.k8s.io/v1
 kind: Ingress
-{{ $_ := unset $unit "enabled" -}}
-{{ $unit | toYaml }}
+{{ $_ := unset $ingress "enabled" -}}
+{{ $ingress | toYaml }}
 ---
 {{- end }}
 {{- end }}
 
 {{/*
-Usage: {{ include "base.ingress.unit" (dict "ingress" $ingress "ctx" $ctx) }}
-*/}}
-{{ define "base.ingress.unit" -}}
-{{ $ingress := .ingress -}}
-{{ $ctx := .ctx -}}
-{{ $override := include "base.ingress.override" (dict "ingress" $ingress "ctx" $ctx) | fromYaml -}}
-{{ $unit := mustMergeOverwrite $ingress $override -}}
-{{ if not $unit.metadata.annotations -}}
-{{ $_ := unset $unit.metadata "annotations" -}}
-{{- end }}
-{{ tpl ($unit | toYaml) $ctx.abs }}
-{{- end }}
-
-{{/*
-Usage: {{ include "base.ingress.override" (dict ingress" $ingress "ctx" $ctx) }}
+Usage: {{ $ingress = include "base.ingress.override" (dict "ingress" $ingress "ctx" $ctx) | fromYaml -}}
 */}}
 {{ define "base.ingress.override" -}}
 {{ $ingress := .ingress -}}
 {{ $ctx := .ctx -}}
+{{ $ingress = include "base.ingress.override.spec" (dict "ingress" $ingress "ctx" $ctx) | fromYaml -}}
+{{ if not $ingress.metadata.annotations -}}
+{{ $_ := unset $ingress.metadata "annotations" -}}
+{{- end }}
+{{ tpl ($ingress | toYaml) $ctx.abs }}
+{{- end }}
+
+{{/*
+Usage: {{ $ingress = include "base.ingress.override.spec" (dict "ingress" $ingress "ctx" $ctx) | fromYaml -}}
+*/}}
+{{ define "base.ingress.override.spec" -}}
+{{ $ingress := .ingress -}}
+{{ $ctx := .ctx -}}
 {{ $spec := include "base.ingress.spec" (dict "spec" $ingress.spec "ctx" $ctx) | fromYaml -}}
-{{ dict "spec" $spec | toYaml }}
+{{ $_ := set $ingress "spec" $spec -}}
+{{ $ingress | toYaml }}
 {{- end }}
 
 {{/*
