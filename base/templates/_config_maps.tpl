@@ -24,26 +24,17 @@ Usage: {{ include "base.configMaps.unit" (dict "postfix" $postfix "unit" $unit "
 {{ $postfix := .postfix -}}
 {{ $unit := .unit -}}
 {{ $ctx := .ctx -}}
-{{ $defaultunit := include "base.configMaps.unit.default" (dict "postfix" $postfix "ctx" $ctx) | fromYaml -}}
-{{ $unit = mustMergeOverwrite $defaultunit $unit -}}
-{{ $payload := dict -}}
+{{ $unit = include "base.configMaps.unit.merged" (dict "postfix" $postfix "unit" $unit "ctx" $ctx) | fromYaml }}
+{{ $override := dict -}}
 {{ if eq $postfix "envVars" -}}
-{{ $payload = include "base.configMaps.envVars.payload" (dict "unit" $unit "ctx" $ctx) | fromYaml -}}
+{{ $override = include "base.configMaps.envVars.override" (dict "unit" $unit "ctx" $ctx) | fromYaml -}}
 {{ else if eq $postfix "files" -}}
-{{ $payload = include "base.configMaps.files.payload" (dict "unit" $unit "ctx" $ctx) | fromYaml -}}
+{{ $override = include "base.configMaps.files.override" (dict "unit" $unit "ctx" $ctx) | fromYaml -}}
 {{ else -}}
-{{ $payload = include "base.configMaps.others.payload" (dict "unit" $unit "ctx" $ctx) | fromYaml -}}
+{{ $override = include "base.configMaps.others.override" (dict "unit" $unit "ctx" $ctx) | fromYaml -}}
 {{- end }}
-{{ if $payload.data -}}
-{{ $_ := set $unit "data" $payload.data -}}
-{{ else -}}
-{{ $_ := unset $unit "data" -}}
-{{- end }}
-{{ if $payload.binaryData -}}
-{{ $_ := set $unit "binaryData" $payload.binaryData -}}
-{{ else -}}
-{{ $_ := unset $unit "binaryData" -}}
-{{- end }}
+{{ $unit = include "base.util.replaceOrUnset" (dict "dict" $unit "key" "data" "value" $override.data) | fromYaml }}
+{{ $unit = include "base.util.replaceOrUnset" (dict "dict" $unit "key" "binaryData" "value" $override.binaryData) | fromYaml }}
 {{ if not $unit.metadata.annotations -}}
 {{ $_ := unset $unit.metadata "annotations" -}}
 {{- end }}
@@ -53,7 +44,7 @@ Usage: {{ include "base.configMaps.unit" (dict "postfix" $postfix "unit" $unit "
 {{/*
 Usage: {{ include "base.configMaps.envVars.unit" (dict "unit" $unit "ctx" $ctx) }}
 */}}
-{{ define "base.configMaps.envVars.payload" -}}
+{{ define "base.configMaps.envVars.override" -}}
 {{ $unit := .unit -}}
 {{ $ctx := .ctx -}}
 {{ if $unit.data -}}
@@ -70,7 +61,7 @@ Usage: {{ include "base.configMaps.envVars.unit" (dict "unit" $unit "ctx" $ctx) 
 {{/*
 Usage: {{ include "base.configMaps.files.unit" (dict "unit" $unit "ctx" $ctx) }}
 */}}
-{{ define "base.configMaps.files.payload" -}}
+{{ define "base.configMaps.files.override" -}}
 {{ $unit := .unit -}}
 {{ $ctx := .ctx -}}
 {{ if $unit.data -}}
@@ -165,7 +156,7 @@ Usage: {{ include "base.configMaps.envFrom" (dict "envVars" $envVars "ctx" $ctx)
 {{/*
 Usage: {{ include "base.configMaps.others.unit" (dict "unit" $unit "ctx" $ctx) }}
 */}}
-{{ define "base.configMaps.others.payload" -}}
+{{ define "base.configMaps.others.override" -}}
 {{ $unit := .unit -}}
 {{ $ctx := .ctx -}}
 {{- with $unit.data }}
@@ -199,6 +190,17 @@ metadata:
 data: {}
 binaryData: {}
 mount: {}
+{{- end }}
+
+{{/*
+Usage: {{ $unit = include "base.configMaps.unit.merged" (dict "postfix" $postfix "unit" $unit "ctx" $ctx) | fromYaml }}
+*/}}
+{{ define "base.configMaps.unit.merged" -}}
+{{ $postfix := .postfix -}}
+{{ $unit := .unit -}}
+{{ $ctx := .ctx -}}
+{{ $default := include "base.configMaps.unit.default" (dict "postfix" $postfix "ctx" $ctx) | fromYaml -}}
+{{ mustMergeOverwrite $default $unit | toYaml }}
 {{- end }}
 
 {{/*
