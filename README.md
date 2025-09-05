@@ -1,7 +1,6 @@
 # helm-chart-base
 
 TODO list:
-- Add Job and CronJob implementations
 - Resolve case with empty dir usage in 2 containers within a pod (volumes as a map and concatenate it?)
 - Doublecheck tpl rendering in all resources
 - Rework from merge approarch to nested replace or unset for clearness, basically, flow should go like that:

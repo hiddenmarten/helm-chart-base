@@ -1,0 +1,220 @@
+suite: CronJob template
+templates:
+  - templates/cronjob.tpl
+
+tests:
+  - it: renders a CronJob with basic configuration
+    set:
+      cronjob:
+        enabled: true
+        spec:
+          schedule: "0 2 * * *"
+          jobTemplate:
+            spec:
+              template:
+                spec:
+                  containers:
+                    job:
+                      image:
+                        repository: busybox
+                      command: ["sh", "-c"]
+                      args: ["echo 'Daily backup completed'"]
+    asserts:
+      - isKind:
+          of: CronJob
+      - equal:
+          path: metadata.name
+          value: RELEASE-NAME-base-test
+      - equal:
+          path: spec.schedule
+          value: "0 2 * * *"
+      - equal:
+          path: spec.jobTemplate.spec.template.spec.containers[0].image
+          value: busybox:latest
+
+  - it: renders a CronJob with custom name
+    set:
+      cronjob:
+        enabled: true
+        spec:
+          schedule: "*/15 * * * *"
+          jobTemplate:
+            spec:
+              template:
+                spec:
+                  containers:
+                    job:
+                      image:
+                        repository: busybox
+                      command: ["sh", "-c"]
+                      args: ["echo 'Health check completed'"]
+      fullnameOverride: custom-cronjob
+    asserts:
+      - isKind:
+          of: CronJob
+      - equal:
+          path: metadata.name
+          value: custom-cronjob
+
+  - it: renders a CronJob with suspend and concurrency policy
+    set:
+      cronjob:
+        enabled: true
+        spec:
+          schedule: "0 3 * * 0"
+          suspend: true
+          concurrencyPolicy: Replace
+          jobTemplate:
+            spec:
+              template:
+                spec:
+                  containers:
+                    job:
+                      image:
+                        repository: busybox
+                      command: ["sh", "-c"]
+                      args: ["echo 'Weekly maintenance'"]
+    asserts:
+      - isKind:
+          of: CronJob
+      - equal:
+          path: spec.suspend
+          value: true
+      - equal:
+          path: spec.concurrencyPolicy
+          value: Replace
+
+  - it: renders a CronJob with environment variables from configMaps
+    set:
+      cronjob:
+        enabled: true
+        spec:
+          schedule: "0 1 * * *"
+          jobTemplate:
+            spec:
+              template:
+                spec:
+                  containers:
+                    job:
+                      image:
+                        repository: busybox
+                      command: ["sh", "-c"]
+                      args: ["echo 'Config: $TEST_VAR' && echo 'Scheduled task completed'"]
+      configMaps:
+        envVars:
+          data:
+            TEST_VAR: test_value
+    asserts:
+      - isKind:
+          of: CronJob
+      - contains:
+          path: spec.jobTemplate.spec.template.spec.containers[0].envFrom
+          content:
+            configMapRef:
+              name: RELEASE-NAME-base-test-env-vars
+
+  - it: renders a CronJob with environment variables from secrets
+    set:
+      cronjob:
+        enabled: true
+        spec:
+          schedule: "30 4 * * *"
+          jobTemplate:
+            spec:
+              template:
+                spec:
+                  containers:
+                    job:
+                      image:
+                        repository: busybox
+                      command: ["sh", "-c"]
+                      args: ["echo 'Using secret: $SECRET_VAR' && echo 'Data sync completed'"]
+      secrets:
+        envVars:
+          data:
+            SECRET_VAR: secret_value
+    asserts:
+      - isKind:
+          of: CronJob
+      - contains:
+          path: spec.jobTemplate.spec.template.spec.containers[0].envFrom
+          content:
+            secretRef:
+              name: RELEASE-NAME-base-test-env-vars
+
+  - it: should not render CronJob when disabled
+    set:
+      cronjob:
+        enabled: false
+        spec:
+          schedule: "0 5 * * *"
+          jobTemplate:
+            spec:
+              template:
+                spec:
+                  containers:
+                    job:
+                      image:
+                        repository: busybox
+                      command: ["sh", "-c"]
+                      args: ["echo 'Cleanup completed'"]
+    asserts:
+      - hasDocuments:
+          count: 0
+
+  - it: should not render CronJob when schedule is not specified
+    set:
+      cronjob:
+        enabled: true
+        spec:
+          jobTemplate:
+            spec:
+              template:
+                spec:
+                  containers:
+                    job:
+                      image:
+                        repository: busybox
+                      command: ["sh", "-c"]
+                      args: ["echo 'Task completed'"]
+    asserts:
+      - hasDocuments:
+          count: 0
+
+  - it: should not render CronJob when jobTemplate is not specified
+    set:
+      cronjob:
+        enabled: true
+        spec:
+          schedule: "0 5 * * *"
+    asserts:
+      - hasDocuments:
+          count: 0
+
+  - it: should not render envFrom when no config maps or secrets have data
+    set:
+      cronjob:
+        enabled: true
+        spec:
+          schedule: "0 7 * * *"
+          jobTemplate:
+            spec:
+              template:
+                spec:
+                  containers:
+                    job:
+                      image:
+                        repository: busybox
+                      command: ["sh", "-c"]
+                      args: ["echo 'Log rotation completed'"]
+      configMaps:
+        envVars:
+          data: {}
+      secrets:
+        envVars:
+          data: {}
+    asserts:
+      - isKind:
+          of: CronJob
+      - notExists:
+          path: spec.jobTemplate.spec.template.spec.containers[0].envFrom
