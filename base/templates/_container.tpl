@@ -1,5 +1,5 @@
 {{/*
-Usage: {{ include "base.container" (dict "container" $container "ctx" $ctx) }}
+Usage: {{ include "base.container" (dict "name" $name "container" $container "ctx" $ctx) }}
 */}}
 {{ define "base.container" -}}
 {{ $ctx := .ctx -}}
@@ -25,7 +25,7 @@ Usage: {{ include "base.container.override" (dict "container" $container "ctx" $
 {{ if len $envFrom.envFrom -}}
 {{ $envFrom | toYaml }}
 {{- end }}
-{{ $volumeMounts := include "base.container.volumeMounts" (dict "ctx" $ctx) | fromYaml -}}
+{{ $volumeMounts := include "base.container.volumeMounts" (dict "volumeMounts" $container.volumeMounts "ctx" $ctx) | fromYaml -}}
 {{ if len $volumeMounts.volumeMounts -}}
 {{ $volumeMounts | toYaml }}
 {{- end }}
@@ -101,12 +101,28 @@ Usage: {{ include "base.container.volumeMounts" (dict "ctx" $ctx) }}
 */}}
 {{ define "base.container.volumeMounts" -}}
 {{ $ctx := .ctx -}}
+{{ $volumeMounts := .volumeMounts -}}
 {{ $configMaps := include "base.configMaps.merged" (dict "ctx" $ctx) | fromYaml -}}
 {{ $secrets := include "base.secrets.merged" (dict "ctx" $ctx) | fromYaml -}}
 {{ $persistentVolumeClaims := include "base.persistentVolumeClaims.merged" (dict "ctx" $ctx) | fromYaml -}}
+{{ $asListVolumeMounts := include "base.container.volumeMounts.asList" (dict "volumeMounts" $volumeMounts "ctx" $ctx) | fromYaml -}}
 {{ $cmVolumeMounts := include "base.configMaps.files.volumeMounts" (dict "unit" $configMaps.files "ctx" $ctx) | fromYaml -}}
 {{ $secretVolumeMounts := include "base.secrets.files.volumeMounts" (dict "unit" $secrets.files "ctx" $ctx) | fromYaml -}}
 {{ $pvcVolumeMounts := include "base.persistentVolumeClaims.volumeMounts" (dict "persistentVolumeClaims" $persistentVolumeClaims "ctx" $ctx) | fromYaml -}}
-{{ $items := concat $cmVolumeMounts.volumeMounts $secretVolumeMounts.volumeMounts $pvcVolumeMounts.volumeMounts | default list -}}
+{{ $items := concat $cmVolumeMounts.volumeMounts $secretVolumeMounts.volumeMounts $pvcVolumeMounts.volumeMounts $asListVolumeMounts.volumeMounts | default list -}}
 {{ dict "volumeMounts" $items | toYaml }}
 {{- end }}
+
+{{/*
+Usage: {{ include "base.volumes.asList" (dict "volumes" $volumes "ctx" $ctx) }}
+*/}}
+{{ define "base.container.volumeMounts.asList" -}}
+{{ $ctx := .ctx -}}
+{{ $volumeMounts := .volumeMounts -}}
+{{ $volumeMountsList := list -}}
+{{ range $name, $unit := $volumeMounts }}
+{{ $_ := set $unit "name" $name -}}
+{{ $volumeMountsList = append $volumeMountsList $unit -}}
+{{ end -}}
+{{ dict "volumeMounts" $volumeMountsList | toYaml }}
+{{ end -}}

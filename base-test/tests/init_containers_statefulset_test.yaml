@@ -103,7 +103,7 @@ tests:
                     repository: busybox
                   command: ["sh", "-c", "mkdir -p /data/logs && chmod 755 /data/logs"]
                   volumeMounts:
-                    - name: data-pvc
+                    data-pvc:
                       mountPath: /data
       persistentVolumeClaims:
         data-pvc:

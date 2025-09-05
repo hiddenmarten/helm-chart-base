@@ -18,6 +18,7 @@ An example of HashiCorp Vault using base library
 | configMaps.files.data."/vault/config/config.json".ui | bool | `true` |  |
 | deployment.spec.template.spec.containers.vault.image.repository | string | `"hashicorp/vault"` |  |
 | deployment.spec.template.spec.containers.vault.image.tag | string | `"1.20.2"` |  |
+| deployment.spec.template.spec.containers.vault.volumeMounts | string | `nil` |  |
 | deployment.spec.template.spec.volumes.tmp.emptyDir | object | `{}` |  |
 | ingress.spec.rules."vault.example.local".http.paths./.backend.service.port.name | string | `"http"` |  |
 | ingress.spec.rules."vault.example.local".tls.secretName | string | `"vault-tls-secret"` |  |

@@ -121,22 +121,28 @@ tests:
                   image:
                     repository: busybox
                   volumeMounts:
-                    - name: data-volume
-                      mountPath: /data
-      volumes:
-        data-volume:
-          emptyDir: {}
+                    tmp:
+                      mountPath: /tmp
+              volumes:
+                tmp:
+                  emptyDir: {}
     asserts:
       - isKind:
           of: Deployment
       - equal:
           path: spec.template.spec.initContainers[0].name
           value: init-data
-      - contains:
-          path: spec.template.spec.initContainers[0].volumeMounts
-          content:
-            name: data-volume
-            mountPath: /data
+      - equal:
+          path: spec.template.spec.volumes[0].name
+          value: tmp
+      - exists:
+          path: spec.template.spec.volumes[0].emptyDir
+      - equal:
+          path: spec.template.spec.initContainers[0].volumeMounts[0].name
+          value: tmp
+      - equal:
+          path: spec.template.spec.initContainers[0].volumeMounts[0].mountPath
+          value: /tmp
 
   - it: renders a Deployment with init container having resource limits
     set:
