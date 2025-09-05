@@ -5,39 +5,41 @@ Usage: {{ include "base.serviceMonitor" (dict "ctx" $ctx) }}
 {{ define "base.serviceMonitor" -}}
 {{ $ctx := .ctx -}}
 {{ $serviceMonitor := include "base.serviceMonitor.merged" (dict "ctx" $ctx) | fromYaml -}}
-{{ $unit := include "base.serviceMonitor.unit" (dict "serviceMonitor" $serviceMonitor "ctx" $ctx) | fromYaml -}}
-{{ if and $unit.enabled $unit.spec.endpoints -}}
+{{ $serviceMonitor = include "base.serviceMonitor.override" (dict "serviceMonitor" $serviceMonitor "ctx" $ctx) | fromYaml -}}
+{{ if and $serviceMonitor.enabled $serviceMonitor.spec.endpoints -}}
 apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
-{{ $_ := unset $unit "enabled" -}}
-{{ $unit | toYaml }}
+{{ $_ := unset $serviceMonitor "enabled" -}}
+{{ $serviceMonitor | toYaml }}
 ---
 {{- end }}
 {{- end }}
 
 {{/*
-Usage: {{ include "base.serviceMonitor.unit" (dict "serviceMonitor" $serviceMonitor "ctx" $ctx) }}
-*/}}
-{{ define "base.serviceMonitor.unit" -}}
-{{ $serviceMonitor := .serviceMonitor -}}
-{{ $ctx := .ctx -}}
-{{ $override := include "base.serviceMonitor.override" (dict "serviceMonitor" $serviceMonitor "ctx" $ctx) | fromYaml -}}
-{{ $unit := mustMergeOverwrite $serviceMonitor $override -}}
-{{ if not $unit.metadata.annotations -}}
-{{ $_ := unset $unit.metadata "annotations" -}}
-{{- end }}
-{{ tpl ($unit | toYaml) $ctx.abs }}
-{{- end }}
-
-{{/*
-Usage: {{ include "base.serviceMonitor.payload" (dict "unit" $unit "ctx" $ctx) }}
+Usage: {{ $serviceMonitor = include "base.serviceMonitor.override" (dict "serviceMonitor" $serviceMonitor "ctx" $ctx) | fromYaml -}}
 */}}
 {{ define "base.serviceMonitor.override" -}}
 {{ $serviceMonitor := .serviceMonitor -}}
 {{ $ctx := .ctx -}}
-{{ $endpoints := include "base.serviceMonitor.endpoints" (dict "endpoints" $serviceMonitor.spec.endpoints "ctx" $ctx) | fromYaml -}}
-{{ $override := dict "spec" $endpoints -}}
-{{ $override | toYaml }}
+{{ $serviceMonitor = include "base.serviceMonitor.override.spec" (dict "serviceMonitor" $serviceMonitor "ctx" $ctx) | fromYaml -}}
+{{ if not $serviceMonitor.metadata.annotations -}}
+{{ $_ := unset $serviceMonitor.metadata "annotations" -}}
+{{- end }}
+{{ tpl ($serviceMonitor | toYaml) $ctx.abs }}
+{{- end }}
+
+{{/*
+Usage: {{ include "base.serviceMonitor.override" (dict "unit" $unit "ctx" $ctx) }}
+*/}}
+{{ define "base.serviceMonitor.override.spec" -}}
+{{ $serviceMonitor := .serviceMonitor -}}
+{{ $spec := $serviceMonitor.spec -}}
+{{ $endpoints := $spec.endpoints -}}
+{{ $ctx := .ctx -}}
+{{ $endpoints = include "base.serviceMonitor.endpoints" (dict "endpoints" $endpoints "ctx" $ctx) | fromYaml -}}
+{{ $spec = include "base.util.replaceOrUnset" (dict "dict" $spec "key" "endpoints" "value" $endpoints.endpoints) | fromYaml }}
+{{ $serviceMonitor = include "base.util.replaceOrUnset" (dict "dict" $serviceMonitor "key" "spec" "value" $spec) | fromYaml }}
+{{ $serviceMonitor | toYaml }}
 {{- end }}
 
 {{/*
@@ -55,8 +57,6 @@ Usage: {{ include "base.serviceMonitor.endpoints" (dict "endpoints" $endpoints "
 {{ $endpointsList = append $endpointsList $endpoint -}}
 {{- end }}
 {{ if $endpointsList -}}
-selector:
-  matchLabels: {{ include "base.selectorLabels" (dict "ctx" $ctx) | nindent 4 }}
 endpoints: {{ $endpointsList | toYaml | nindent 2 }}
 {{- end }}
 {{- end }}
@@ -72,6 +72,8 @@ metadata:
   labels: {{ include "base.labels" (dict "ctx" $ctx) | nindent 4 }}
   annotations: {}
 spec:
+  selector:
+    matchLabels: {{ include "base.selectorLabels" (dict "ctx" $ctx) | nindent 6 }}
   endpoints: {}
 {{- end }}
 
