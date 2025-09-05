@@ -4,78 +4,78 @@ Usage: {{ include "base.secrets" (dict "ctx" $ctx) }}
 {{ define "base.secrets" -}}
 {{ $ctx := .ctx -}}
 {{ $secrets := include "base.secrets.merged" (dict "ctx" $ctx) | fromYaml -}}
-{{- range $postfix, $content := $secrets }}
-{{ $content = include "base.secrets.content" (dict "postfix" $postfix "content" $content "ctx" $ctx) | fromYaml -}}
-{{ if and $content.enabled (or $content.data $content.stringData) -}}
+{{- range $postfix, $unit := $secrets }}
+{{ $unit = include "base.secrets.unit" (dict "postfix" $postfix "unit" $unit "ctx" $ctx) | fromYaml -}}
+{{ if and $unit.enabled (or $unit.data $unit.stringData) -}}
 apiVersion: v1
 kind: Secret
-{{ $_ := unset $content "enabled" -}}
-{{ $_ = unset $content "mount" -}}
-{{ $content | toYaml }}
+{{ $_ := unset $unit "enabled" -}}
+{{ $_ = unset $unit "mount" -}}
+{{ $unit | toYaml }}
 ---
 {{- end }}
 {{- end }}
 {{- end }}
 
 {{/*
-Usage: {{ include "base.secrets.content" (dict "postfix" $postfix "content" $content "ctx" $ctx) }}
+Usage: {{ include "base.secrets.unit" (dict "postfix" $postfix "unit" $unit "ctx" $ctx) }}
 */}}
-{{ define "base.secrets.content" -}}
+{{ define "base.secrets.unit" -}}
 {{ $postfix := .postfix -}}
-{{ $content := .content -}}
+{{ $unit := .unit -}}
 {{ $ctx := .ctx -}}
-{{ $defaultContent := include "base.secrets.default.content" (dict "postfix" $postfix "ctx" $ctx) | fromYaml -}}
-{{ $content = mustMergeOverwrite $defaultContent $content -}}
+{{ $defaultunit := include "base.secrets.default.unit" (dict "postfix" $postfix "ctx" $ctx) | fromYaml -}}
+{{ $unit = mustMergeOverwrite $defaultunit $unit -}}
 {{ $payload := dict -}}
 {{ if eq $postfix "envVars" -}}
-{{ $payload = include "base.secrets.envVars.payload" (dict "content" $content "ctx" $ctx) | fromYaml -}}
+{{ $payload = include "base.secrets.envVars.payload" (dict "unit" $unit "ctx" $ctx) | fromYaml -}}
 {{ else if eq $postfix "files" -}}
-{{ $payload = include "base.secrets.files.payload" (dict "content" $content "ctx" $ctx) | fromYaml -}}
+{{ $payload = include "base.secrets.files.payload" (dict "unit" $unit "ctx" $ctx) | fromYaml -}}
 {{ else -}}
-{{ $payload = include "base.secrets.others.payload" (dict "content" $content "ctx" $ctx) | fromYaml -}}
+{{ $payload = include "base.secrets.others.payload" (dict "unit" $unit "ctx" $ctx) | fromYaml -}}
 {{- end }}
 {{ if $payload.data -}}
-{{ $_ := set $content "data" $payload.data -}}
+{{ $_ := set $unit "data" $payload.data -}}
 {{ else -}}
-{{ $_ := unset $content "data" -}}
+{{ $_ := unset $unit "data" -}}
 {{- end }}
 {{ if $payload.stringData -}}
-{{ $_ := set $content "stringData" $payload.stringData -}}
+{{ $_ := set $unit "stringData" $payload.stringData -}}
 {{ else -}}
-{{ $_ := unset $content "stringData" -}}
+{{ $_ := unset $unit "stringData" -}}
 {{- end }}
-{{ if not $content.metadata.annotations -}}
-{{ $_ := unset $content.metadata "annotations" -}}
+{{ if not $unit.metadata.annotations -}}
+{{ $_ := unset $unit.metadata "annotations" -}}
 {{- end }}
-{{ tpl ($content | toYaml) $ctx.abs }}
+{{ tpl ($unit | toYaml) $ctx.abs }}
 {{- end }}
 
 {{/*
-Usage: {{ include "base.secrets.envVars.payload" (dict "content" $content "ctx" $ctx) }}
+Usage: {{ include "base.secrets.envVars.payload" (dict "unit" $unit "ctx" $ctx) }}
 */}}
 {{ define "base.secrets.envVars.payload" -}}
-{{ $content := .content -}}
+{{ $unit := .unit -}}
 {{ $ctx := .ctx -}}
-{{ if $content.data -}}
+{{ if $unit.data -}}
 {{ print "data: " }}
-{{ range $k, $v := $content.data -}}
+{{ range $k, $v := $unit.data -}}
 {{ printf "%s: %s" (tpl $k $ctx.abs) ((tpl $v $ctx.abs) | b64enc) | nindent 2 }}
 {{- end }}
 {{- end }}
-{{- if $content.stringData }}
+{{- if $unit.stringData }}
 {{ fail "secrets.envVars does not support 'stringData'" }}
 {{- end }}
 {{- end }}
 
 {{/*
-Usage: {{ include "base.secrets.files.payload" (dict "content" $content "ctx" $ctx) }}
+Usage: {{ include "base.secrets.files.payload" (dict "unit" $unit "ctx" $ctx) }}
 */}}
 {{ define "base.secrets.files.payload" -}}
-{{ $content := .content -}}
+{{ $unit := .unit -}}
 {{ $ctx := .ctx -}}
-{{ if $content.data -}}
+{{ if $unit.data -}}
 {{ print "data:" }}
-{{ range $k, $v := $content.data -}}
+{{ range $k, $v := $unit.data -}}
 {{ $filepath := tpl $k $ctx.abs -}}
 {{ printf "%s: |" (include "base.util.dnsCompatible" (dict "filepath" $filepath)) | indent 2 }}
 {{ if mustRegexMatch "(.+)(\\.yaml|\\.yml)$" (base $filepath) -}}
@@ -89,7 +89,7 @@ Usage: {{ include "base.secrets.files.payload" (dict "content" $content "ctx" $c
 {{ end -}}
 {{- end }}
 {{- end }}
-{{- if $content.stringData }}
+{{- if $unit.stringData }}
 {{ fail "secrets.files does not support 'stringData'" }}
 {{- end }}
 {{- end }}
@@ -107,11 +107,11 @@ Usage: {{ include "base.volumes.secrets.volumes" (dict "ctx" $ctx) }}
 */}}
 {{ define "base.secrets.files.volumes" -}}
 {{ $ctx := .ctx -}}
-{{ $content := .content -}}
-{{ $defaultContent := include "base.secrets.default.content" (dict "postfix" "files" "ctx" $ctx) | fromYaml -}}
-{{ $content = mustMergeOverwrite $defaultContent $content -}}
+{{ $unit := .unit -}}
+{{ $defaultunit := include "base.secrets.default.unit" (dict "postfix" "files" "ctx" $ctx) | fromYaml -}}
+{{ $unit = mustMergeOverwrite $defaultunit $unit -}}
 {{ $volumes := list -}}
-{{ if and $content.enabled $content.data -}}
+{{ if and $unit.enabled $unit.data -}}
 {{ $volumes = append $volumes (include "base.secrets.files.volume" (dict "ctx" $ctx) | fromYaml) -}}
 {{- end }}
 volumes: {{ $volumes | toYaml | nindent 2 }}
@@ -131,16 +131,16 @@ secret:
 Usage: {{ include "base.secrets.files.volumeMounts" (dict "files" $files "ctx" $ctx) }}
 */}}
 {{ define "base.secrets.files.volumeMounts" -}}
-{{ $content := .content -}}
+{{ $unit := .unit -}}
 {{ $ctx := .ctx -}}
-{{ $defaultContent := include "base.secrets.default.content" (dict "postfix" "files" "ctx" $ctx) | fromYaml -}}
-{{ $content = mustMergeOverwrite $defaultContent $content -}}
+{{ $defaultunit := include "base.secrets.default.unit" (dict "postfix" "files" "ctx" $ctx) | fromYaml -}}
+{{ $unit = mustMergeOverwrite $defaultunit $unit -}}
 {{ $mounts := list -}}
-{{ if and $content.enabled $content.data -}}
-{{ range $path, $_ := $content.data -}}
+{{ if and $unit.enabled $unit.data -}}
+{{ range $path, $_ := $unit.data -}}
 {{ $name := include "base.secrets.files.volume.name" (dict "ctx" $ctx) -}}
 {{ $defaultMount := include "base.volumeMounts.files.default" (dict "path" $path "name" $name "ctx" $ctx) | fromYaml -}}
-{{ $mount := mustMergeOverwrite $defaultMount $content.mount -}}
+{{ $mount := mustMergeOverwrite $defaultMount $unit.mount -}}
 {{ $mounts = append $mounts $mount -}}
 {{- end }}
 {{- end }}
@@ -153,7 +153,7 @@ Usage: {{ include "base.secrets.envFrom" (dict "envVars" $envVars "ctx" $ctx) }}
 {{ define "base.secrets.envFrom" -}}
 {{ $envVars := .envVars -}}
 {{ $ctx := .ctx -}}
-{{ $default := include "base.secrets.default.content" (dict "postfix" "envVars" "ctx" $ctx) | fromYaml -}}
+{{ $default := include "base.secrets.default.unit" (dict "postfix" "envVars" "ctx" $ctx) | fromYaml -}}
 {{ $envVars = mustMergeOverwrite $default $envVars -}}
 {{ $items := list -}}
 {{ if and $envVars.data $envVars.enabled -}}
@@ -163,15 +163,15 @@ Usage: {{ include "base.secrets.envFrom" (dict "envVars" $envVars "ctx" $ctx) }}
 {{- end }}
 
 {{/*
-Usage: {{ include "base.secrets.others.payload" (dict "content" $content "ctx" $ctx) }}
+Usage: {{ include "base.secrets.others.payload" (dict "unit" $unit "ctx" $ctx) }}
 */}}
 {{ define "base.secrets.others.payload" -}}
-{{ $content := .content -}}
+{{ $unit := .unit -}}
 {{ $ctx := .ctx -}}
-{{- with $content.data }}
+{{- with $unit.data }}
 data: {{ tpl (. | toYaml) $ctx.abs | nindent 2 }}
 {{- end }}
-{{- with $content.stringData }}
+{{- with $unit.stringData }}
 stringData: {{ tpl (. | toYaml) $ctx.abs | nindent 2 }}
 {{- end }}
 {{- end }}
@@ -186,9 +186,9 @@ Usage: {{ include "base.secrets.name" (dict "postfix" $postfix "ctx" $ctx) }}
 {{- end }}
 
 {{/*
-Usage: {{ include "base.secrets.default.content" (dict "postfix" $postfix "ctx" $ctx) }}
+Usage: {{ include "base.secrets.default.unit" (dict "postfix" $postfix "ctx" $ctx) }}
 */}}
-{{ define "base.secrets.default.content" -}}
+{{ define "base.secrets.default.unit" -}}
 {{ $ctx := .ctx -}}
 {{ $postfix := .postfix -}}
 enabled: true

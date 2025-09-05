@@ -4,20 +4,20 @@ Usage: {{ include "base.statefulset" (dict "ctx" $ctx) }}
 {{ define "base.statefulset" -}}
 {{ $ctx := .ctx -}}
 {{ $statefulset := include "base.statefulset.merged" (dict "ctx" $ctx) | fromYaml -}}
-{{ $content := include "base.statefulset.content" (dict "statefulset" $statefulset "ctx" $ctx) | fromYaml -}}
-{{ if $content.enabled -}}
+{{ $unit := include "base.statefulset.unit" (dict "statefulset" $statefulset "ctx" $ctx) | fromYaml -}}
+{{ if $unit.enabled -}}
 apiVersion: apps/v1
 kind: StatefulSet
-{{ $_ := unset $content "enabled" -}}
-{{ $content | toYaml }}
+{{ $_ := unset $unit "enabled" -}}
+{{ $unit | toYaml }}
 ---
 {{- end }}
 {{- end }}
 
 {{/*
-Usage: {{ include "base.statefulset.content" (dict "statefulset" $statefulset "service" $service "ctx" $ctx) }}
+Usage: {{ include "base.statefulset.unit" (dict "statefulset" $statefulset "service" $service "ctx" $ctx) }}
 */}}
-{{ define "base.statefulset.content" -}}
+{{ define "base.statefulset.unit" -}}
 {{ $ctx := .ctx -}}
 {{ $statefulset := .statefulset -}}
 {{ $spec := $statefulset.spec -}}
@@ -64,8 +64,8 @@ Usage: {{ include "base.statefulset.volumeClaimTemplates.default.merge" (dict "v
 {{ $dict := dict -}}
 {{ range $k, $v := $volumeClaimTemplates -}}
 {{ $default := dict "metadata" (dict "name" $k) "mount" (dict "name" $k) -}}
-{{ $content := mustMergeOverwrite $default $v -}}
-{{ $_ := set $dict $k $content -}}
+{{ $unit := mustMergeOverwrite $default $v -}}
+{{ $_ := set $dict $k $unit -}}
 {{ end -}}
 {{ $dict | toYaml }}
 {{- end }}
@@ -78,11 +78,11 @@ Usage: {{ include "base.statefulset.volumeClaimTemplates" (dict "volumeClaimTemp
 {{ $volumeClaimTemplates := .volumeClaimTemplates -}}
 {{ $list := list -}}
 {{- range $postfix, $persistentVolumeClaim := $volumeClaimTemplates }}
-{{ $content := include "base.persistentVolumeClaims.content" (dict "postfix" $postfix "persistentVolumeClaim" $persistentVolumeClaim "ctx" $ctx) | fromYaml -}}
-{{ if and $content.enabled $content.spec.resources.requests.storage -}}
-{{ $_ := unset $content "enabled" -}}
-{{ $_ = unset $content "mount" -}}
-{{ $list = append $list $content }}
+{{ $unit := include "base.persistentVolumeClaims.unit" (dict "postfix" $postfix "persistentVolumeClaim" $persistentVolumeClaim "ctx" $ctx) | fromYaml -}}
+{{ if and $unit.enabled $unit.spec.resources.requests.storage -}}
+{{ $_ := unset $unit "enabled" -}}
+{{ $_ = unset $unit "mount" -}}
+{{ $list = append $list $unit }}
 {{- end }}
 {{- end }}
 {{ dict "volumeClaimTemplates" $list | toYaml }}

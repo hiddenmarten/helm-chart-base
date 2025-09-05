@@ -5,32 +5,32 @@ Usage: {{ include "base.serviceMonitor" (dict "ctx" $ctx) }}
 {{ define "base.serviceMonitor" -}}
 {{ $ctx := .ctx -}}
 {{ $serviceMonitor := include "base.serviceMonitor.merged" (dict "ctx" $ctx) | fromYaml -}}
-{{ $content := include "base.serviceMonitor.content" (dict "serviceMonitor" $serviceMonitor "ctx" $ctx) | fromYaml -}}
-{{ if and $content.enabled $content.spec.endpoints -}}
+{{ $unit := include "base.serviceMonitor.unit" (dict "serviceMonitor" $serviceMonitor "ctx" $ctx) | fromYaml -}}
+{{ if and $unit.enabled $unit.spec.endpoints -}}
 apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
-{{ $_ := unset $content "enabled" -}}
-{{ $content | toYaml }}
+{{ $_ := unset $unit "enabled" -}}
+{{ $unit | toYaml }}
 ---
 {{- end }}
 {{- end }}
 
 {{/*
-Usage: {{ include "base.serviceMonitor.content" (dict "serviceMonitor" $serviceMonitor "ctx" $ctx) }}
+Usage: {{ include "base.serviceMonitor.unit" (dict "serviceMonitor" $serviceMonitor "ctx" $ctx) }}
 */}}
-{{ define "base.serviceMonitor.content" -}}
+{{ define "base.serviceMonitor.unit" -}}
 {{ $serviceMonitor := .serviceMonitor -}}
 {{ $ctx := .ctx -}}
 {{ $override := include "base.serviceMonitor.override" (dict "serviceMonitor" $serviceMonitor "ctx" $ctx) | fromYaml -}}
-{{ $content := mustMergeOverwrite $serviceMonitor $override -}}
-{{ if not $content.metadata.annotations -}}
-{{ $_ := unset $content.metadata "annotations" -}}
+{{ $unit := mustMergeOverwrite $serviceMonitor $override -}}
+{{ if not $unit.metadata.annotations -}}
+{{ $_ := unset $unit.metadata "annotations" -}}
 {{- end }}
-{{ tpl ($content | toYaml) $ctx.abs }}
+{{ tpl ($unit | toYaml) $ctx.abs }}
 {{- end }}
 
 {{/*
-Usage: {{ include "base.serviceMonitor.payload" (dict "content" $content "ctx" $ctx) }}
+Usage: {{ include "base.serviceMonitor.payload" (dict "unit" $unit "ctx" $ctx) }}
 */}}
 {{ define "base.serviceMonitor.override" -}}
 {{ $serviceMonitor := .serviceMonitor -}}

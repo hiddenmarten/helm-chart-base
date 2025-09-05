@@ -95,8 +95,8 @@ Usage: {{ include "base.container.volumeMounts" (dict "ctx" $ctx) }}
 {{ $configMaps := include "base.configMaps.merged" (dict "ctx" $ctx) | fromYaml -}}
 {{ $secrets := include "base.secrets.merged" (dict "ctx" $ctx) | fromYaml -}}
 {{ $persistentVolumeClaims := include "base.persistentVolumeClaims.merged" (dict "ctx" $ctx) | fromYaml -}}
-{{ $cmVolumeMounts := include "base.configMaps.files.volumeMounts" (dict "content" $configMaps.files "ctx" $ctx) | fromYaml -}}
-{{ $secretVolumeMounts := include "base.secrets.files.volumeMounts" (dict "content" $secrets.files "ctx" $ctx) | fromYaml -}}
+{{ $cmVolumeMounts := include "base.configMaps.files.volumeMounts" (dict "unit" $configMaps.files "ctx" $ctx) | fromYaml -}}
+{{ $secretVolumeMounts := include "base.secrets.files.volumeMounts" (dict "unit" $secrets.files "ctx" $ctx) | fromYaml -}}
 {{ $pvcVolumeMounts := include "base.persistentVolumeClaims.volumeMounts" (dict "persistentVolumeClaims" $persistentVolumeClaims "ctx" $ctx) | fromYaml -}}
 {{ $items := concat $cmVolumeMounts.volumeMounts $secretVolumeMounts.volumeMounts $pvcVolumeMounts.volumeMounts | default list -}}
 {{ dict "volumeMounts" $items | toYaml }}

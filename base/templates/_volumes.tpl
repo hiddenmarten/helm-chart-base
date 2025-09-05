@@ -8,11 +8,11 @@ Usage: {{ include "base.volumes" (dict "ctx" $ctx) }}
 {{ $secrets := include "base.secrets.merged" (dict "ctx" $ctx) | fromYaml -}}
 {{ $persistentVolumeClaims := include "base.persistentVolumeClaims.merged" (dict "ctx" $ctx) | fromYaml -}}
 {{ $volumes := list -}}
-{{ $cmVolumes := include "base.configMaps.files.volumes" (dict "content" $configMaps.files "ctx" $ctx) | fromYaml -}}
+{{ $cmVolumes := include "base.configMaps.files.volumes" (dict "unit" $configMaps.files "ctx" $ctx) | fromYaml -}}
 {{ range $cmVolumes.volumes -}}
 {{ $volumes = append $volumes . -}}
 {{ end -}}
-{{ $secretVolumes := include "base.secrets.files.volumes" (dict "content" $secrets.files "ctx" $ctx) | fromYaml -}}
+{{ $secretVolumes := include "base.secrets.files.volumes" (dict "unit" $secrets.files "ctx" $ctx) | fromYaml -}}
 {{ range $secretVolumes.volumes -}}
 {{ $volumes = append $volumes . -}}
 {{ end -}}

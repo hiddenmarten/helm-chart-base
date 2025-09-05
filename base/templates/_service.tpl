@@ -5,32 +5,32 @@ Usage: {{ include "base.service" (dict "ctx" $ctx) }}
 {{ define "base.service" -}}
 {{ $ctx := .ctx -}}
 {{ $service := include "base.service.merged" (dict "ctx" $ctx) | fromYaml -}}
-{{ $content := include "base.service.content" (dict "service" $service "ctx" $ctx) | fromYaml -}}
-{{ if and $content.enabled $content.spec.ports -}}
+{{ $unit := include "base.service.unit" (dict "service" $service "ctx" $ctx) | fromYaml -}}
+{{ if and $unit.enabled $unit.spec.ports -}}
 apiVersion: v1
 kind: Service
-{{ $_ := unset $content "enabled" -}}
-{{ $content | toYaml }}
+{{ $_ := unset $unit "enabled" -}}
+{{ $unit | toYaml }}
 ---
 {{- end }}
 {{- end }}
 
 {{/*
-Usage: {{ include "base.service.content" (dict "service" $service "ctx" $ctx) }}
+Usage: {{ include "base.service.unit" (dict "service" $service "ctx" $ctx) }}
 */}}
-{{ define "base.service.content" -}}
+{{ define "base.service.unit" -}}
 {{ $service := .service -}}
 {{ $ctx := .ctx -}}
 {{ $override := include "base.service.override" (dict "service" $service "ctx" $ctx) | fromYaml -}}
-{{ $content := mustMergeOverwrite $service $override -}}
-{{ if not $content.metadata.annotations -}}
-{{ $_ := unset $content.metadata "annotations" -}}
+{{ $unit := mustMergeOverwrite $service $override -}}
+{{ if not $unit.metadata.annotations -}}
+{{ $_ := unset $unit.metadata "annotations" -}}
 {{- end }}
-{{ tpl ($content | toYaml) $ctx.abs }}
+{{ tpl ($unit | toYaml) $ctx.abs }}
 {{- end }}
 
 {{/*
-Usage: {{ include "base.service.payload" (dict "content" $content "ctx" $ctx) }}
+Usage: {{ include "base.service.payload" (dict "unit" $unit "ctx" $ctx) }}
 */}}
 {{ define "base.service.override" -}}
 {{ $service := .service -}}

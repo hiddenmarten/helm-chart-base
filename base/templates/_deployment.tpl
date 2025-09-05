@@ -4,20 +4,20 @@ Usage: {{ include "base.deployment" (dict "ctx" $ctx) }}
 {{ define "base.deployment" -}}
 {{ $ctx := .ctx -}}
 {{ $deployment := include "base.deployment.merged" (dict "ctx" $ctx) | fromYaml -}}
-{{ $content := include "base.deployment.content" (dict "deployment" $deployment "ctx" $ctx) | fromYaml -}}
-{{ if $content.enabled -}}
+{{ $unit := include "base.deployment.unit" (dict "deployment" $deployment "ctx" $ctx) | fromYaml -}}
+{{ if $unit.enabled -}}
 apiVersion: apps/v1
 kind: Deployment
-{{ $_ := unset $content "enabled" -}}
-{{ $content | toYaml }}
+{{ $_ := unset $unit "enabled" -}}
+{{ $unit | toYaml }}
 ---
 {{- end }}
 {{- end }}
 
 {{/*
-Usage: {{ include "base.deployment.content" (dict "deployment" $deployment "ctx" $ctx) }}
+Usage: {{ include "base.deployment.unit" (dict "deployment" $deployment "ctx" $ctx) }}
 */}}
-{{ define "base.deployment.content" -}}
+{{ define "base.deployment.unit" -}}
 {{ $ctx := .ctx -}}
 {{ $deployment := .deployment -}}
 {{ $spec := $deployment.spec -}}

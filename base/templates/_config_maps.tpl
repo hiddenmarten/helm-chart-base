@@ -4,78 +4,78 @@ Usage: {{ include "base.configMaps" (dict "ctx" $ctx) }}
 {{ define "base.configMaps" -}}
 {{ $ctx := .ctx -}}
 {{ $configMaps := include "base.configMaps.merged" (dict "ctx" $ctx) | fromYaml -}}
-{{- range $postfix, $content := $configMaps }}
-{{ $content = include "base.configMaps.content" (dict "postfix" $postfix "content" $content "ctx" $ctx) | fromYaml -}}
-{{ if and $content.enabled (or $content.data $content.binaryData) -}}
+{{- range $postfix, $unit := $configMaps }}
+{{ $unit = include "base.configMaps.unit" (dict "postfix" $postfix "unit" $unit "ctx" $ctx) | fromYaml -}}
+{{ if and $unit.enabled (or $unit.data $unit.binaryData) -}}
 apiVersion: v1
 kind: ConfigMap
-{{ $_ := unset $content "enabled" -}}
-{{ $_ = unset $content "mount" -}}
-{{ $content | toYaml }}
+{{ $_ := unset $unit "enabled" -}}
+{{ $_ = unset $unit "mount" -}}
+{{ $unit | toYaml }}
 ---
 {{- end }}
 {{- end }}
 {{- end }}
 
 {{/*
-Usage: {{ include "base.configMaps.content" (dict "postfix" $postfix "content" $content "ctx" $ctx) }}
+Usage: {{ include "base.configMaps.unit" (dict "postfix" $postfix "unit" $unit "ctx" $ctx) }}
 */}}
-{{ define "base.configMaps.content" -}}
+{{ define "base.configMaps.unit" -}}
 {{ $postfix := .postfix -}}
-{{ $content := .content -}}
+{{ $unit := .unit -}}
 {{ $ctx := .ctx -}}
-{{ $defaultContent := include "base.configMaps.default.content" (dict "postfix" $postfix "ctx" $ctx) | fromYaml -}}
-{{ $content = mustMergeOverwrite $defaultContent $content -}}
+{{ $defaultunit := include "base.configMaps.unit.default" (dict "postfix" $postfix "ctx" $ctx) | fromYaml -}}
+{{ $unit = mustMergeOverwrite $defaultunit $unit -}}
 {{ $payload := dict -}}
 {{ if eq $postfix "envVars" -}}
-{{ $payload = include "base.configMaps.envVars.payload" (dict "content" $content "ctx" $ctx) | fromYaml -}}
+{{ $payload = include "base.configMaps.envVars.payload" (dict "unit" $unit "ctx" $ctx) | fromYaml -}}
 {{ else if eq $postfix "files" -}}
-{{ $payload = include "base.configMaps.files.payload" (dict "content" $content "ctx" $ctx) | fromYaml -}}
+{{ $payload = include "base.configMaps.files.payload" (dict "unit" $unit "ctx" $ctx) | fromYaml -}}
 {{ else -}}
-{{ $payload = include "base.configMaps.others.payload" (dict "content" $content "ctx" $ctx) | fromYaml -}}
+{{ $payload = include "base.configMaps.others.payload" (dict "unit" $unit "ctx" $ctx) | fromYaml -}}
 {{- end }}
 {{ if $payload.data -}}
-{{ $_ := set $content "data" $payload.data -}}
+{{ $_ := set $unit "data" $payload.data -}}
 {{ else -}}
-{{ $_ := unset $content "data" -}}
+{{ $_ := unset $unit "data" -}}
 {{- end }}
 {{ if $payload.binaryData -}}
-{{ $_ := set $content "binaryData" $payload.binaryData -}}
+{{ $_ := set $unit "binaryData" $payload.binaryData -}}
 {{ else -}}
-{{ $_ := unset $content "binaryData" -}}
+{{ $_ := unset $unit "binaryData" -}}
 {{- end }}
-{{ if not $content.metadata.annotations -}}
-{{ $_ := unset $content.metadata "annotations" -}}
+{{ if not $unit.metadata.annotations -}}
+{{ $_ := unset $unit.metadata "annotations" -}}
 {{- end }}
-{{ tpl ($content | toYaml) $ctx.abs }}
+{{ tpl ($unit | toYaml) $ctx.abs }}
 {{- end }}
 
 {{/*
-Usage: {{ include "base.configMaps.envVars.content" (dict "content" $content "ctx" $ctx) }}
+Usage: {{ include "base.configMaps.envVars.unit" (dict "unit" $unit "ctx" $ctx) }}
 */}}
 {{ define "base.configMaps.envVars.payload" -}}
-{{ $content := .content -}}
+{{ $unit := .unit -}}
 {{ $ctx := .ctx -}}
-{{ if $content.data -}}
+{{ if $unit.data -}}
 {{ print "data: " }}
-{{ range $k, $v := $content.data -}}
+{{ range $k, $v := $unit.data -}}
 {{ printf "%s: %s" $k $v | nindent 2 }}
 {{- end }}
 {{- end }}
-{{- if $content.binaryData }}
+{{- if $unit.binaryData }}
 {{ fail "configMaps.envVars does not support 'binaryData'" }}
 {{- end }}
 {{- end }}
 
 {{/*
-Usage: {{ include "base.configMaps.files.content" (dict "content" $content "ctx" $ctx) }}
+Usage: {{ include "base.configMaps.files.unit" (dict "unit" $unit "ctx" $ctx) }}
 */}}
 {{ define "base.configMaps.files.payload" -}}
-{{ $content := .content -}}
+{{ $unit := .unit -}}
 {{ $ctx := .ctx -}}
-{{ if $content.data -}}
+{{ if $unit.data -}}
 {{ print "data:" }}
-{{ range $k, $v := $content.data -}}
+{{ range $k, $v := $unit.data -}}
 {{ $filepath := $k -}}
 {{ printf "%s: |" (include "base.util.dnsCompatible" (dict "filepath" $filepath)) | indent 2 }}
 {{ if mustRegexMatch "(.+)(\\.yaml|\\.yml)$" (base $filepath) -}}
@@ -89,7 +89,7 @@ Usage: {{ include "base.configMaps.files.content" (dict "content" $content "ctx"
 {{ end -}}
 {{- end }}
 {{- end }}
-{{- if $content.binaryData }}
+{{- if $unit.binaryData }}
 {{ fail "configMaps.files does not support 'binaryData'" }}
 {{- end }}
 {{- end }}
@@ -107,11 +107,11 @@ Usage: {{ include "base.volumes.configMap.volumes" (dict "ctx" $ctx) }}
 */}}
 {{ define "base.configMaps.files.volumes" -}}
 {{ $ctx := .ctx -}}
-{{ $content := .content -}}
-{{ $defaultContent := include "base.configMaps.default.content" (dict "postfix" "files" "ctx" $ctx) | fromYaml -}}
-{{ $content = mustMergeOverwrite $defaultContent $content -}}
+{{ $unit := .unit -}}
+{{ $defaultunit := include "base.configMaps.unit.default" (dict "postfix" "files" "ctx" $ctx) | fromYaml -}}
+{{ $unit = mustMergeOverwrite $defaultunit $unit -}}
 {{ $volumes := list -}}
-{{ if and $content.enabled $content.data -}}
+{{ if and $unit.enabled $unit.data -}}
 {{ $volumes = append $volumes (include "base.configMaps.files.volume" (dict "ctx" $ctx) | fromYaml) -}}
 {{- end }}
 volumes: {{ $volumes | toYaml | nindent 2 }}
@@ -128,19 +128,19 @@ configMap:
 {{- end }}
 
 {{/*
-Usage: {{ include "base.configMaps.files.volumeMounts" (dict "content" $content "ctx" $ctx) }}
+Usage: {{ include "base.configMaps.files.volumeMounts" (dict "unit" $unit "ctx" $ctx) }}
 */}}
 {{ define "base.configMaps.files.volumeMounts" -}}
-{{ $content := .content -}}
+{{ $unit := .unit -}}
 {{ $ctx := .ctx -}}
-{{ $defaultContent := include "base.configMaps.default.content" (dict "postfix" "files" "ctx" $ctx) | fromYaml -}}
-{{ $content = mustMergeOverwrite $defaultContent $content -}}
+{{ $defaultunit := include "base.configMaps.unit.default" (dict "postfix" "files" "ctx" $ctx) | fromYaml -}}
+{{ $unit = mustMergeOverwrite $defaultunit $unit -}}
 {{ $mounts := list -}}
-{{ if and $content.enabled $content.data -}}
-{{ range $path, $_ := $content.data -}}
+{{ if and $unit.enabled $unit.data -}}
+{{ range $path, $_ := $unit.data -}}
 {{ $name := include "base.configMaps.files.volume.name" (dict "ctx" $ctx) -}}
 {{ $defaultMount := include "base.volumeMounts.files.default" (dict "path" $path "name" $name "ctx" $ctx) | fromYaml -}}
-{{ $mount := mustMergeOverwrite $defaultMount $content.mount -}}
+{{ $mount := mustMergeOverwrite $defaultMount $unit.mount -}}
 {{ $mounts = append $mounts $mount -}}
 {{- end }}
 {{- end }}
@@ -153,7 +153,7 @@ Usage: {{ include "base.configMaps.envFrom" (dict "envVars" $envVars "ctx" $ctx)
 {{ define "base.configMaps.envFrom" -}}
 {{ $envVars := .envVars -}}
 {{ $ctx := .ctx -}}
-{{ $default := include "base.configMaps.default.content" (dict "postfix" "envVars" "ctx" $ctx) | fromYaml -}}
+{{ $default := include "base.configMaps.unit.default" (dict "postfix" "envVars" "ctx" $ctx) | fromYaml -}}
 {{ $envVars = mustMergeOverwrite $default $envVars -}}
 {{ $items := list -}}
 {{ if and $envVars.data $envVars.enabled -}}
@@ -163,15 +163,15 @@ Usage: {{ include "base.configMaps.envFrom" (dict "envVars" $envVars "ctx" $ctx)
 {{- end }}
 
 {{/*
-Usage: {{ include "base.configMaps.others.content" (dict "content" $content "ctx" $ctx) }}
+Usage: {{ include "base.configMaps.others.unit" (dict "unit" $unit "ctx" $ctx) }}
 */}}
 {{ define "base.configMaps.others.payload" -}}
-{{ $content := .content -}}
+{{ $unit := .unit -}}
 {{ $ctx := .ctx -}}
-{{- with $content.data }}
+{{- with $unit.data }}
 data: {{ toYaml . | nindent 2 }}
 {{- end }}
-{{- with $content.binaryData }}
+{{- with $unit.binaryData }}
 binaryData: {{ toYaml . | nindent 2 }}
 {{- end }}
 {{- end }}
@@ -186,9 +186,9 @@ Usage: {{ include "base.configMaps.name" (dict "postfix" $postfix "ctx" $ctx) }}
 {{- end }}
 
 {{/*
-Usage: {{ include "base.configMaps.default.content" (dict "postfix" $postfix "ctx" $ctx) }}
+Usage: {{ include "base.configMaps.unit.default" (dict "postfix" $postfix "ctx" $ctx) }}
 */}}
-{{ define "base.configMaps.default.content" -}}
+{{ define "base.configMaps.unit.default" -}}
 {{ $ctx := .ctx -}}
 {{ $postfix := .postfix -}}
 enabled: true
