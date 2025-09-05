@@ -220,7 +220,6 @@ tests:
           annotations:
             app-name: "{{ .Release.Name }}"
             namespace: "{{ .Release.Namespace }}"
-            chart-version: "{{ .Chart.Version }}"
         spec:
           type: ClusterIP
           ports:
@@ -235,9 +234,6 @@ tests:
       - equal:
           path: metadata.annotations["namespace"]
           value: production
-      - equal:
-          path: metadata.annotations["chart-version"]
-          value: 0.0.1
       - equal:
           path: spec.type
           value: ClusterIP

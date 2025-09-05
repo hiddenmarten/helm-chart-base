@@ -7,7 +7,7 @@ metadata:
     app.kubernetes.io/instance: mono
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/name: postgres
-    helm.sh/chart: mono-0.0.1
+    helm.sh/chart: mono-0.0.2
   name: mono-postgres
 ---
 # Source: mono/templates/vault.tpl
@@ -18,7 +18,7 @@ metadata:
     app.kubernetes.io/instance: mono
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/name: vault
-    helm.sh/chart: mono-0.0.1
+    helm.sh/chart: mono-0.0.2
   name: mono-vault
 ---
 # Source: mono/templates/postgres.tpl
@@ -31,7 +31,7 @@ metadata:
     app.kubernetes.io/instance: mono
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/name: postgres
-    helm.sh/chart: mono-0.0.1
+    helm.sh/chart: mono-0.0.2
   name: mono-postgres-env-vars
 ---
 # Source: mono/templates/vault.tpl
@@ -44,7 +44,7 @@ metadata:
     app.kubernetes.io/instance: mono
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/name: vault
-    helm.sh/chart: mono-0.0.1
+    helm.sh/chart: mono-0.0.2
   name: mono-vault-env-vars
 ---
 # Source: mono/templates/postgres.tpl
@@ -69,7 +69,7 @@ metadata:
     app.kubernetes.io/instance: mono
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/name: postgres
-    helm.sh/chart: mono-0.0.1
+    helm.sh/chart: mono-0.0.2
   name: mono-postgres-files
 ---
 # Source: mono/templates/vault.tpl
@@ -83,7 +83,7 @@ metadata:
     app.kubernetes.io/instance: mono
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/name: vault
-    helm.sh/chart: mono-0.0.1
+    helm.sh/chart: mono-0.0.2
   name: mono-vault-files
 ---
 # Source: mono/templates/postgres.tpl
@@ -94,7 +94,7 @@ metadata:
     app.kubernetes.io/instance: mono
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/name: postgres
-    helm.sh/chart: mono-0.0.1
+    helm.sh/chart: mono-0.0.2
   name: mono-postgres
 spec:
   clusterIP: None
@@ -113,7 +113,7 @@ metadata:
     app.kubernetes.io/instance: mono
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/name: vault
-    helm.sh/chart: mono-0.0.1
+    helm.sh/chart: mono-0.0.2
   name: mono-vault
 spec:
   ports:
@@ -131,7 +131,7 @@ metadata:
     app.kubernetes.io/instance: mono
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/name: vault
-    helm.sh/chart: mono-0.0.1
+    helm.sh/chart: mono-0.0.2
   name: mono-vault
 spec:
   selector:
@@ -147,7 +147,7 @@ spec:
         app.kubernetes.io/instance: mono
         app.kubernetes.io/managed-by: Helm
         app.kubernetes.io/name: vault
-        helm.sh/chart: mono-0.0.1
+        helm.sh/chart: mono-0.0.2
     spec:
       containers:
       - envFrom:
@@ -177,7 +177,7 @@ metadata:
     app.kubernetes.io/instance: mono
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/name: postgres
-    helm.sh/chart: mono-0.0.1
+    helm.sh/chart: mono-0.0.2
   name: mono-postgres
 spec:
   selector:
@@ -194,7 +194,7 @@ spec:
         app.kubernetes.io/instance: mono
         app.kubernetes.io/managed-by: Helm
         app.kubernetes.io/name: postgres
-        helm.sh/chart: mono-0.0.1
+        helm.sh/chart: mono-0.0.2
     spec:
       containers:
       - envFrom:
@@ -223,7 +223,7 @@ spec:
         app.kubernetes.io/instance: mono
         app.kubernetes.io/managed-by: Helm
         app.kubernetes.io/name: postgres
-        helm.sh/chart: mono-0.0.1
+        helm.sh/chart: mono-0.0.2
       name: data
     spec:
       accessModes:
@@ -240,7 +240,7 @@ metadata:
     app.kubernetes.io/instance: mono
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/name: vault
-    helm.sh/chart: mono-0.0.1
+    helm.sh/chart: mono-0.0.2
   name: mono-vault
 spec:
   rules:
@@ -267,7 +267,7 @@ metadata:
     app.kubernetes.io/instance: mono
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/name: vault
-    helm.sh/chart: mono-0.0.1
+    helm.sh/chart: mono-0.0.2
   name: mono-vault
 spec:
   endpoints:
