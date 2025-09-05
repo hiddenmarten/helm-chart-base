@@ -24,26 +24,17 @@ Usage: {{ include "base.secrets.unit" (dict "postfix" $postfix "unit" $unit "ctx
 {{ $postfix := .postfix -}}
 {{ $unit := .unit -}}
 {{ $ctx := .ctx -}}
-{{ $defaultunit := include "base.secrets.default.unit" (dict "postfix" $postfix "ctx" $ctx) | fromYaml -}}
-{{ $unit = mustMergeOverwrite $defaultunit $unit -}}
-{{ $payload := dict -}}
+{{ $unit = include "base.secrets.unit.merged" (dict "postfix" $postfix "unit" $unit "ctx" $ctx) | fromYaml -}}
+{{ $override := dict -}}
 {{ if eq $postfix "envVars" -}}
-{{ $payload = include "base.secrets.envVars.payload" (dict "unit" $unit "ctx" $ctx) | fromYaml -}}
+{{ $override = include "base.secrets.envVars.override" (dict "unit" $unit "ctx" $ctx) | fromYaml -}}
 {{ else if eq $postfix "files" -}}
-{{ $payload = include "base.secrets.files.payload" (dict "unit" $unit "ctx" $ctx) | fromYaml -}}
+{{ $override = include "base.secrets.files.override" (dict "unit" $unit "ctx" $ctx) | fromYaml -}}
 {{ else -}}
-{{ $payload = include "base.secrets.others.payload" (dict "unit" $unit "ctx" $ctx) | fromYaml -}}
+{{ $override = include "base.secrets.others.override" (dict "unit" $unit "ctx" $ctx) | fromYaml -}}
 {{- end }}
-{{ if $payload.data -}}
-{{ $_ := set $unit "data" $payload.data -}}
-{{ else -}}
-{{ $_ := unset $unit "data" -}}
-{{- end }}
-{{ if $payload.stringData -}}
-{{ $_ := set $unit "stringData" $payload.stringData -}}
-{{ else -}}
-{{ $_ := unset $unit "stringData" -}}
-{{- end }}
+{{ $unit = include "base.util.replaceOrUnset" (dict "dict" $unit "key" "data" "value" $override.data) | fromYaml }}
+{{ $unit = include "base.util.replaceOrUnset" (dict "dict" $unit "key" "stringData" "value" $override.stringData) | fromYaml }}
 {{ if not $unit.metadata.annotations -}}
 {{ $_ := unset $unit.metadata "annotations" -}}
 {{- end }}
@@ -51,9 +42,9 @@ Usage: {{ include "base.secrets.unit" (dict "postfix" $postfix "unit" $unit "ctx
 {{- end }}
 
 {{/*
-Usage: {{ include "base.secrets.envVars.payload" (dict "unit" $unit "ctx" $ctx) }}
+Usage: {{ include "base.secrets.envVars.override" (dict "unit" $unit "ctx" $ctx) }}
 */}}
-{{ define "base.secrets.envVars.payload" -}}
+{{ define "base.secrets.envVars.override" -}}
 {{ $unit := .unit -}}
 {{ $ctx := .ctx -}}
 {{ if $unit.data -}}
@@ -68,9 +59,9 @@ Usage: {{ include "base.secrets.envVars.payload" (dict "unit" $unit "ctx" $ctx) 
 {{- end }}
 
 {{/*
-Usage: {{ include "base.secrets.files.payload" (dict "unit" $unit "ctx" $ctx) }}
+Usage: {{ include "base.secrets.files.override" (dict "unit" $unit "ctx" $ctx) }}
 */}}
-{{ define "base.secrets.files.payload" -}}
+{{ define "base.secrets.files.override" -}}
 {{ $unit := .unit -}}
 {{ $ctx := .ctx -}}
 {{ if $unit.data -}}
@@ -108,8 +99,7 @@ Usage: {{ include "base.volumes.secrets.volumes" (dict "ctx" $ctx) }}
 {{ define "base.secrets.files.volumes" -}}
 {{ $ctx := .ctx -}}
 {{ $unit := .unit -}}
-{{ $defaultunit := include "base.secrets.default.unit" (dict "postfix" "files" "ctx" $ctx) | fromYaml -}}
-{{ $unit = mustMergeOverwrite $defaultunit $unit -}}
+{{ $unit = include "base.secrets.unit.merged" (dict "postfix" "files" "unit" $unit "ctx" $ctx) | fromYaml -}}
 {{ $volumes := list -}}
 {{ if and $unit.enabled $unit.data -}}
 {{ $volumes = append $volumes (include "base.secrets.files.volume" (dict "ctx" $ctx) | fromYaml) -}}
@@ -133,14 +123,13 @@ Usage: {{ include "base.secrets.files.volumeMounts" (dict "files" $files "ctx" $
 {{ define "base.secrets.files.volumeMounts" -}}
 {{ $unit := .unit -}}
 {{ $ctx := .ctx -}}
-{{ $defaultunit := include "base.secrets.default.unit" (dict "postfix" "files" "ctx" $ctx) | fromYaml -}}
-{{ $unit = mustMergeOverwrite $defaultunit $unit -}}
+{{ $unit = include "base.secrets.unit.merged" (dict "postfix" "files" "unit" $unit "ctx" $ctx) | fromYaml -}}
 {{ $mounts := list -}}
 {{ if and $unit.enabled $unit.data -}}
 {{ range $path, $_ := $unit.data -}}
 {{ $name := include "base.secrets.files.volume.name" (dict "ctx" $ctx) -}}
-{{ $defaultMount := include "base.volumeMounts.files.default" (dict "path" $path "name" $name "ctx" $ctx) | fromYaml -}}
-{{ $mount := mustMergeOverwrite $defaultMount $unit.mount -}}
+{{ $default := include "base.volumeMounts.files.default" (dict "path" $path "name" $name "ctx" $ctx) | fromYaml -}}
+{{ $mount := mustMergeOverwrite $default $unit.mount -}}
 {{ $mounts = append $mounts $mount -}}
 {{- end }}
 {{- end }}
@@ -148,24 +137,23 @@ volumeMounts: {{ $mounts | toYaml | nindent 2 }}
 {{- end }}
 
 {{/*
-Usage: {{ include "base.secrets.envFrom" (dict "envVars" $envVars "ctx" $ctx) }}
+Usage: {{ include "base.secrets.envFrom" (dict "unit" $unit "ctx" $ctx) }}
 */}}
 {{ define "base.secrets.envFrom" -}}
-{{ $envVars := .envVars -}}
+{{ $unit := .unit -}}
 {{ $ctx := .ctx -}}
-{{ $default := include "base.secrets.default.unit" (dict "postfix" "envVars" "ctx" $ctx) | fromYaml -}}
-{{ $envVars = mustMergeOverwrite $default $envVars -}}
+{{ $unit = include "base.secrets.unit.merged" (dict "postfix" "envVars" "unit" $unit "ctx" $ctx) | fromYaml -}}
 {{ $items := list -}}
-{{ if and $envVars.data $envVars.enabled -}}
-{{ $items = append $items (dict "secretRef" (dict "name" $envVars.metadata.name)) -}}
+{{ if and $unit.data $unit.enabled -}}
+{{ $items = append $items (dict "secretRef" (dict "name" $unit.metadata.name)) -}}
 {{- end }}
 {{ dict "envFrom" $items | toYaml }}
 {{- end }}
 
 {{/*
-Usage: {{ include "base.secrets.others.payload" (dict "unit" $unit "ctx" $ctx) }}
+Usage: {{ include "base.secrets.others.override" (dict "unit" $unit "ctx" $ctx) }}
 */}}
-{{ define "base.secrets.others.payload" -}}
+{{ define "base.secrets.others.override" -}}
 {{ $unit := .unit -}}
 {{ $ctx := .ctx -}}
 {{- with $unit.data }}
@@ -186,9 +174,9 @@ Usage: {{ include "base.secrets.name" (dict "postfix" $postfix "ctx" $ctx) }}
 {{- end }}
 
 {{/*
-Usage: {{ include "base.secrets.default.unit" (dict "postfix" $postfix "ctx" $ctx) }}
+Usage: {{ include "base.secrets.unit.default" (dict "postfix" $postfix "ctx" $ctx) }}
 */}}
-{{ define "base.secrets.default.unit" -}}
+{{ define "base.secrets.unit.default" -}}
 {{ $ctx := .ctx -}}
 {{ $postfix := .postfix -}}
 enabled: true
@@ -199,6 +187,17 @@ metadata:
 data: {}
 stringData: {}
 mount: {}
+{{- end }}
+
+{{/*
+Usage: {{ $unit = include "base.secrets.unit.merged" (dict "postfix" $postfix "unit" $unit "ctx" $ctx) | fromYaml }}
+*/}}
+{{ define "base.secrets.unit.merged" -}}
+{{ $postfix := .postfix -}}
+{{ $unit := .unit -}}
+{{ $ctx := .ctx -}}
+{{ $default := include "base.secrets.unit.default" (dict "postfix" $postfix "ctx" $ctx) | fromYaml -}}
+{{ mustMergeOverwrite $default $unit | toYaml }}
 {{- end }}
 
 {{/*

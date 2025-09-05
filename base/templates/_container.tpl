@@ -81,8 +81,8 @@ Usage: {{ include "base.container.envFrom" (dict "ctx" $ctx) }}
 {{ $ctx := .ctx -}}
 {{ $configMaps := include "base.configMaps.merged" (dict "ctx" $ctx) | fromYaml -}}
 {{ $secrets := include "base.secrets.merged" (dict "ctx" $ctx) | fromYaml -}}
-{{ $configMapRefs := include "base.configMaps.envFrom" (dict "envVars" $configMaps.envVars "ctx" $ctx) | fromYaml -}}
-{{ $secretRefs := include "base.secrets.envFrom" (dict "envVars" $secrets.envVars "ctx" $ctx) | fromYaml -}}
+{{ $configMapRefs := include "base.configMaps.envFrom" (dict "unit" $configMaps.envVars "ctx" $ctx) | fromYaml -}}
+{{ $secretRefs := include "base.secrets.envFrom" (dict "unit" $secrets.envVars "ctx" $ctx) | fromYaml -}}
 {{ $items := concat $configMapRefs.envFrom $secretRefs.envFrom | default list -}}
 {{ dict "envFrom" $items | toYaml }}
 {{- end }}

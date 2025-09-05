@@ -99,8 +99,7 @@ Usage: {{ include "base.volumes.configMap.volumes" (dict "ctx" $ctx) }}
 {{ define "base.configMaps.files.volumes" -}}
 {{ $ctx := .ctx -}}
 {{ $unit := .unit -}}
-{{ $defaultunit := include "base.configMaps.unit.default" (dict "postfix" "files" "ctx" $ctx) | fromYaml -}}
-{{ $unit = mustMergeOverwrite $defaultunit $unit -}}
+{{ $unit = include "base.configMaps.unit.merged" (dict "postfix" "files" "unit" $unit "ctx" $ctx) | fromYaml }}
 {{ $volumes := list -}}
 {{ if and $unit.enabled $unit.data -}}
 {{ $volumes = append $volumes (include "base.configMaps.files.volume" (dict "ctx" $ctx) | fromYaml) -}}
@@ -124,14 +123,13 @@ Usage: {{ include "base.configMaps.files.volumeMounts" (dict "unit" $unit "ctx" 
 {{ define "base.configMaps.files.volumeMounts" -}}
 {{ $unit := .unit -}}
 {{ $ctx := .ctx -}}
-{{ $defaultunit := include "base.configMaps.unit.default" (dict "postfix" "files" "ctx" $ctx) | fromYaml -}}
-{{ $unit = mustMergeOverwrite $defaultunit $unit -}}
+{{ $unit = include "base.configMaps.unit.merged" (dict "postfix" "files" "unit" $unit "ctx" $ctx) | fromYaml }}
 {{ $mounts := list -}}
 {{ if and $unit.enabled $unit.data -}}
 {{ range $path, $_ := $unit.data -}}
 {{ $name := include "base.configMaps.files.volume.name" (dict "ctx" $ctx) -}}
-{{ $defaultMount := include "base.volumeMounts.files.default" (dict "path" $path "name" $name "ctx" $ctx) | fromYaml -}}
-{{ $mount := mustMergeOverwrite $defaultMount $unit.mount -}}
+{{ $default := include "base.volumeMounts.files.default" (dict "path" $path "name" $name "ctx" $ctx) | fromYaml -}}
+{{ $mount := mustMergeOverwrite $default $unit.mount -}}
 {{ $mounts = append $mounts $mount -}}
 {{- end }}
 {{- end }}
@@ -139,16 +137,15 @@ volumeMounts: {{ $mounts | toYaml | nindent 2 }}
 {{- end }}
 
 {{/*
-Usage: {{ include "base.configMaps.envFrom" (dict "envVars" $envVars "ctx" $ctx) }}
+Usage: {{ include "base.configMaps.envFrom" (dict "unit" $unit "ctx" $ctx) }}
 */}}
 {{ define "base.configMaps.envFrom" -}}
-{{ $envVars := .envVars -}}
+{{ $unit := .unit -}}
 {{ $ctx := .ctx -}}
-{{ $default := include "base.configMaps.unit.default" (dict "postfix" "envVars" "ctx" $ctx) | fromYaml -}}
-{{ $envVars = mustMergeOverwrite $default $envVars -}}
+{{ $unit = include "base.configMaps.unit.merged" (dict "postfix" "envVars" "unit" $unit "ctx" $ctx) | fromYaml }}
 {{ $items := list -}}
-{{ if and $envVars.data $envVars.enabled -}}
-{{ $items = append $items (dict "configMapRef" (dict "name" $envVars.metadata.name)) -}}
+{{ if and $unit.data $unit.enabled -}}
+{{ $items = append $items (dict "configMapRef" (dict "name" $unit.metadata.name)) -}}
 {{- end }}
 {{ dict "envFrom" $items | toYaml }}
 {{- end }}
