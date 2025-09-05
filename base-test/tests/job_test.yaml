@@ -1,0 +1,204 @@
+suite: Job template
+templates:
+  - templates/job.tpl
+
+tests:
+  - it: renders a Job with basic configuration
+    set:
+      job:
+        spec:
+          template:
+            spec:
+              containers:
+                job:
+                  image:
+                    repository: busybox
+                  command: ["sh", "-c"]
+                  args: ["echo 'Job completed successfully'"]
+    asserts:
+      - isKind:
+          of: Job
+      - equal:
+          path: metadata.name
+          value: RELEASE-NAME-base-test
+      - equal:
+          path: spec.template.spec.containers[0].image
+          value: busybox:latest
+
+  - it: renders a Job with custom name
+    set:
+      job:
+        spec:
+          template:
+            spec:
+              containers:
+                job:
+                  image:
+                    repository: busybox
+                  command: ["sh", "-c"]
+                  args: ["echo 'Custom job executed'"]
+      fullnameOverride: custom-job
+    asserts:
+      - isKind:
+          of: Job
+      - equal:
+          path: metadata.name
+          value: custom-job
+
+  - it: renders a Job with custom backoffLimit
+    set:
+      job:
+        spec:
+          backoffLimit: 5
+          template:
+            spec:
+              containers:
+                job:
+                  image:
+                    repository: busybox
+                  command: ["sh", "-c"]
+                  args: ["sleep 2 && echo 'Backup completed'"]
+    asserts:
+      - isKind:
+          of: Job
+      - equal:
+          path: spec.backoffLimit
+          value: 5
+
+  - it: renders a Job with custom completions and parallelism
+    set:
+      job:
+        spec:
+          completions: 3
+          parallelism: 2
+          template:
+            spec:
+              containers:
+                job:
+                  image:
+                    repository: busybox
+                  command: ["sh", "-c"]
+                  args: ["for i in $(seq 1 10); do echo 'Processing item $i'; sleep 0.1; done"]
+    asserts:
+      - isKind:
+          of: Job
+      - equal:
+          path: spec.completions
+          value: 3
+      - equal:
+          path: spec.parallelism
+          value: 2
+
+  - it: renders a Job with environment variables from configMaps
+    set:
+      job:
+        spec:
+          template:
+            spec:
+              containers:
+                job:
+                  image:
+                    repository: busybox
+                  command: ["sh", "-c"]
+                  args: ["echo 'Config: $TEST_VAR' && echo 'Setup completed'"]
+      configMaps:
+        envVars:
+          data:
+            TEST_VAR: test_value
+    asserts:
+      - isKind:
+          of: Job
+      - contains:
+          path: spec.template.spec.containers[0].envFrom
+          content:
+            configMapRef:
+              name: RELEASE-NAME-base-test-env-vars
+
+  - it: renders a Job with environment variables from secrets
+    set:
+      job:
+        spec:
+          template:
+            spec:
+              containers:
+                job:
+                  image:
+                    repository: busybox
+                  command: ["sh", "-c"]
+                  args: ["echo 'Using secret: $SECRET_VAR' && echo 'Database seeded'"]
+      secrets:
+        envVars:
+          data:
+            SECRET_VAR: secret_value
+    asserts:
+      - isKind:
+          of: Job
+      - contains:
+          path: spec.template.spec.containers[0].envFrom
+          content:
+            secretRef:
+              name: RELEASE-NAME-base-test-env-vars
+
+  - it: should not render Job when disabled
+    set:
+      job:
+        enabled: false
+        spec:
+          template:
+            spec:
+              containers:
+                job:
+                  image:
+                    repository: busybox
+                  command: ["sh", "-c"]
+                  args: ["echo 'Cleanup completed'"]
+    asserts:
+      - hasDocuments:
+          count: 0
+
+
+  - it: should render job with only image configured
+    set:
+      job:
+        spec:
+          template:
+            spec:
+              containers:
+                job:
+                  image:
+                    repository: busybox
+                  command: ["sh", "-c"]
+                  args: ["echo 'Database initialized'"]
+    asserts:
+      - isKind:
+          of: Job
+      - equal:
+          path: metadata.name
+          value: RELEASE-NAME-base-test
+      - equal:
+          path: spec.template.spec.containers[0].image
+          value: busybox:latest
+
+  - it: should not render envFrom when no config maps or secrets have data
+    set:
+      job:
+        spec:
+          template:
+            spec:
+              containers:
+                job:
+                  image:
+                    repository: busybox
+                  command: ["sh", "-c"]
+                  args: ["echo 'Tests completed successfully'"]
+      configMaps:
+        envVars:
+          data: {}
+      secrets:
+        envVars:
+          data: {}
+    asserts:
+      - isKind:
+          of: Job
+      - notExists:
+          path: spec.template.spec.containers[0].envFrom
