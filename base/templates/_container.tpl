@@ -37,8 +37,7 @@ Usage: {{ include "base.container.image" (dict "image" $image "ctx" $ctx) }}
 {{ define "base.container.image" -}}
 {{ $ctx := .ctx -}}
 {{ $image := .image -}}
-{{ $default := include "base.container.image.default" (dict "ctx" $ctx) | fromYaml -}}
-{{ $image = mustMergeOverwrite $default $image -}}
+{{ $image = include "base.container.image.merged" (dict "image" $image "ctx" $ctx) | fromYaml }}
 {{ $value := "" -}}
 {{ if $image.registry -}}
 {{ $value = printf "%s/%s:%s" $image.registry $image.repository $image.tag -}}
@@ -56,6 +55,16 @@ Usage: {{ include "base.container.image.default" (dict "ctx" $ctx) }}
 registry: ""
 repository: ""
 tag: latest
+{{- end }}
+
+{{/*
+Usage: {{ $image = include "base.container.image.merged" (dict "image" $image "ctx" $ctx) | fromYaml }}
+*/}}
+{{ define "base.container.image.merged" -}}
+{{ $image := .image -}}
+{{ $ctx := .ctx -}}
+{{ $default := include "base.container.image.default" (dict "ctx" $ctx) | fromYaml -}}
+{{ mustMergeOverwrite $default $image | toYaml }}
 {{- end }}
 
 {{/*
