@@ -15,7 +15,7 @@ Usage: {{ include "base.pod.override" (dict "pod" $pod "ctx" $ctx) }}
 {{ $ctx := .ctx -}}
 {{ $pod := .pod -}}
 {{ $spec := dict -}}
-{{ $volumes := include "base.volumes" (dict "volumes" $pod.volumes "ctx" $ctx) | fromYaml -}}
+{{ $volumes := include "base.volumes" (dict "volumes" $pod.spec.volumes "ctx" $ctx) | fromYaml -}}
 {{ if $volumes -}}
 {{ $spec := mustMergeOverwrite $spec $volumes -}}
 {{- end }}
@@ -37,7 +37,7 @@ Usage: {{ include "base.pod.override" (dict "pod" $pod "ctx" $ctx) }}
 {{ $_ := set $allContainers "initContainers" $initContainersList -}}
 {{ end -}}
 {{ $serviceAccountName := dict "serviceAccountName" (include "base.serviceAccount.name" (dict "ctx" $ctx)) -}}
-{{ $spec = mustMergeOverwrite $spec $allContainers $serviceAccountName -}}
+{{ $spec = mustMergeOverwrite $allContainers $serviceAccountName $volumes -}}
 {{ $pod = include "base.pod.override.annotations" (dict "pod" $pod "ctx" $ctx) | fromYaml }}
 {{ $_ := set $pod "spec" $spec -}}
 {{ $pod | toYaml }}

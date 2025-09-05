@@ -1,5 +1,4 @@
 {{/*
-Template for volumes
 Usage: {{ include "base.volumes" (dict "volumes" $volumes "ctx" $ctx) }}
 */}}
 {{ define "base.volumes" -}}
@@ -9,19 +8,26 @@ Usage: {{ include "base.volumes" (dict "volumes" $volumes "ctx" $ctx) }}
 {{ $secrets := include "base.secrets.merged" (dict "ctx" $ctx) | fromYaml -}}
 {{ $persistentVolumeClaims := include "base.persistentVolumeClaims.merged" (dict "ctx" $ctx) | fromYaml -}}
 {{ $volumesList := list -}}
+{{ $asListVolumes := include "base.volumes.asList" (dict "volumes" $volumes "ctx" $ctx) | fromYaml -}}
 {{ $cmVolumes := include "base.configMaps.files.volumes" (dict "unit" $configMaps.files "ctx" $ctx) | fromYaml -}}
-{{ range $cmVolumes.volumes -}}
-{{ $volumesList = append $volumesList . -}}
-{{ end -}}
 {{ $secretVolumes := include "base.secrets.files.volumes" (dict "unit" $secrets.files "ctx" $ctx) | fromYaml -}}
-{{ range $secretVolumes.volumes -}}
-{{ $volumesList = append $volumesList . -}}
-{{ end -}}
 {{ $pvcVolumes := include "base.persistentVolumeClaims.volumes" (dict "persistentVolumeClaims" $persistentVolumeClaims "ctx" $ctx) | fromYaml -}}
-{{ range $pvcVolumes.volumes -}}
-{{ $volumesList = append $volumesList . -}}
-{{ end -}}
+{{ $volumesList = concat $volumesList $cmVolumes.volumes $secretVolumes.volumes $pvcVolumes.volumes $asListVolumes.volumes -}}
 {{ if ne (len $volumesList) 0 -}}
 volumes: {{ $volumesList | toYaml | nindent 2 }}
 {{ end -}}
+{{ end -}}
+
+{{/*
+Usage: {{ include "base.volumes.asList" (dict "volumes" $volumes "ctx" $ctx) }}
+*/}}
+{{ define "base.volumes.asList" -}}
+{{ $ctx := .ctx -}}
+{{ $volumes := .volumes -}}
+{{ $volumesList := list -}}
+{{ range $name, $unit := $volumes }}
+{{ $_ := set $unit "name" $name -}}
+{{ $volumesList = append $volumesList $unit -}}
+{{ end -}}
+{{ dict "volumes" $volumesList | toYaml }}
 {{ end -}}

@@ -2,6 +2,9 @@ deployment:
   spec:
     template:
       spec:
+        volumes:
+          tmp:
+            emptyDir: {}
         containers:
           vault:
             image:

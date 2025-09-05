@@ -168,6 +168,8 @@ spec:
       - configMap:
           name: umbrella-vault-files
         name: config-map-files
+      - emptyDir: {}
+        name: tmp
 ---
 # Source: umbrella/charts/postgres/templates/base.tpl
 apiVersion: apps/v1
