@@ -28,7 +28,7 @@ Usage: {{ include "base.cronjob.unit" (dict "cronjob" $cronjob "ctx" $ctx) }}
 {{ $_ = set $jobTemplate "spec" $jobSpec -}}
 {{ $_ = set $spec "jobTemplate" $jobTemplate -}}
 {{ $_ = set $cronjob "spec" $spec -}}
-{{ $cronjob | toYaml }}
+{{ tpl ($cronjob | toYaml) $ctx.abs }}
 {{- end }}
 
 {{/*

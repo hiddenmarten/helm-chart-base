@@ -24,7 +24,7 @@ Usage: {{ include "base.deployment.unit" (dict "deployment" $deployment "ctx" $c
 {{ $pod := include "base.pod" (dict "pod" (index $spec "template") "ctx" $ctx) | fromYaml -}}
 {{ $_ := set $spec "template" $pod -}}
 {{ $_ = set $deployment "spec" $spec -}}
-{{ $deployment | toYaml }}
+{{ tpl ($deployment | toYaml) $ctx.abs }}
 {{- end }}
 
 {{/*

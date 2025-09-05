@@ -33,7 +33,7 @@ Usage: {{ include "base.statefulset.unit" (dict "statefulset" $statefulset "serv
 {{ $_ = set $pod "spec" $podSpec -}}
 {{ $_ = set $spec "template" $pod -}}
 {{ $_ = set $statefulset "spec" $spec -}}
-{{ $statefulset | toYaml }}
+{{ tpl ($statefulset | toYaml) $ctx.abs }}
 {{- end }}
 
 {{/*

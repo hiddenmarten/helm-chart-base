@@ -24,7 +24,7 @@ Usage: {{ include "base.job.override" (dict "job" $job "ctx" $ctx) }}
 {{ $pod := include "base.pod" (dict "pod" (index $spec "template") "ctx" $ctx) | fromYaml -}}
 {{ $_ := set $spec "template" $pod -}}
 {{ $_ = set $job "spec" $spec -}}
-{{ $job | toYaml }}
+{{ tpl ($job | toYaml) $ctx.abs }}
 {{- end }}
 
 {{/*
