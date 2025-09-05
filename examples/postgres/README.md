@@ -18,6 +18,10 @@ An example of Postgres using base library
 | service.spec.ports.tcp.port | int | `5432` |  |
 | statefulset.spec.template.spec.containers.postgres.image.repository | string | `"postgres"` |  |
 | statefulset.spec.template.spec.containers.postgres.image.tag | string | `"17.6"` |  |
+| statefulset.spec.template.spec.initContainers.db-migrate.command[0] | string | `"sh"` |  |
+| statefulset.spec.template.spec.initContainers.db-migrate.command[1] | string | `"-c"` |  |
+| statefulset.spec.template.spec.initContainers.db-migrate.command[2] | string | `"until pg_isready -h db; do sleep 1; done"` |  |
+| statefulset.spec.template.spec.initContainers.db-migrate.image.repository | string | `"migrate/migrate"` |  |
 | statefulset.spec.volumeClaimTemplates.data.mount.mountPath | string | `"/var/lib/postgresql/data"` |  |
 | statefulset.spec.volumeClaimTemplates.data.spec.resources.requests.storage | string | `"20Gi"` |  |
 

@@ -81,6 +81,19 @@ spec:
         volumeMounts:
         - mountPath: /var/lib/postgresql/data
           name: data
+      initContainers:
+      - command:
+        - sh
+        - -c
+        - until pg_isready -h db; do sleep 1; done
+        envFrom:
+        - secretRef:
+            name: postgres-env-vars
+        image: migrate/migrate:latest
+        name: db-migrate
+        ports:
+        - containerPort: 5432
+          name: tcp
       serviceAccountName: postgres
   volumeClaimTemplates:
   - metadata:

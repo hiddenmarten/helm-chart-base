@@ -212,6 +212,24 @@ spec:
           subPath: ___docker-entrypoint-initdb.d___001-vault-schema.sql
         - mountPath: /var/lib/postgresql/data
           name: data
+      initContainers:
+      - command:
+        - sh
+        - -c
+        - until pg_isready -h db; do sleep 1; done
+        envFrom:
+        - secretRef:
+            name: umbrella-postgres-env-vars
+        image: migrate/migrate:latest
+        name: db-migrate
+        ports:
+        - containerPort: 5432
+          name: tcp
+        volumeMounts:
+        - mountPath: /docker-entrypoint-initdb.d/001-vault-schema.sql
+          name: config-map-files
+          readOnly: true
+          subPath: ___docker-entrypoint-initdb.d___001-vault-schema.sql
       serviceAccountName: umbrella-postgres
       volumes:
       - configMap:

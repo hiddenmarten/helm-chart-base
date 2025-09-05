@@ -2,6 +2,11 @@ statefulset:
   spec:
     template:
       spec:
+        initContainers:
+          db-migrate:
+            image:
+              repository: migrate/migrate
+            command: ["sh", "-c", "until pg_isready -h db; do sleep 1; done"]
         containers:
           postgres:
             image:

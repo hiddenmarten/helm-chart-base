@@ -15,7 +15,7 @@ Usage: {{ include "base.pod.override" (dict "pod" $pod "ctx" $ctx) }}
 {{ $ctx := .ctx -}}
 {{ $pod := .pod -}}
 {{ $spec := dict -}}
-{{ $volumes := include "base.volumes" (dict "ctx" $ctx) | fromYaml -}}
+{{ $volumes := include "base.volumes" (dict "volumes" $pod.volumes "ctx" $ctx) | fromYaml -}}
 {{ if $volumes -}}
 {{ $spec := mustMergeOverwrite $spec $volumes -}}
 {{- end }}
@@ -75,6 +75,7 @@ metadata:
     base.chart.hiddenmarten.me/secrets-hash: "true"
 spec:
   containers: {}
+  volumes: {}
 {{- end }}
 
 {{/*
