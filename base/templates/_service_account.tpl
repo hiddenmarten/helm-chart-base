@@ -5,20 +5,20 @@ Usage: {{ include "base.serviceAccount" (dict "ctx" $ctx) }}
 {{ define "base.serviceAccount" -}}
 {{ $ctx := .ctx -}}
 {{ $serviceAccount := include "base.serviceAccount.merged" (dict "ctx" $ctx) | fromYaml -}}
-{{ $unit := include "base.serviceAccount.unit" (dict "serviceAccount" $serviceAccount "ctx" $ctx) | fromYaml -}}
-{{ if $unit.create -}}
+{{ $serviceAccount = include "base.serviceAccount.override" (dict "serviceAccount" $serviceAccount "ctx" $ctx) | fromYaml -}}
+{{ if $serviceAccount.create -}}
 apiVersion: v1
 kind: ServiceAccount
-{{ $_ := unset $unit "create" -}}
-{{ $unit | toYaml }}
+{{ $_ := unset $serviceAccount "create" -}}
+{{ $serviceAccount | toYaml }}
 ---
 {{- end }}
 {{- end }}
 
 {{/*
-Usage: {{ include "base.serviceAccount.unit" (dict "serviceAccount" $serviceAccount "ctx" $ctx) }}
+Usage: {{ include "base.serviceAccount.override" (dict "serviceAccount" $serviceAccount "ctx" $ctx) }}
 */}}
-{{ define "base.serviceAccount.unit" -}}
+{{ define "base.serviceAccount.override" -}}
 {{ $serviceAccount := .serviceAccount -}}
 {{ $ctx := .ctx -}}
 {{ if not $serviceAccount.metadata.annotations -}}
@@ -33,8 +33,8 @@ Usage: {{ include "base.serviceAccount.name" (dict "ctx" $ctx) }}
 {{ define "base.serviceAccount.name" -}}
 {{ $ctx := .ctx -}}
 {{ $serviceAccount := include "base.serviceAccount.merged" (dict "ctx" $ctx) | fromYaml -}}
-{{ $unit := include "base.serviceAccount.unit" (dict "serviceAccount" $serviceAccount "ctx" $ctx) | fromYaml -}}
-{{ $unit.metadata.name }}
+{{ $serviceAccount = include "base.serviceAccount.override" (dict "serviceAccount" $serviceAccount "ctx" $ctx) | fromYaml -}}
+{{ $serviceAccount.metadata.name }}
 {{- end }}
 
 {{/*
