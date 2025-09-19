@@ -53,6 +53,5 @@ Usage: {{ include "base.labels" (dict "ctx" $ctx) }}
 {{ define "base.labels" -}}
 {{ $ctx := .ctx -}}
 {{ include "base.selectorLabels" (dict "ctx" $ctx) }}
-helm.sh/chart: {{ include "base.chart" (dict "abs" $ctx.abs) }}
 app.kubernetes.io/managed-by: {{ $ctx.abs.Release.Service }}
 {{- end }}

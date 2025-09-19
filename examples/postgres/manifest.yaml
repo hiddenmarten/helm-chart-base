@@ -7,7 +7,6 @@ metadata:
     app.kubernetes.io/instance: postgres
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/name: postgres
-    helm.sh/chart: postgres-0.0.2
   name: postgres
 ---
 # Source: postgres/templates/base.tpl
@@ -20,7 +19,6 @@ metadata:
     app.kubernetes.io/instance: postgres
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/name: postgres
-    helm.sh/chart: postgres-0.0.2
   name: postgres-env-vars
 ---
 # Source: postgres/templates/base.tpl
@@ -31,7 +29,6 @@ metadata:
     app.kubernetes.io/instance: postgres
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/name: postgres
-    helm.sh/chart: postgres-0.0.2
   name: postgres
 spec:
   clusterIP: None
@@ -50,7 +47,6 @@ metadata:
     app.kubernetes.io/instance: postgres
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/name: postgres
-    helm.sh/chart: postgres-0.0.2
   name: postgres
 spec:
   selector:
@@ -67,7 +63,6 @@ spec:
         app.kubernetes.io/instance: postgres
         app.kubernetes.io/managed-by: Helm
         app.kubernetes.io/name: postgres
-        helm.sh/chart: postgres-0.0.2
     spec:
       containers:
       - envFrom:
@@ -101,7 +96,6 @@ spec:
         app.kubernetes.io/instance: postgres
         app.kubernetes.io/managed-by: Helm
         app.kubernetes.io/name: postgres
-        helm.sh/chart: postgres-0.0.2
       name: data
     spec:
       accessModes:

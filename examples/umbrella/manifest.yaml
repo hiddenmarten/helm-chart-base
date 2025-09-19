@@ -7,7 +7,6 @@ metadata:
     app.kubernetes.io/instance: umbrella
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/name: postgres
-    helm.sh/chart: postgres-0.0.2
   name: umbrella-postgres
 ---
 # Source: umbrella/charts/vault/templates/base.tpl
@@ -18,7 +17,6 @@ metadata:
     app.kubernetes.io/instance: umbrella
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/name: vault
-    helm.sh/chart: vault-0.0.2
   name: umbrella-vault
 ---
 # Source: umbrella/charts/postgres/templates/base.tpl
@@ -31,7 +29,6 @@ metadata:
     app.kubernetes.io/instance: umbrella
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/name: postgres
-    helm.sh/chart: postgres-0.0.2
   name: umbrella-postgres-env-vars
 ---
 # Source: umbrella/charts/vault/templates/base.tpl
@@ -44,7 +41,6 @@ metadata:
     app.kubernetes.io/instance: umbrella
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/name: vault
-    helm.sh/chart: vault-0.0.2
   name: umbrella-vault-env-vars
 ---
 # Source: umbrella/charts/postgres/templates/base.tpl
@@ -69,7 +65,6 @@ metadata:
     app.kubernetes.io/instance: umbrella
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/name: postgres
-    helm.sh/chart: postgres-0.0.2
   name: umbrella-postgres-files
 ---
 # Source: umbrella/charts/vault/templates/base.tpl
@@ -83,7 +78,6 @@ metadata:
     app.kubernetes.io/instance: umbrella
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/name: vault
-    helm.sh/chart: vault-0.0.2
   name: umbrella-vault-files
 ---
 # Source: umbrella/charts/postgres/templates/base.tpl
@@ -94,7 +88,6 @@ metadata:
     app.kubernetes.io/instance: umbrella
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/name: postgres
-    helm.sh/chart: postgres-0.0.2
   name: umbrella-postgres
 spec:
   clusterIP: None
@@ -113,7 +106,6 @@ metadata:
     app.kubernetes.io/instance: umbrella
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/name: vault
-    helm.sh/chart: vault-0.0.2
   name: umbrella-vault
 spec:
   ports:
@@ -131,7 +123,6 @@ metadata:
     app.kubernetes.io/instance: umbrella
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/name: vault
-    helm.sh/chart: vault-0.0.2
   name: umbrella-vault
 spec:
   selector:
@@ -147,7 +138,6 @@ spec:
         app.kubernetes.io/instance: umbrella
         app.kubernetes.io/managed-by: Helm
         app.kubernetes.io/name: vault
-        helm.sh/chart: vault-0.0.2
     spec:
       containers:
       - envFrom:
@@ -179,7 +169,6 @@ metadata:
     app.kubernetes.io/instance: umbrella
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/name: postgres
-    helm.sh/chart: postgres-0.0.2
   name: umbrella-postgres
 spec:
   selector:
@@ -196,7 +185,6 @@ spec:
         app.kubernetes.io/instance: umbrella
         app.kubernetes.io/managed-by: Helm
         app.kubernetes.io/name: postgres
-        helm.sh/chart: postgres-0.0.2
     spec:
       containers:
       - envFrom:
@@ -243,7 +231,6 @@ spec:
         app.kubernetes.io/instance: umbrella
         app.kubernetes.io/managed-by: Helm
         app.kubernetes.io/name: postgres
-        helm.sh/chart: postgres-0.0.2
       name: data
     spec:
       accessModes:
@@ -260,7 +247,6 @@ metadata:
     app.kubernetes.io/instance: umbrella
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/name: vault
-    helm.sh/chart: vault-0.0.2
   name: umbrella-vault
 spec:
   rules:
@@ -287,7 +273,6 @@ metadata:
     app.kubernetes.io/instance: umbrella
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/name: vault
-    helm.sh/chart: vault-0.0.2
   name: umbrella-vault
 spec:
   endpoints:
