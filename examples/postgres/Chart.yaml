@@ -2,8 +2,8 @@ apiVersion: v2
 name: postgres
 description: An example of Postgres using base library
 type: application
-version: 0.0.2
+version: 0.0.3
 dependencies:
   - name: base
-    version: 0.0.2
+    version: 0.0.3
     repository: file://../../base
