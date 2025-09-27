@@ -8,7 +8,7 @@ postgres:
             postgres:
               image:
                 repository: postgres
-                tag: "17.6"
+                tag: "18.0"
       volumeClaimTemplates:
         data:
           mount:
