@@ -1,6 +1,6 @@
 # vault
 
-![Version: 0.0.3](https://img.shields.io/badge/Version-0.0.3-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square)
+![Version: 0.0.4](https://img.shields.io/badge/Version-0.0.4-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square)
 
 An example of HashiCorp Vault using base library
 
@@ -8,7 +8,7 @@ An example of HashiCorp Vault using base library
 
 | Repository | Name | Version |
 |------------|------|---------|
-| file://../../base | base | 0.0.3 |
+| file://../../base | base | 0.0.4 |
 
 ## Values
 
@@ -17,7 +17,7 @@ An example of HashiCorp Vault using base library
 | configMaps.files.data."/vault/config/config.json".disable_mlock | bool | `true` |  |
 | configMaps.files.data."/vault/config/config.json".ui | bool | `true` |  |
 | deployment.spec.template.spec.containers.vault.image.repository | string | `"hashicorp/vault"` |  |
-| deployment.spec.template.spec.containers.vault.image.tag | string | `"1.20.2"` |  |
+| deployment.spec.template.spec.containers.vault.image.tag | string | `"1.20.4"` |  |
 | deployment.spec.template.spec.containers.vault.volumeMounts | string | `nil` |  |
 | deployment.spec.template.spec.volumes.tmp.emptyDir | object | `{}` |  |
 | ingress.spec.rules."vault.example.local".http.paths./.backend.service.port.name | string | `"http"` |  |

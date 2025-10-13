@@ -143,7 +143,7 @@ spec:
       - envFrom:
         - secretRef:
             name: mono-vault-env-vars
-        image: hashicorp/vault:1.20.2
+        image: hashicorp/vault:1.20.4
         name: vault
         ports:
         - containerPort: 8200
@@ -188,7 +188,7 @@ spec:
       - envFrom:
         - secretRef:
             name: mono-postgres-env-vars
-        image: postgres:17.6
+        image: postgres:18.0
         name: postgres
         ports:
         - containerPort: 5432

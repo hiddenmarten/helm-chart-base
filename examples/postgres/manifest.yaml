@@ -68,7 +68,7 @@ spec:
       - envFrom:
         - secretRef:
             name: postgres-env-vars
-        image: postgres:17.6
+        image: postgres:18.0
         name: postgres
         ports:
         - containerPort: 5432

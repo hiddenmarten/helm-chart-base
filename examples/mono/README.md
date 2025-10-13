@@ -1,6 +1,6 @@
 # mono
 
-![Version: 0.0.3](https://img.shields.io/badge/Version-0.0.3-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square)
+![Version: 0.0.4](https://img.shields.io/badge/Version-0.0.4-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square)
 
 A mono chart for vault-postgres stack
 
@@ -8,7 +8,7 @@ A mono chart for vault-postgres stack
 
 | Repository | Name | Version |
 |------------|------|---------|
-| file://../../base | base | 0.0.3 |
+| file://../../base | base | 0.0.4 |
 
 ## Values
 
@@ -19,14 +19,14 @@ A mono chart for vault-postgres stack
 | postgres.secrets.envVars.data.POSTGRES_PASSWORD | string | `"postgres"` |  |
 | postgres.service.spec.ports.tcp.port | int | `5432` |  |
 | postgres.statefulset.spec.template.spec.containers.postgres.image.repository | string | `"postgres"` |  |
-| postgres.statefulset.spec.template.spec.containers.postgres.image.tag | string | `"17.6"` |  |
+| postgres.statefulset.spec.template.spec.containers.postgres.image.tag | string | `"18.0"` |  |
 | postgres.statefulset.spec.volumeClaimTemplates.data.mount.mountPath | string | `"/var/lib/postgresql/data"` |  |
 | postgres.statefulset.spec.volumeClaimTemplates.data.spec.resources.requests.storage | string | `"20Gi"` |  |
 | vault.configMaps.files.data."/vault/config/config.json".disable_mlock | bool | `true` |  |
 | vault.configMaps.files.data."/vault/config/config.json".storage.postgresql.connection_url | string | `"postgres://postgres:postgres@mono-postgres:5432/vault?sslmode=disable"` |  |
 | vault.configMaps.files.data."/vault/config/config.json".ui | bool | `true` |  |
 | vault.deployment.spec.template.spec.containers.vault.image.repository | string | `"hashicorp/vault"` |  |
-| vault.deployment.spec.template.spec.containers.vault.image.tag | string | `"1.20.2"` |  |
+| vault.deployment.spec.template.spec.containers.vault.image.tag | string | `"1.20.4"` |  |
 | vault.ingress.spec.rules."vault.example.local".http.paths./.backend.service.port.name | string | `"http"` |  |
 | vault.ingress.spec.rules."vault.example.local".tls.secretName | string | `"vault-tls-secret"` |  |
 | vault.nameOverride | string | `"vault"` |  |

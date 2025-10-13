@@ -50,7 +50,7 @@ Usage: {{ include "base.configMaps.envVars.unit" (dict "unit" $unit "ctx" $ctx) 
 {{ if $unit.data -}}
 {{ print "data: " }}
 {{ range $k, $v := $unit.data -}}
-{{ printf "%s: %s" $k $v | nindent 2 }}
+{{ printf "%s: %s" $k ($v | quote) | nindent 2 }}
 {{- end }}
 {{- end }}
 {{- if $unit.binaryData }}
