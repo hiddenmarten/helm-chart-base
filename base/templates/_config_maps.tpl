@@ -69,7 +69,9 @@ Usage: {{ include "base.configMaps.files.unit" (dict "unit" $unit "ctx" $ctx) }}
 {{ range $k, $v := $unit.data -}}
 {{ $filepath := $k -}}
 {{ printf "%s: |" (include "base.util.dnsCompatible" (dict "filepath" $filepath)) | indent 2 }}
-{{ if mustRegexMatch "(.+)(\\.yaml|\\.yml)$" (base $filepath) -}}
+{{ if kindIs "string" $v -}}
+{{ $v | toString | indent 4 }}
+{{ else if mustRegexMatch "(.+)(\\.yaml|\\.yml)$" (base $filepath) -}}
 {{ $v | toYaml | indent 4 }}
 {{ else if mustRegexMatch "(.+)(\\.json)$" (base $filepath) -}}
 {{ $v | toJson | indent 4 }}

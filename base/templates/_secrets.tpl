@@ -69,7 +69,9 @@ Usage: {{ include "base.secrets.files.override" (dict "unit" $unit "ctx" $ctx) }
 {{ range $k, $v := $unit.data -}}
 {{ $filepath := tpl $k $ctx.abs -}}
 {{ printf "%s: |" (include "base.util.dnsCompatible" (dict "filepath" $filepath)) | indent 2 }}
-{{ if mustRegexMatch "(.+)(\\.yaml|\\.yml)$" (base $filepath) -}}
+{{ if kindIs "string" $v -}}
+{{ (tpl ($v | toString) $ctx.abs | b64enc) | indent 4 }}
+{{ else if mustRegexMatch "(.+)(\\.yaml|\\.yml)$" (base $filepath) -}}
 {{ (tpl ($v | toYaml) $ctx.abs | b64enc) | indent 4 }}
 {{ else if mustRegexMatch "(.+)(\\.json)$" (base $filepath) -}}
 {{ (tpl ($v | toJson) $ctx.abs | b64enc) | indent 4 }}
