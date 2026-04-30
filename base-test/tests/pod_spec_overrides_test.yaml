@@ -1,0 +1,97 @@
+suite: Pod spec overrides
+templates:
+  - templates/deployment.tpl
+
+tests:
+  - it: uses auto-generated serviceAccountName by default
+    set:
+      deployment:
+        spec:
+          template:
+            spec:
+              containers:
+                nginx:
+                  image:
+                    repository: nginx
+    asserts:
+      - equal:
+          path: spec.template.spec.serviceAccountName
+          value: RELEASE-NAME-base-test
+
+  - it: overrides serviceAccountName from Values
+    set:
+      deployment:
+        spec:
+          template:
+            spec:
+              serviceAccountName: my-custom-sa
+              containers:
+                nginx:
+                  image:
+                    repository: nginx
+    asserts:
+      - equal:
+          path: spec.template.spec.serviceAccountName
+          value: my-custom-sa
+
+  - it: passes through securityContext from Values
+    set:
+      deployment:
+        spec:
+          template:
+            spec:
+              securityContext:
+                runAsNonRoot: true
+                runAsUser: 1000
+              containers:
+                nginx:
+                  image:
+                    repository: nginx
+    asserts:
+      - equal:
+          path: spec.template.spec.securityContext.runAsNonRoot
+          value: true
+      - equal:
+          path: spec.template.spec.securityContext.runAsUser
+          value: 1000
+
+  - it: passes through nodeSelector from Values
+    set:
+      deployment:
+        spec:
+          template:
+            spec:
+              nodeSelector:
+                disktype: ssd
+              containers:
+                nginx:
+                  image:
+                    repository: nginx
+    asserts:
+      - equal:
+          path: spec.template.spec.nodeSelector.disktype
+          value: ssd
+
+  - it: passes through tolerations from Values
+    set:
+      deployment:
+        spec:
+          template:
+            spec:
+              tolerations:
+                - key: dedicated
+                  operator: Equal
+                  value: gpu
+                  effect: NoSchedule
+              containers:
+                nginx:
+                  image:
+                    repository: nginx
+    asserts:
+      - contains:
+          path: spec.template.spec.tolerations
+          content:
+            key: dedicated
+            operator: Equal
+            value: gpu
+            effect: NoSchedule
